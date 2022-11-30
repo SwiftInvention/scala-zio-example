@@ -1,0 +1,27 @@
+version: "3.8"
+
+networks:
+  localNetwork:
+   name: scala-zio-example-local
+
+services:
+  mysql:
+    image: mysql:8.0
+    networks:
+      - localNetwork
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: 'localDatabase'
+      MYSQL_USER: 'localUser'
+      MYSQL_PASSWORD: 'localPassword'
+
+      # Note: mySQL won't run without root password being set.
+      # Though there are other root password options, the `MYSQL_ROOT_PASSWORD` is the most explicit.
+      MYSQL_ROOT_PASSWORD: 'localPassword'
+
+    healthcheck:
+      test: mysql -h localhost -P 3306 --protocol=tcp -u $$MYSQL_USER --password=$$MYSQL_PASSWORD $$MYSQL_DATABASE -e 'SELECT 1'
+      interval: 3s
+      retries: 500
+    command: ['mysqld', '--character-set-server=utf8', '--collation-server=utf8_general_ci']

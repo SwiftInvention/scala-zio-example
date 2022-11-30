@@ -1,0 +1,13 @@
+.ammonite/
+.bloop/
+.bsp/
+.idea/
+.metals/
+.vscode/
+boot/
+lib_managed/
+metals.sbt
+project/plugins/project/
+project/target/
+src_managed/
+target/
