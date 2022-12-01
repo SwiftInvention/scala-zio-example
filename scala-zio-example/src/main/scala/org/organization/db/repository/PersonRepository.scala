@@ -8,7 +8,7 @@ import org.organization.AppEnv.AppIO
 trait PersonRepository {
   def getAllPersons: AppIO[List[Person]] = {
     val q = ctx.quote {
-      persons
+      persons.sortBy(_.birthDate)
     }
     run(q)
   }
