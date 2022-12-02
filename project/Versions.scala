@@ -6,4 +6,5 @@ object Versions {
   val zio        = "1.0.17" // Note: Upgrading to 2.x may break compatibility with internal libs
   val pureConfig = "0.17.1"
   val zioHttpVersion = "1.0.0.0-RC29" // Note: Upgrading to 2.x brings ZIO 2.x
+  val chimney        = "0.6.2"
 }
