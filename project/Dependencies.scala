@@ -9,12 +9,14 @@ object Dependencies {
   ) map (_                   % Compile)
 
   lazy val dbDep = Seq(
-    "io.getquill" %% "quill-jdbc"           % Versions.quill,
-    "io.getquill" %% "quill-jdbc-zio"       % Versions.quill,
-    "mysql"        % "mysql-connector-java" % Versions.mysql,
-    "org.flywaydb" % "flyway-core"          % Versions.flyway,
-    "org.flywaydb" % "flyway-mysql"         % Versions.flyway
-  ) map (_         % Compile)
+    "io.getquill"  %% "quill-jdbc"           % Versions.quill,
+    "io.getquill"  %% "quill-jdbc-zio"       % Versions.quill,
+    "com.beachape" %% "enumeratum-quill"     % Versions.enumeratum,
+    "com.beachape" %% "enumeratum"           % Versions.enumeratum,
+    "mysql"         % "mysql-connector-java" % Versions.mysql,
+    "org.flywaydb"  % "flyway-core"          % Versions.flyway,
+    "org.flywaydb"  % "flyway-mysql"         % Versions.flyway
+  ) map (_          % Compile)
 
   lazy val httpDep = Seq(
     "com.softwaremill.sttp.tapir" %% "tapir-core"              % Versions.tapir,

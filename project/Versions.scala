@@ -7,4 +7,5 @@ object Versions {
   val pureConfig = "0.17.2"
   val zioHttpVersion = "1.0.0.0-RC29" // Note: Upgrading to 2.x brings ZIO 2.x
   val chimney        = "0.6.2"
+  val enumeratum     = "1.7.0"
 }
