@@ -6,9 +6,3 @@ CREATE TABLE IF NOT EXISTS `person` (
     `gender` INT NOT NULL,
     PRIMARY KEY (`id`)
 );
-
-INSERT INTO `person` (`identifier`, `name`, `birth_date`, `gender`)
-    VALUES 
-    ("247b94f6-34b2-433a-9289-6f3613a11a68", 'Justin Bieber', FROM_UNIXTIME (762469200), 2),
-    ("b4647f79-eb76-4d5d-ac92-31a6161f5dd4", 'Elon Musk', FROM_UNIXTIME (46900800), 0);
-
