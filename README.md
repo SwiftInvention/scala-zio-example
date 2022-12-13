@@ -29,6 +29,11 @@
   ```sh
   docker-compose up -Vd --wait
   ```
+- Fill db by demo data
+
+  ```sh
+  sbt "scalaZioExample/runMain org.organization.utils.DemoDb"
+  ```
 
 - Run
 
