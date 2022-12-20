@@ -52,7 +52,7 @@ object PersonEndpoint extends PersonRepository with ZTapir {
 
   val addPersonServerLogic: ZServerEndpoint[AppEnv, Any] = {
     createPerson.zServerLogic(newPersonTO =>
-      insert(newPersonTO.toEnt()).map(_ => ()).mapError(_ => ())
+      insert(newPersonTO.toDomain()).map(_ => ()).mapError(_ => ())
     )
   }
 

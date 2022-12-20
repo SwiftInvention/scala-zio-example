@@ -33,13 +33,14 @@ trait PersonRepository {
 
   def insert(newPersonData: NewPersonData): AppIO[Long] = {
     val stubId: Long = 0
-    val uuid = UUID.randomUUID()
-    val personEnt = newPersonEnt.into[PersonEnt]
+    val uuid         = UUID.randomUUID()
+    val personEntToCreate = newPersonData
+      .into[PersonEnt]
       .withFieldConst(_.id, stubId)
       .withFieldConst(_.identifier, uuid)
       .transform
     val q = ctx.quote {
-      person.insertValue(lift(personEnt)).returningGenerated(_.id)
+      person.insertValue(lift(personEntToCreate)).returningGenerated(_.id)
     }
     run(q)
   }
