@@ -5,6 +5,7 @@ val betterMonadicFor = "0.3.1"
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % sbtScalafmt)
 addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % sbtScalafix)
+addSbtPlugin("io.spray" % "sbt-revolver" % "0.9.1")
 addCompilerPlugin("org.typelevel" % "kind-projector" % kindProjector cross CrossVersion.full)
 addCompilerPlugin("com.olegpy" %% "better-monadic-for" % betterMonadicFor)
 

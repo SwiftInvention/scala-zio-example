@@ -1,9 +1,10 @@
 package org.organization.db.repository
 
-import org.organization.db.DbContext.ctx._
-import org.organization.db.DbContext._
-import org.organization.db.model.PersonEnt
+import io.scalaland.chimney.dsl.TransformerOps
 import org.organization.AppEnv.AppIO
+import org.organization.db.DbContext._
+import org.organization.db.DbContext.ctx._
+import org.organization.db.model.{NewPersonData, PersonEnt}
 
 import java.util.UUID
 
@@ -30,9 +31,16 @@ trait PersonRepository {
     run(q).map(_.headOption)
   }
 
-  def insert(productEnt: PersonEnt): AppIO[Long] = {
+  def insert(newPersonData: NewPersonData): AppIO[Long] = {
+    val stubId: Long = 0
+    val uuid         = UUID.randomUUID()
+    val personEntToCreate = newPersonData
+      .into[PersonEnt]
+      .withFieldConst(_.id, stubId)
+      .withFieldConst(_.identifier, uuid)
+      .transform
     val q = ctx.quote {
-      person.insertValue(lift(productEnt)).returningGenerated(_.id)
+      person.insertValue(lift(personEntToCreate)).returningGenerated(_.id)
     }
     run(q)
   }
