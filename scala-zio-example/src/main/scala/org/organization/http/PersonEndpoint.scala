@@ -12,6 +12,7 @@ import zio.ZIO
 
 import java.util.UUID
 
+// TODO: Provide error body, not just Unit
 object PersonEndpoint extends PersonRepository with ZTapir {
 
   private val personListing: PublicEndpoint[Unit, Unit, List[PersonTO], Any] =
@@ -21,7 +22,6 @@ object PersonEndpoint extends PersonRepository with ZTapir {
       .in("person" / "list" / "all")
       .out(jsonBody[List[PersonTO]])
 
-  // TODO: Provide error body, not just Unit
   val personListingServerLogic: ZServerEndpoint[AppEnv, Any] =
     personListing.zServerLogic(_ => getAllPersons.map(_.map(_.toTO())).mapError(_ => ()))
 
@@ -29,13 +29,12 @@ object PersonEndpoint extends PersonRepository with ZTapir {
     endpoint.get
       .name("get-person-by-identifier")
       .description("Get person from database by identifier")
-      .in("person" / path[UUID]("personUUID"))
+      .in("person" / path[UUID]("identifier"))
       .out(jsonBody[PersonTO])
 
-  // TODO: Provide error body, not just Unit
   val personByIdentifierServerLogic: ZServerEndpoint[AppEnv, Any] = {
-    personByIdentifier.zServerLogic(personUUID =>
-      getByIdentifier(personUUID)
+    personByIdentifier.zServerLogic(identifier =>
+      getByIdentifier(identifier)
         .mapError(_ => ())
         .flatMap({
           case None         => ZIO.fail(())
@@ -51,7 +50,6 @@ object PersonEndpoint extends PersonRepository with ZTapir {
       .in("person")
       .in(jsonBody[NewPersonTO])
 
-  // TODO: Provide error body, not just Unit
   val addPersonServerLogic: ZServerEndpoint[AppEnv, Any] = {
     createPerson.zServerLogic(newPersonTO =>
       insert(newPersonTO.toEnt()).map(_ => ()).mapError(_ => ())
