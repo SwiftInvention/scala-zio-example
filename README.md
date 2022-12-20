@@ -14,6 +14,7 @@
 - [Intellij IDEA][intellij]
 
 [vscode]: https://scalameta.org/metals/docs/editors/vscode/
+
 [intellij]: https://scalameta.org/scalafmt/docs/installation.html#intellij
 
 ## Usage
@@ -22,9 +23,9 @@
 
   Note: flags and options mean:
 
-  - use detached mode
-  - wait for all containers to be healthy
-  - remove volumes on exit
+    - use detached mode
+    - wait for all containers to be healthy
+    - remove volumes on exit
 
   ```sh
   docker-compose up -Vd --wait
@@ -39,6 +40,12 @@
 
   ```sh
   sbt scalaZioExample/run
+  ```
+
+- Run in live reload mode
+
+  ```sh
+  sbt ~scalaZioExample/reStart
   ```
 
 - When done, remove docker containers, networks and volumes
@@ -58,9 +65,10 @@
   ```sh
     sbt dependencyUpdates
     ```
+
 ### Swagger-UI
 
- Go to `http://localhost:8080/docs`
+Go to `http://localhost:8080/docs`
 
 ### Scalafix
 
