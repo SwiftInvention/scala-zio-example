@@ -10,6 +10,8 @@ import sttp.tapir.json.circe._
 import sttp.tapir.ztapir.ZTapir
 import zio.ZIO
 
+import java.util.UUID
+
 object PersonEndpoint extends PersonRepository with ZTapir {
 
   private val personListing: PublicEndpoint[Unit, Unit, List[PersonTO], Any] =
@@ -24,17 +26,17 @@ object PersonEndpoint extends PersonRepository with ZTapir {
   val personListingServerLogic: ZServerEndpoint[AppEnv, Any] =
     personListing.zServerLogic(_ => getAllPersons.map(_.map(_.toTO())).mapError(_ => ()))
 
-  private val personById: PublicEndpoint[Long, Unit, PersonTO, Any] =
+  private val personByIdentifier: PublicEndpoint[UUID, Unit, PersonTO, Any] =
     endpoint.get
-      .name("get-person")
-      .description("Get person from database by id")
-      .in("person" / path[Long]("personId"))
+      .name("get-person-by-identifier")
+      .description("Get person from database by its identifier")
+      .in("person" / path[UUID]("personUUID"))
       .out(jsonBody[PersonTO])
 
   // TODO: Provide error body, not just Unit
-  val personByIdServerLogic: ZServerEndpoint[AppEnv, Any] = {
-    personById.zServerLogic(
-      personId => getById(personId)
+  val personByIdentifierServerLogic: ZServerEndpoint[AppEnv, Any] = {
+    personByIdentifier.zServerLogic(
+      personUUID => getByIdentifier(personUUID)
         .mapError(_ => ())
         .flatMap({
           case None => ZIO.fail(())

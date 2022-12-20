@@ -1,7 +1,7 @@
 package org.organization.http.swagger
 
 import org.organization.AppEnv.AppEnv
-import org.organization.http.PersonEndpoint.{personByIdServerLogic, personListingServerLogic}
+import org.organization.http.PersonEndpoint.{personByIdentifierServerLogic, personListingServerLogic}
 import org.organization.http.check.HealthCheckEndpoint
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import sttp.tapir.ztapir.ZTapir
@@ -12,7 +12,7 @@ object SwaggerApiEndpoint extends ZTapir {
       HealthCheckEndpoint.healthCheckingServerEndpoint,
       HealthCheckEndpoint.readinessCheckingServerEndpoint,
       personListingServerLogic,
-      personByIdServerLogic
+      personByIdentifierServerLogic
     )
 
   private val docEndpoints: List[ZServerEndpoint[AppEnv, Any]] = SwaggerInterpreter()
