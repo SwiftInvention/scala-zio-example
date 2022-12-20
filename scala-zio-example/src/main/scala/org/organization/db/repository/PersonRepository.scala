@@ -4,7 +4,7 @@ import io.scalaland.chimney.dsl.TransformerOps
 import org.organization.AppEnv.AppIO
 import org.organization.db.DbContext._
 import org.organization.db.DbContext.ctx._
-import org.organization.db.model.{NewPersonEnt, PersonEnt}
+import org.organization.db.model.{NewPersonData, PersonEnt}
 
 import java.util.UUID
 
@@ -31,7 +31,7 @@ trait PersonRepository {
     run(q).map(_.headOption)
   }
 
-  def insert(newPersonEnt: NewPersonEnt): AppIO[Long] = {
+  def insert(newPersonData: NewPersonData): AppIO[Long] = {
     val stubId: Long = 0
     val uuid = UUID.randomUUID()
     val personEnt = newPersonEnt.into[PersonEnt]
