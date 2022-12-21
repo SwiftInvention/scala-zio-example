@@ -8,14 +8,14 @@ import sttp.tapir.ztapir.ZTapir
 
 object SwaggerApiEndpoint extends ZTapir {
   private val healthCheckEndpoints = List(
-    HealthCheckEndpoint.healthCheckingServerEndpoint,
-    HealthCheckEndpoint.readinessCheckingServerEndpoint
+    HealthCheckEndpoint.serverCheck,
+    HealthCheckEndpoint.databaseCheck
   )
 
   private val personEndpoints = List(
-    PersonEndpoint.personListingServerLogic,
-    PersonEndpoint.personByIdentifierServerLogic,
-    PersonEndpoint.addPersonServerLogic
+    PersonEndpoint.personListing,
+    PersonEndpoint.personByIdentifier,
+    PersonEndpoint.createPerson
   )
 
   private val apiEndpoints = healthCheckEndpoints ++ personEndpoints
