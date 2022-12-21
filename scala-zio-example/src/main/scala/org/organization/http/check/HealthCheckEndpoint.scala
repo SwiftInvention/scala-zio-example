@@ -6,6 +6,7 @@ import org.organization.http.BaseEndpoint.{makeEndpoint, makeEndpointHandler}
 import org.organization.http.InternalServerError
 import sttp.tapir._
 import sttp.tapir.ztapir.ZTapir
+import zio.ZIO
 
 object HealthCheckEndpoint extends HealthCheckHelper with ZTapir {
 
@@ -27,6 +28,6 @@ object HealthCheckEndpoint extends HealthCheckHelper with ZTapir {
       ).get
         .in("check" / "server")
         .out(emptyOutput)
-    )(_ => databaseHealthCheck.mapError(_ => InternalServerError))
+    )(_ => ZIO.unit)
 
 }

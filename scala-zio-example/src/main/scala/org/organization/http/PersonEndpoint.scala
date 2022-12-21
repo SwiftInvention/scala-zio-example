@@ -25,7 +25,7 @@ object PersonEndpoint extends PersonRepository with ZTapir {
         .out(jsonBody[List[PersonTO]])
     )(_ =>
       getAllPersons
-        .map(_.map(_.toTO()))
+        .map(_.map(_.toTO))
         .mapError(_ => InternalServerError)
     )
 
@@ -43,7 +43,7 @@ object PersonEndpoint extends PersonRepository with ZTapir {
           _ => ZIO.fail(InternalServerError),
           {
             case None         => ZIO.fail(NotFound)
-            case Some(person) => ZIO.succeed(person.toTO())
+            case Some(person) => ZIO.succeed(person.toTO)
           }
         )
     )
