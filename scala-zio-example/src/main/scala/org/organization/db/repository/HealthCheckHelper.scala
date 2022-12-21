@@ -6,7 +6,7 @@ import org.organization.AppEnv.AppIO
 
 trait HealthCheckHelper {
 
-  def healthCheck: AppIO[Unit] = {
+  def databaseHealthCheck: AppIO[Unit] = {
     val q = ctx.quote {
       infix"""SELECT 1""".as[Int]
     }
