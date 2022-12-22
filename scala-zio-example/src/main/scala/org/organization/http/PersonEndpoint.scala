@@ -61,4 +61,22 @@ object PersonEndpoint extends PersonRepository with ZTapir {
         .mapError(_ => InternalServerError)
     )
 
+  val oldestPerson: ZServerEndpoint[AppEnv, Any] =
+    makeEndpointHandler(
+      makeEndpoint(
+        name = "get-oldest-person",
+        description = "Get the oldest person from database",
+      ).get
+        .in("person" / "oldest")
+        .out(jsonBody[PersonTO])
+    )(_ =>
+      getOldest
+        .foldM(
+          _ => ZIO.fail(InternalServerError),
+          {
+            case None => ZIO.fail(NotFound)
+            case Some(person) => ZIO.succeed(person.toTO)
+          }
+        )
+    )
 }

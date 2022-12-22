@@ -44,4 +44,12 @@ trait PersonRepository {
     }
     run(q)
   }
+
+  def getOldest: AppIO[Option[PersonEnt]] = {
+    val q = ctx.quote {
+      person.filter(p => p.birthDate equals
+        person.map(_.birthDate).min.orNull).take(1)
+    }
+    run(q).map(_.headOption)
+  }
 }
