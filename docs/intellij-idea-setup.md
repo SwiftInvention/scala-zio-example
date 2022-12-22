@@ -1,8 +1,9 @@
 ### Setting up debugger in Intellij IDEA
 
 * Ensure that debugging is enabled for sbt
-* ![sbt config](/docs/images/idea-sbt-settings.png)
+  ![sbt config](images/idea-sbt-settings.png)
 * Create a run configuration from the "sbt task" template
-* ![debug configuration template](/docs/images/idea-debug-configuration-template.png)
+  ![debug configuration template](images/idea-debug-configuration-template.png)
 * Set the task to be `scalaZioExample/run`
-* ![debug configuration](/docs/images/idea-debug-configuration.png)
+  ![debug configuration](images/idea-debug-configuration.png)
+    
