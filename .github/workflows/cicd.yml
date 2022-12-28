@@ -3,9 +3,13 @@ name: scala-zio-example CI
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: 
+      - main
+  pull_request: 
+    types: 
+      - opened
+      # "synchronize" means new commits pushed to the HEAD of the pull request branch
+      - synchronize
 
 permissions:
   contents: read
