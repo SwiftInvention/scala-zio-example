@@ -3,16 +3,25 @@ name: scala-zio-example CI
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: 
+      - main
+  pull_request: 
+    types: 
+      - opened
+      # "synchronize" means new commits pushed to the HEAD of the pull request branch
+      - synchronize
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  cancel-previous:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.11.0
 
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,9 +36,9 @@ jobs:
         
     - name: setup-scala
       uses: olafurpg/setup-scala@v10
-      
-    - name: Compile
-      run: sbt compile
+
+    - name: Compile and Lint
+      run: sbt compile scalafmtCheck scalafixAll
         
     - name: Run tests
       run: sbt test
