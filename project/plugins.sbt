@@ -1,4 +1,4 @@
-val sbtScalafmt = "2.4.6"
+val sbtScalafmt = "2.5.0"
 val sbtScalafix = "0.10.4"
 val kindProjector = "0.13.2"
 val betterMonadicFor = "0.3.1"

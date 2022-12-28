@@ -27,9 +27,9 @@ jobs:
         
     - name: setup-scala
       uses: olafurpg/setup-scala@v10
-      
-    - name: Compile
-      run: sbt compile
+
+    - name: Compile and Lint
+      run: sbt compile scalafmtCheck scalafixAll
         
     - name: Run tests
       run: sbt test
