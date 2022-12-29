@@ -2,6 +2,7 @@ package org.organization.db.repository
 
 import io.scalaland.chimney.dsl.TransformerOps
 import org.organization.AppEnv.AppIO
+import org.organization.api.model.NewType.PersonIdentifier
 import org.organization.db.DbContext._
 import org.organization.db.DbContext.ctx._
 import org.organization.db.model.{NewPersonData, PersonEnt}
@@ -9,6 +10,11 @@ import org.organization.db.model.{NewPersonData, PersonEnt}
 import java.util.UUID
 
 trait PersonRepository {
+
+  implicit val encodeIdentifier: MappedEncoding[PersonIdentifier, UUID] =
+    MappedEncoding[PersonIdentifier, UUID](_.value)
+  implicit val decodeIdentifier: MappedEncoding[UUID, PersonIdentifier] =
+    MappedEncoding[UUID, PersonIdentifier](PersonIdentifier.fromUUID)
 
   def getAllPersons: AppIO[List[PersonEnt]] = {
     val q = ctx.quote {
@@ -24,7 +30,7 @@ trait PersonRepository {
     run(q).map(_.headOption)
   }
 
-  def getByIdentifier(identifier: UUID): AppIO[Option[PersonEnt]] = {
+  def getByIdentifier(identifier: PersonIdentifier): AppIO[Option[PersonEnt]] = {
     val q = ctx.quote {
       person.filter(_.identifier equals lift(identifier))
     }
@@ -33,7 +39,7 @@ trait PersonRepository {
 
   def insert(newPersonData: NewPersonData): AppIO[Long] = {
     val stubId: Long = 0
-    val uuid         = UUID.randomUUID()
+    val uuid         = PersonIdentifier.fromUUID(UUID.randomUUID())
     val personEntToCreate = newPersonData
       .into[PersonEnt]
       .withFieldConst(_.id, stubId)

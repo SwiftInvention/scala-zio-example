@@ -3,10 +3,12 @@ import sbt._
 object Dependencies {
 
   lazy val commonDep = Seq(
-    "dev.zio"               %% "zio"        % Versions.zio,
-    "com.github.pureconfig" %% "pureconfig" % Versions.pureConfig,
-    "io.scalaland"          %% "chimney"    % Versions.chimney
-  ) map (_                   % Compile)
+    "dev.zio"                     %% "zio"           % Versions.zio,
+    "com.github.pureconfig"       %% "pureconfig"    % Versions.pureConfig,
+    "io.scalaland"                %% "chimney"       % Versions.chimney,
+    "io.estatico"                 %% "newtype"       % Versions.newType,
+    "com.softwaremill.sttp.tapir" %% "tapir-newtype" % Versions.tapirNewType
+  ) map (_                         % Compile)
 
   lazy val dbDep = Seq(
     "io.getquill"  %% "quill-jdbc"           % Versions.quill,

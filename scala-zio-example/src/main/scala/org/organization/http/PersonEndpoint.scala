@@ -2,18 +2,18 @@ package org.organization.http
 
 import io.circe.generic.auto._
 import org.organization.AppEnv.AppEnv
+import org.organization.api.model.NewType.PersonIdentifier
 import org.organization.api.to.{NewPersonTO, PersonTO}
 import org.organization.db.repository.PersonRepository
 import org.organization.http.BaseEndpoint.{makeEndpoint, makeEndpointHandler}
 import sttp.tapir._
+import sttp.tapir.codec.newtype._
 import sttp.tapir.generic.auto._
 import sttp.tapir.json.circe._
 import sttp.tapir.ztapir.ZTapir
 import zio.ZIO
 
-import java.util.UUID
-
-object PersonEndpoint extends PersonRepository with ZTapir {
+object PersonEndpoint extends PersonRepository with ZTapir with TapirCodecNewType {
 
   val personListing: ZServerEndpoint[AppEnv, Any] =
     makeEndpointHandler(
@@ -35,7 +35,7 @@ object PersonEndpoint extends PersonRepository with ZTapir {
         "get-person-by-identifier",
         "Get person from database by identifier"
       ).get
-        .in("person" / path[UUID]("identifier"))
+        .in("person" / path[PersonIdentifier]("identifier"))
         .out(jsonBody[PersonTO])
     )(identifier =>
       getByIdentifier(identifier)

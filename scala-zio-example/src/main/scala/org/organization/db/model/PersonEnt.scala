@@ -1,14 +1,14 @@
 package org.organization.db.model
 
 import io.scalaland.chimney.dsl.TransformerOps
+import org.organization.api.model.NewType.PersonIdentifier
 import org.organization.api.to.PersonTO
 
 import java.time.Instant
-import java.util.UUID
 
 final case class PersonEnt(
     id: Long,
-    identifier: UUID,
+    identifier: PersonIdentifier,
     name: String,
     birthDate: Instant,
     gender: Gender
