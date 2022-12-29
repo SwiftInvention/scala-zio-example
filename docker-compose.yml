@@ -5,28 +5,30 @@ networks:
    name: scala-zio-example-local
 
 services:
-  # Note: uncomment to run backend in the container (instead of the host),
-  # Don't forget to run `docker-compose build backend` before each run
-  # (to make sure that the image is up to date).
-  # 
-  # backend:
-  #   build:
-  #     context: .
-  #   networks:
-  #     - localNetwork
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     MYSQL_URL: 'jdbc:mysql://mysql:3306/localDatabase?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC'
-  #     MYSQL_USER: 'localUser'
-  #     MYSQL_PASSWORD: 'localPassword'
-  #     SERVER_HOST: '0.0.0.0'
-  #     SERVER_PORT: 8080
-  #   healthcheck:
-  #     test: [ "CMD", "curl", "--fail", "http://localhost:8080/api/v1/check/health" ]
-  #     interval: 1s
-  #     start_period: 5s
-  #     retries: 500
+  # Note: If for some reason you are running the server in the container, 
+  # don't forget to run `docker-compose build backend` before each run
+  # to make sure that the image is up to date.
+  backend:
+    build:
+      context: .
+    networks:
+      - localNetwork
+    ports:
+      - "8080:8080"
+    environment:
+      MYSQL_URL: 'jdbc:mysql://mysql:3306/localDatabase?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC'
+      MYSQL_USER: 'localUser'
+      MYSQL_PASSWORD: 'localPassword'
+      SERVER_HOST: '0.0.0.0'
+      SERVER_PORT: 8080
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:8080/api/v1/check/health" ]
+      interval: 1s
+      start_period: 5s
+      retries: 500
+    depends_on:
+      mysql:
+        condition: service_healthy
 
   mysql:
     image: mysql:8.0

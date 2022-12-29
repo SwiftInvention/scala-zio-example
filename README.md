@@ -28,7 +28,7 @@
     - remove volumes on exit
 
   ```sh
-  docker-compose up -Vd --wait
+  docker-compose up -Vd --wait mysql
   ```
 - Fill db by demo data
 
