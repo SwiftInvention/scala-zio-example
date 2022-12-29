@@ -1,6 +1,7 @@
 .bloop/
 .metals/
 project/**/metals.sbt
+**/target/
 
 dist/*
 target/
@@ -16,4 +17,10 @@ project/plugins/project/
 *.class
 *.log
 
+# Project-specific
+docker-compose.yml
+Dockerfile
+pipeline/
+**/*.md
+docs/
 
