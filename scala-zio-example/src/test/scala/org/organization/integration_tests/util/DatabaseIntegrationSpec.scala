@@ -9,7 +9,7 @@ import zio.test.environment.TestEnvironment
 
 import javax.sql.DataSource
 
-/** Spins up a separate postgres container for each test. Limits the amount of tests running in
+/** Spins up a separate MySQL container for each test. Limits the number of tests running in
   * parallel to put an upper bound on resource usage
   */
 abstract class DatabaseIntegrationSpec extends DefaultRunnableSpec {
