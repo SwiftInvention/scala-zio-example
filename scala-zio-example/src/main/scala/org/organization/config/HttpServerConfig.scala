@@ -3,7 +3,7 @@ package org.organization.config
 import pureconfig._
 import pureconfig.error.ConfigReaderFailures
 import pureconfig.generic.auto._
-import zio.{Has, ZLayer, ZIO}
+import zio.{Has, ZIO, ZLayer}
 
 final case class HttpServerConfig(host: String, port: Int)
 

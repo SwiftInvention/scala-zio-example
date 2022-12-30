@@ -1,12 +1,15 @@
 package org.organization.db.repository
 
-import org.organization.db.DbContext.ctx._
+import org.organization.AppEnv.AppRIO
 import org.organization.db.DbContext._
-import org.organization.AppEnv.AppIO
+import org.organization.db.DbContext.ctx._
+import zio._
+
+import javax.sql.DataSource
 
 trait HealthCheckHelper {
 
-  def databaseHealthCheck: AppIO[Unit] = {
+  def databaseHealthCheck: AppRIO[Has[DataSource], Unit] = {
     val q = ctx.quote {
       infix"""SELECT 1""".as[Int]
     }
