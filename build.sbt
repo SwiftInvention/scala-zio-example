@@ -7,9 +7,8 @@ ThisBuild / version      := "0.1.1-SNAPSHOT"
 lazy val scalaZioExample = (project in file("scala-zio-example"))
   .settings(
     settings
-      ++ Seq(
-        name := """scala-zio-example"""
-      )
+      ++ integrationTestSettings
+      ++ Seq(name := """scala-zio-example""")
   )
 
 lazy val scalaZioExampleRoot = project
@@ -49,3 +48,11 @@ lazy val settings = Seq(
 
   testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
 )
+
+lazy val integrationTestSettings =
+  inConfig(IntegrationTest)(
+    Seq(
+      // To ensure that test containers get cleaned up immediately
+      Test / fork := true
+    )
+  )
