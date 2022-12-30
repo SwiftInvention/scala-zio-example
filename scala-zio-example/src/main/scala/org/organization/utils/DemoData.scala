@@ -1,14 +1,16 @@
 package org.organization.utils
 
-import org.organization.AppEnv.AppIO
+import org.organization.AppEnv.AppRIO
 import org.organization.db.model.{Gender, NewPersonData}
 import org.organization.db.repository.PersonRepository
+import zio.Has
 
 import java.time.Instant
+import javax.sql.DataSource
 
 object DemoData extends PersonRepository {
 
-  val fillDb: AppIO[Unit] =
+  val fillDb: AppRIO[Has[DataSource], Unit] =
     for {
       _ <- insert(
         NewPersonData("PersonName 1", Instant.parse("2007-12-03T10:15:30.00Z"), Gender.Male)
