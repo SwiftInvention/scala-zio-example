@@ -26,7 +26,7 @@ object Dependencies {
     "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs"      % Versions.tapir,
     "com.softwaremill.sttp.tapir" %% "tapir-zio1-http-server"  % Versions.tapir,
     "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % Versions.tapir,
-    "io.d11"                       % "zhttp_2.13"              % Versions.zioHttpVersion
+    "io.d11"                       % "zhttp_2.13"              % Versions.zioHttp
   ) map (_                         % Compile)
 
   lazy val testDep: Seq[ModuleID] = Seq(
