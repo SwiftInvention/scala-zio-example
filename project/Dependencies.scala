@@ -7,7 +7,7 @@ object Dependencies {
     "com.github.pureconfig"       %% "pureconfig"    % Versions.pureConfig,
     "io.scalaland"                %% "chimney"       % Versions.chimney,
     "io.estatico"                 %% "newtype"       % Versions.newType,
-    "com.softwaremill.sttp.tapir" %% "tapir-newtype" % Versions.tapirNewType
+    "com.softwaremill.sttp.tapir" %% "tapir-newtype" % Versions.tapir
   ) map (_                         % Compile)
 
   lazy val dbDep = Seq(
