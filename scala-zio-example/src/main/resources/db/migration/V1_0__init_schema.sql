@@ -7,4 +7,5 @@ CREATE TABLE IF NOT EXISTS `person` (
     PRIMARY KEY (`id`)
 );
 
-CREATE UNIQUE INDEX `person_identifier_uidx` USING HASH ON `person` (`identifier`);
+CREATE UNIQUE INDEX `person_identifier_uidx` USING BTREE ON `person` (`identifier`);
+CREATE INDEX `person_gender_idx` USING BTREE ON `person` (`gender`);

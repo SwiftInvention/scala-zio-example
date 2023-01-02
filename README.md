@@ -3,7 +3,8 @@
 ## Prerequisites
 
 - `sbt`
-- Docker, `docker-compose`
+- Docker
+- docker-compose `v2` or higher (Note for macOS: enable `Use Docker Compose V2` in Docker Preferences)
 - OpenJDK 11 or above
 
 ## Setting up
@@ -19,7 +20,7 @@
 
 ## Usage
 
-- Start docker containers
+- Start MySQL in docker container
 
   Note: flags and options mean:
 
@@ -28,7 +29,7 @@
     - remove volumes on exit
 
   ```sh
-  docker-compose up -Vd --wait mysql
+  docker compose up -Vd --wait mysql
   ```
 - Fill db by demo data
 
@@ -51,7 +52,7 @@
 - When done, remove docker containers, networks and volumes
 
   ```sh
-  docker-compose down -v
+  docker compose down -v
   ```
 
 - Clean build artifacts and recompile (just in case)
