@@ -48,6 +48,25 @@ object PersonEndpoint extends PersonRepository with ZTapir with TapirCodecNewTyp
         )
     )
 
+  val oldestPerson: ZServerEndpoint[AppEnv, Any] =
+    makeEndpointHandler(
+      makeEndpoint(
+        "get-oldest-person",
+        "Get the oldest person from database",
+      ).get
+        .in("person" / "oldest")
+        .out(jsonBody[PersonTO])
+    )(_ =>
+      getOldest
+        .foldM(
+          _ => ZIO.fail(InternalServerError),
+          {
+            case None         => ZIO.fail(NotFound)
+            case Some(person) => ZIO.succeed(person.toTO)
+          }
+        )
+    )
+
   val createPerson: ZServerEndpoint[AppEnv, Any] =
     makeEndpointHandler(
       makeEndpoint(
