@@ -52,7 +52,7 @@ object PersonEndpoint extends PersonRepository with ZTapir with TapirCodecNewTyp
     makeEndpointHandler(
       makeEndpoint(
         "get-oldest-person",
-        "Get the oldest person from database",
+        "Get the oldest person from database"
       ).get
         .in("person" / "oldest")
         .out(jsonBody[PersonTO])
