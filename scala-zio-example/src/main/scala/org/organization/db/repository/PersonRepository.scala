@@ -39,6 +39,13 @@ trait PersonRepository {
     run(q).map(_.headOption)
   }
 
+  def getOldest: AppRIO[Has[DataSource], Option[PersonEnt]] = {
+    val q = ctx.quote {
+      person.sortBy(_.birthDate).take(1)
+    }
+    run(q).map(_.headOption)
+  }
+
   def insert(newPersonData: NewPersonData): AppRIO[Has[DataSource], Long] = {
     val stubId: Long = 0
     val uuid         = PersonIdentifier.fromUUID(UUID.randomUUID())

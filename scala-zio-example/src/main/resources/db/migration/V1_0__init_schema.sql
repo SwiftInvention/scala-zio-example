@@ -9,3 +9,4 @@ CREATE TABLE IF NOT EXISTS `person` (
 
 CREATE UNIQUE INDEX `person_identifier_uidx` USING BTREE ON `person` (`identifier`);
 CREATE INDEX `person_gender_idx` USING BTREE ON `person` (`gender`);
+CREATE INDEX `person_birth_date_idx` USING BTREE ON `person` (`birth_date`);
