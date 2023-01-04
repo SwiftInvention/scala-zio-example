@@ -3,7 +3,7 @@ package org.organization
 import zio.test.Assertion.equalTo
 import zio.test._
 
-object ApplicationSpec {
+object ApplicationSpec extends DefaultRunnableSpec {
   def spec: ZSpec[Any, Nothing] =
     suite("Example unit test suite")(
       test("math works") {
