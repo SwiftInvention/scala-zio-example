@@ -61,6 +61,12 @@
   sbt clean compile
   ```
 
+- Run tests
+
+  ```sh
+  sbt test
+  ```
+
 - Check for dependency updates (just in case)
 
   ```sh
