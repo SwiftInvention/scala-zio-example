@@ -6,7 +6,7 @@ import zhttp.service.EventLoopGroup
 import zhttp.service.server.ServerChannelFactory
 import zio._
 import zio.clock.Clock
-import zio.console.{Console, putStrLn}
+import zio.console.{putStrLn, Console}
 import zio.duration.durationInt
 
 import javax.sql.DataSource

@@ -1,13 +1,13 @@
-val sbtScalafmt = "2.5.0"
-val sbtScalafix = "0.10.4"
-val kindProjector = "0.13.2"
+val sbtScalafmt      = "2.5.0"
+val sbtScalafix      = "0.10.4"
+val kindProjector    = "0.13.2"
 val betterMonadicFor = "0.3.1"
 
-addSbtPlugin("org.scalameta" % "sbt-scalafmt" % sbtScalafmt)
-addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % sbtScalafix)
-addSbtPlugin("io.spray" % "sbt-revolver" % "0.9.1")
-addCompilerPlugin("org.typelevel" % "kind-projector" % kindProjector cross CrossVersion.full)
-addCompilerPlugin("com.olegpy" %% "better-monadic-for" % betterMonadicFor)
+addSbtPlugin("org.scalameta"      % "sbt-scalafmt"       % sbtScalafmt)
+addSbtPlugin("ch.epfl.scala"      % "sbt-scalafix"       % sbtScalafix)
+addSbtPlugin("io.spray"           % "sbt-revolver"       % "0.9.1")
+addCompilerPlugin("org.typelevel" % "kind-projector"     % kindProjector cross CrossVersion.full)
+addCompilerPlugin("com.olegpy"   %% "better-monadic-for" % betterMonadicFor)
 
 // Note: Optional plugins:
 // (Left commented out to avoid unnecessary dependencies and/or conflicts)
