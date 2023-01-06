@@ -1,6 +1,6 @@
 package org.organization.integration_tests
 
-import org.organization.db.model.Gender.{Male, Female, NonBinary}
+import org.organization.db.model.Gender.{Female, Male, NonBinary}
 import org.organization.db.model.NewPersonData
 import org.organization.db.repository.PersonRepository
 import org.organization.integration_tests.util.DatabaseIntegrationSpec
@@ -28,7 +28,7 @@ object PersonRepositorySpec extends DatabaseIntegrationSpec with PersonRepositor
           assert(personFromDb.map(_.name))(Assertion.equalTo(Some(newPerson.name)))
             && assert(personFromDb.map(_.birthDate))(Assertion.equalTo(Some(newPerson.birthDate)))
             && assert(personFromDb.map(_.gender))(Assertion.equalTo(Some(newPerson.gender)))
-          )
+        )
       },
       testM("getOldest returns None if person table is empty") {
         assertM(getOldest)(Assertion.equalTo(None))
@@ -51,10 +51,10 @@ object PersonRepositorySpec extends DatabaseIntegrationSpec with PersonRepositor
           gender = Female
         )
         for {
-          _ <- insert(firstPerson)
+          _                     <- insert(firstPerson)
           createdSecondPersonId <- insert(secondPerson)
-          _ <- insert(thirdPerson)
-          personFromDb <- getOldest
+          _                     <- insert(thirdPerson)
+          personFromDb          <- getOldest
         } yield assert(personFromDb.map(_.id))(Assertion.equalTo(Some(createdSecondPersonId)))
       }
     )
