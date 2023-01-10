@@ -15,19 +15,25 @@ import zio.ZIO
 
 object PersonEndpoint extends PersonRepository with ZTapir with TapirCodecNewType {
 
-  val personListing: ZServerEndpoint[AppEnv, Any] =
+  val personList: ZServerEndpoint[AppEnv, Any] =
     makeEndpointHandler(
       makeEndpoint(
         "Default-endpoint",
-        "Get all persons from database"
+        "Get persons from database"
+      ).get
+        .in("person" / "list")
+        .out(jsonBody[List[PersonTO]])
+    )(_ => getPersons.map(_.map(_.toTO)).mapError(_ => InternalServerError))
+
+  val allPersonList: ZServerEndpoint[AppEnv, Any] =
+    makeEndpointHandler(
+      makeEndpoint(
+        "get-all-person",
+        "Get persons from database, including archived"
       ).get
         .in("person" / "list" / "all")
         .out(jsonBody[List[PersonTO]])
-    )(_ =>
-      getAllPersons
-        .map(_.map(_.toTO))
-        .mapError(_ => InternalServerError)
-    )
+    )(_ => getAllPersons.map(_.map(_.toTO)).mapError(_ => InternalServerError))
 
   val personByIdentifier: ZServerEndpoint[AppEnv, Any] =
     makeEndpointHandler(
@@ -74,10 +80,6 @@ object PersonEndpoint extends PersonRepository with ZTapir with TapirCodecNewTyp
         "Add new person to database"
       ).post
         .in("person" / jsonBody[NewPersonTO])
-    )(newPersonTO =>
-      insert(newPersonTO.toDomain())
-        .map(_ => ())
-        .mapError(_ => InternalServerError)
-    )
+    )(newPersonTO => insert(newPersonTO.toDomain()).unit.orElseFail(InternalServerError))
 
 }

@@ -13,7 +13,8 @@ object SwaggerApiEndpoint extends ZTapir {
   )
 
   private val personEndpoints = List(
-    PersonEndpoint.personListing,
+    PersonEndpoint.personList,
+    PersonEndpoint.allPersonList,
     PersonEndpoint.personByIdentifier,
     PersonEndpoint.oldestPerson,
     PersonEndpoint.createPerson

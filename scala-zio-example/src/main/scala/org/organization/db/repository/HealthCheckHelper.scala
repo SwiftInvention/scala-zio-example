@@ -14,7 +14,7 @@ trait HealthCheckHelper {
       infix"""SELECT 1""".as[Int]
     }
 
-    /** Note: the quill effect is uninterruptible Which means that if the database is unavailable,
+    /** Note: the quill effect is uninterruptible which means that if the database is unavailable,
       * then all requests to the database (even the healthcheck) will wait for the default JDBC
       * `connectionTimeout` to complete.
       *

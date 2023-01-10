@@ -9,5 +9,6 @@ final case class PersonTO(
     identifier: PersonIdentifier,
     name: String,
     birthDate: Instant,
-    gender: Gender
+    gender: Gender,
+    isArchived: Boolean
 )

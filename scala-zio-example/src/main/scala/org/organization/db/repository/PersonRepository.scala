@@ -18,11 +18,12 @@ trait PersonRepository {
   implicit val decodeIdentifier: MappedEncoding[UUID, PersonIdentifier] =
     MappedEncoding[UUID, PersonIdentifier](PersonIdentifier.fromUUID)
 
+  def getPersons: AppRIO[Has[DataSource], List[PersonEnt]] = {
+    run(ctx.quote { person.sortBy(_.birthDate).filter(!_.isArchived) })
+  }
+
   def getAllPersons: AppRIO[Has[DataSource], List[PersonEnt]] = {
-    val q = ctx.quote {
-      person.sortBy(_.birthDate)
-    }
-    run(q)
+    run(ctx.quote { person.sortBy(_.birthDate) })
   }
 
   def getById(id: Long): AppRIO[Has[DataSource], Option[PersonEnt]] = {
@@ -46,6 +47,12 @@ trait PersonRepository {
     run(q).map(_.headOption)
   }
 
+  def archive(id: Long): AppRIO[Has[DataSource], Long] = {
+    run(ctx.quote {
+      person.filter(_.id equals lift(id)).update(_.isArchived -> lift(true))
+    })
+  }
+
   def insert(newPersonData: NewPersonData): AppRIO[Has[DataSource], Long] = {
     val stubId: Long = 0
     val uuid         = PersonIdentifier.fromUUID(UUID.randomUUID())
@@ -53,6 +60,7 @@ trait PersonRepository {
       .into[PersonEnt]
       .withFieldConst(_.id, stubId)
       .withFieldConst(_.identifier, uuid)
+      .withFieldConst(_.isArchived, false)
       .transform
     val q = ctx.quote {
       person.insertValue(lift(personEntToCreate)).returningGenerated(_.id)
