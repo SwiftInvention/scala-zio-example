@@ -9,6 +9,6 @@ object Versions {
   val zioTestContainers = "0.9.0"
   val chimney           = "0.6.2"
   val enumeratum =
-    "1.7.0" // Note: Versions above 1.7.0 add Scala 3 support and are not binary compatible with previous versions
+    "1.7.2" // Note: Versions above 1.7.0 add Scala 3 support and are not binary compatible with previous versions
   val newType = "0.4.4"
 }
