@@ -1,7 +1,7 @@
 object Versions {
   val flyway     = "9.10.1"
   val mysql      = "8.0.31"
-  val quill      = "3.19.0" // Note: Upgrading to 4.x brings ZIO 2.x
+  val quill      = "4.6.0"  // Note: Upgrading to 4.x brings ZIO 2.x
   val tapir      = "1.2.3"
   val zio        = "1.0.17" // Note: Upgrading to 2.x may break compatibility with internal libs
   val pureConfig = "0.17.2"
