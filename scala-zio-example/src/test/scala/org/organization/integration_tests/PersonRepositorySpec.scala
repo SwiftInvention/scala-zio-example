@@ -5,6 +5,7 @@ import org.organization.db.model.NewPersonData
 import org.organization.db.repository.PersonRepository
 import org.organization.integration_tests.util.DatabaseIntegrationSpec
 import zio.Has
+import zio.test.Assertion.equalTo
 import zio.test._
 
 import java.time.Instant
@@ -56,6 +57,28 @@ object PersonRepositorySpec extends DatabaseIntegrationSpec with PersonRepositor
           _                     <- insert(thirdPerson)
           personFromDb          <- getOldest
         } yield assert(personFromDb.map(_.id))(Assertion.equalTo(Some(createdSecondPersonId)))
+      },
+      testM("filters archived persons") {
+        val archivedPerson = NewPersonData(
+          name = "John Doe",
+          birthDate = Instant.ofEpochSecond(29),
+          gender = Male
+        )
+        val nonArchivedPerson =
+          NewPersonData(
+            name = "Ivan Petrova",
+            birthDate = Instant.ofEpochSecond(42),
+            gender = NonBinary
+          )
+        for {
+          archivedPersonId   <- insert(archivedPerson)
+          _                  <- insert(nonArchivedPerson)
+          _                  <- archive(archivedPersonId)
+          allPersons         <- getAllPersons
+          nonArchivedPersons <- getPersons
+        } yield assertTrue(allPersons.length equals 2) &&
+          assertTrue(nonArchivedPersons.length equals 1) &&
+          assert(nonArchivedPersons.exists(_.id equals archivedPersonId))(equalTo(false))
       }
     )
 }

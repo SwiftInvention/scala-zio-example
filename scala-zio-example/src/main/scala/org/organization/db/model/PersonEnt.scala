@@ -11,8 +11,8 @@ final case class PersonEnt(
     identifier: PersonIdentifier,
     name: String,
     birthDate: Instant,
-    gender: Gender
+    gender: Gender,
+    isArchived: Boolean
 ) {
-  def toTO: PersonTO =
-    this.into[PersonTO].transform
+  def toTO: PersonTO = this.into[PersonTO].transform
 }
