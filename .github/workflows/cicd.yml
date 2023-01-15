@@ -15,13 +15,13 @@ permissions: read-all
 
 jobs:
   cancel-previous:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.11.0
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v3
@@ -34,10 +34,7 @@ jobs:
         cache: 'sbt'
         
     - name: setup-scala
-      uses: olafurpg/setup-scala@v10
+      uses: olafurpg/setup-scala@v13
 
-    - name: Compile and Lint
-      run: sbt compile scalafmtCheck scalafixAll
-        
-    - name: Run tests
-      run: sbt test
+    - name: Compile, check formatting, lint, and run tests
+      run: sbt compile scalafmtCheck "scalafixAll --check" test
