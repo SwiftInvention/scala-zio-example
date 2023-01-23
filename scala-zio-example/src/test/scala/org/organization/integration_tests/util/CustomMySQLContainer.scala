@@ -8,6 +8,7 @@ import zio._
 
 import java.sql.{Connection, DriverManager}
 import javax.sql.DataSource
+import zio.managed._
 
 /** Copied from https://github.com/scottweaver/testcontainers-for-zio, made minor changes to fix a
   * type inference issue
@@ -22,7 +23,7 @@ object CustomMySQLContainer {
   )
 
   object Settings {
-    val default: ULayer[Has[Settings]] = ZLayer.succeed(
+    val default: ULayer[Settings] = ZLayer.succeed(
       Settings(
         "latest",
         MySQLContainer.defaultDatabaseName,
@@ -32,18 +33,18 @@ object CustomMySQLContainer {
     )
   }
 
-  type Provides = Has[JdbcInfo]
-    with Has[Connection with AutoCloseable]
-    with Has[DataSource]
-    with Has[MySQLContainer]
+  type Provides = JdbcInfo
+    with Connection with AutoCloseable
+    with DataSource
+    with MySQLContainer
 
-  val live: ZLayer[Has[Settings], Nothing, Provides] = {
+  val live: ZLayer[Settings, Nothing, Provides] = {
 
     def makeManagedConnection(
         container: MySQLContainer
     ): ZManaged[Any, Nothing, Connection with AutoCloseable] =
-      ZManaged.make(
-        ZIO.effect {
+      ZManaged.acquireReleaseWith(
+        ZIO.attempt {
           DriverManager.getConnection(
             container.jdbcUrl,
             container.username,
@@ -52,14 +53,14 @@ object CustomMySQLContainer {
         }.orDie
       )(conn =>
         ZIO
-          .effect(conn.close())
-          .tapError(err => ZIO.effect(println(s"Error closing connection: $err")))
+          .attempt(conn.close())
+          .tapError(err => ZIO.attempt(println(s"Error closing connection: $err")))
           .ignore
       )
 
     def makeManagedContainer(settings: Settings) =
-      ZManaged.make(
-        ZIO.effect {
+      ZManaged.acquireReleaseWith(
+        ZIO.attempt {
           val containerDef = MySQLContainer.Def(
             dockerImageName = DockerImageName.parse(s"mysql:${settings.imageVersion}"),
             databaseName = settings.databaseName,
@@ -70,14 +71,14 @@ object CustomMySQLContainer {
         }.orDie
       )(container =>
         ZIO
-          .effect(container.stop())
-          .tapError(err => ZIO.effect(println(s"Error stopping container: $err")))
+          .attempt(container.stop())
+          .tapError(err => ZIO.attempt(println(s"Error stopping container: $err")))
           .ignore
       )
 
     ZLayer.fromManagedMany {
       for {
-        settings  <- ZIO.service[Settings].toManaged_
+        settings  <- ZIO.service[Settings].toManaged
         container <- makeManagedContainer(settings)
         conn      <- makeManagedConnection(container)
 

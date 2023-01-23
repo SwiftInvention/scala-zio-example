@@ -5,17 +5,18 @@ import org.organization.config.HttpServerConfig
 import zhttp.service.EventLoopGroup
 import zhttp.service.server.ServerChannelFactory
 import zio._
-import zio.clock.Clock
-import zio.console.{putStrLn, Console}
+import zio.Clock
 import zio.duration.durationInt
 
 import javax.sql.DataSource
+import zio.Console
+import zio.Console.printLine
 
 object AppEnv {
-  type AppEnv = Has[HttpServerConfig]
-    with Has[Clock.Service]
-    with Has[Console.Service]
-    with Has[DataSource]
+  type AppEnv = HttpServerConfig
+    with Clock.Service
+    with Console
+    with DataSource
     with EventLoopGroup
     with zhttp.service.ServerChannelFactory
 
@@ -24,7 +25,7 @@ object AppEnv {
 
   private lazy val availableDbSchedule = Schedule
     .fixed(2000.milliseconds)
-    .tapOutput(o => putStrLn(s"Waiting for database to be available, retry count: $o").orDie)
+    .tapOutput(o => printLine(s"Waiting for database to be available, retry count: $o").orDie)
 
   def buildLiveEnv: ZLayer[Console with Clock, Object, AppEnv] =
     HttpServerConfig.layer ++ Clock.live ++ Console.live ++

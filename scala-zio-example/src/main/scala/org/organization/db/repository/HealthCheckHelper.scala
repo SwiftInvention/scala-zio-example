@@ -9,7 +9,7 @@ import javax.sql.DataSource
 
 trait HealthCheckHelper {
 
-  def databaseHealthCheck: AppRIO[Has[DataSource], Unit] = {
+  def databaseHealthCheck: AppRIO[DataSource, Unit] = {
     val q = ctx.quote {
       infix"""SELECT 1""".as[Int]
     }

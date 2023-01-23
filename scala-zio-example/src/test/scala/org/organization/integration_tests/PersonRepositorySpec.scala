@@ -4,7 +4,6 @@ import org.organization.db.model.Gender.{Female, Male, NonBinary}
 import org.organization.db.model.NewPersonData
 import org.organization.db.repository.PersonRepository
 import org.organization.integration_tests.util.DatabaseIntegrationSpec
-import zio.Has
 import zio.test.Assertion.equalTo
 import zio.test._
 
@@ -13,9 +12,9 @@ import javax.sql.DataSource
 
 object PersonRepositorySpec extends DatabaseIntegrationSpec with PersonRepository {
 
-  def integrationSpec: ZSpec[Has[DataSource], Throwable] =
+  def integrationSpec: ZSpec[DataSource, Throwable] =
     suite("PersonRepository")(
-      testM("can insert record") {
+      test("can insert record") {
         val newPerson =
           NewPersonData(
             name = "Ivan Petrova",
@@ -31,10 +30,10 @@ object PersonRepositorySpec extends DatabaseIntegrationSpec with PersonRepositor
             && assert(personFromDb.map(_.gender))(Assertion.equalTo(Some(newPerson.gender)))
         )
       },
-      testM("getOldest returns None if person table is empty") {
+      test("getOldest returns None if person table is empty") {
         assertM(getOldest)(Assertion.equalTo(None))
       },
-      testM("returns the oldest person") {
+      test("returns the oldest person") {
         val firstPerson =
           NewPersonData(
             name = "Ivan Petrova",
@@ -58,7 +57,7 @@ object PersonRepositorySpec extends DatabaseIntegrationSpec with PersonRepositor
           personFromDb          <- getOldest
         } yield assert(personFromDb.map(_.id))(Assertion.equalTo(Some(createdSecondPersonId)))
       },
-      testM("filters archived persons") {
+      test("filters archived persons") {
         val archivedPerson = NewPersonData(
           name = "John Doe",
           birthDate = Instant.ofEpochSecond(29),

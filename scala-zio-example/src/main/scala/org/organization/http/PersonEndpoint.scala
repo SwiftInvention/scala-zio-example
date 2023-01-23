@@ -45,7 +45,7 @@ object PersonEndpoint extends PersonRepository with ZTapir with TapirCodecNewTyp
         .out(jsonBody[PersonTO])
     )(identifier =>
       getByIdentifier(identifier)
-        .foldM(
+        .foldZIO(
           _ => ZIO.fail(InternalServerError),
           {
             case None         => ZIO.fail(NotFound)
@@ -64,7 +64,7 @@ object PersonEndpoint extends PersonRepository with ZTapir with TapirCodecNewTyp
         .out(jsonBody[PersonTO])
     )(_ =>
       getOldest
-        .foldM(
+        .foldZIO(
           _ => ZIO.fail(InternalServerError),
           {
             case None         => ZIO.fail(NotFound)

@@ -10,8 +10,10 @@ import zhttp.service.Server
 import zio._
 
 import java.time.Duration
+import zio.{ Console, ZIOAppDefault }
+import zio.managed._
 
-object Application extends App {
+object Application extends ZIOAppDefault {
   private val composedMiddlewares = Middleware.timeout(Duration.ofSeconds(10))
 
   private val app: HttpApp[AppEnv, Throwable] =
@@ -20,12 +22,12 @@ object Application extends App {
   private val main: ZIO[AppEnv, Throwable, Nothing] = {
     val server: ZManaged[AppEnv, Throwable, Server.Start] =
       for {
-        conf        <- ZIO.service[HttpServerConfig].toManaged_
+        conf        <- ZIO.service[HttpServerConfig].toManaged
         serverStart <- Server(app).withBinding(conf.host, conf.port).make
       } yield serverStart
 
     Migration.migrate *> server.use(start =>
-      console.putStrLn(s"Server started on port ${start.port}")
+      Console.printLine(s"Server started on port ${start.port}")
         *> ZIO.never
     )
   }
