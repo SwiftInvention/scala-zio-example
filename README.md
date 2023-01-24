@@ -88,7 +88,7 @@ Go to `http://localhost:8080/docs`
 - Update dependencies
     - Bump versions on core zio dependencies (`zio`, `zio-streams`, `zio-test`)
     - Remove pins on dependencies which were pinned to prevent a transitive dependency on ZIO2
-    - For other ZIO libraries, check their respective docs for a way to correctly import a version with ZIO2 support.
+    - For other ZIO libraries, check their respective docs for a way to correctly add a version with ZIO2 support.
       Some require you to specify a different organization name or artefact ID:
         - `"io.d11" % "zhttp_2.13"` -> `"dev.zio" %% "zio-http"`
         - `"com.softwaremill.sttp.tapir" %% "tapir-zio1-http-server"` -> `"com.softwaremill.sttp.tapir" %% "tapir-zio-http-server"`
