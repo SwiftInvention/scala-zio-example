@@ -81,6 +81,22 @@ Go to `http://localhost:8080/docs`
 
 - `sbt scalafix` – run linter, check all files, fail on warnings
 
+### Migrating to ZIO2
+
+- Apply the `Zio2Upgrade` scalafix rule, as described in
+  the [migration guide](https://zio.dev/guides/migrate/zio-2.x-migration-guide/#automatic-migration)
+- Update dependencies
+    - Bump versions on core zio dependencies (`zio`, `zio-streams`, `zio-test`)
+    - Remove pins on dependencies which were pinned to prevent a transitive dependency on ZIO2
+    - For other ZIO libraries, check their respective docs for a way to correctly import a version with ZIO2 support.
+      Some require you to specify a different organization name or artefact ID:
+        - `"io.d11" % "zhttp_2.13"` -> `"dev.zio" %% "zio-http"`
+        - `"com.softwaremill.sttp.tapir" %% "tapir-zio1-http-server"` -> `"com.softwaremill.sttp.tapir" %% "tapir-zio-http-server"`
+        - `"io.github.scottweaver" %% "zio-testcontainers-mysql"` -> `"io.github.scottweaver" %% "zio-2-0-testcontainers-mysql"`
+- Fix the remaining compilation errors referring
+  to the [migration guide](https://zio.dev/guides/migrate/zio-2.x-migration-guide/#automatic-migration).
+
 ### Additional resources
 
+[Migrating to ZIO2](https://zio.dev/guides/migrate/zio-2.x-migration-guide/#automatic-migration)
 [Setting up debugger in Intellij IDEA](/docs/intellij-idea-setup.md)
