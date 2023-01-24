@@ -94,9 +94,8 @@ Go to `http://localhost:8080/docs`
         - `"com.softwaremill.sttp.tapir" %% "tapir-zio1-http-server"` -> `"com.softwaremill.sttp.tapir" %% "tapir-zio-http-server"`
         - `"io.github.scottweaver" %% "zio-testcontainers-mysql"` -> `"io.github.scottweaver" %% "zio-2-0-testcontainers-mysql"`
 - Fix the remaining compilation errors referring
-  to the [migration guide](https://zio.dev/guides/migrate/zio-2.x-migration-guide/#automatic-migration).
+  to the [migration guide](https://zio.dev/guides/migrate/zio-2.x-migration-guide).
 
 ### Additional resources
 
-[Migrating to ZIO2](https://zio.dev/guides/migrate/zio-2.x-migration-guide/#automatic-migration)
 [Setting up debugger in Intellij IDEA](/docs/intellij-idea-setup.md)
