@@ -8,7 +8,7 @@ import javax.sql.DataSource
 
 object HealthCheckHelperSpec extends DatabaseIntegrationSpec with HealthCheckHelper {
 
-  def integrationSpec: ZSpec[DataSource, Throwable] =
+  def integrationSpec: Spec[DataSource, Throwable] =
     suite("HealthCheckHelper")(
       test("health check succeeds") {
         for {

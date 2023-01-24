@@ -12,7 +12,7 @@ import javax.sql.DataSource
 
 object PersonRepositorySpec extends DatabaseIntegrationSpec with PersonRepository {
 
-  def integrationSpec: ZSpec[DataSource, Throwable] =
+  def integrationSpec: Spec[DataSource, Throwable] =
     suite("PersonRepository")(
       test("can insert record") {
         val newPerson =
@@ -31,7 +31,7 @@ object PersonRepositorySpec extends DatabaseIntegrationSpec with PersonRepositor
         )
       },
       test("getOldest returns None if person table is empty") {
-        assertM(getOldest)(Assertion.equalTo(None))
+        assertZIO(getOldest)(Assertion.equalTo(None))
       },
       test("returns the oldest person") {
         val firstPerson =

@@ -2,13 +2,12 @@ package org.organization.integration_tests.util
 
 import com.dimafeng.testcontainers.MySQLContainer
 import io.github.scottweaver.zio.aspect.DbMigrationAspect
-import org.organization.integration_tests.util.CustomMySQLContainer.Settings
+import io.github.scottweaver.zio.testcontainers.mysql.ZMySQLContainer
+import io.github.scottweaver.zio.testcontainers.mysql.ZMySQLContainer.Settings
 import zio._
-import zio.test._
-import zio.test.environment.TestEnvironment
+import zio.test.{ZIOSpecDefault, _}
 
 import javax.sql.DataSource
-import zio.test.ZIOSpecDefault
 
 /** Spins up a separate MySQL container for each test. Limits the number of tests running in
   * parallel to put an upper bound on resource usage
@@ -27,12 +26,13 @@ abstract class DatabaseIntegrationSpec extends ZIOSpecDefault {
       MySQLContainer.defaultUsername,
       MySQLContainer.defaultPassword
     )
-  ) >+> CustomMySQLContainer.live
+  ) >+> ZMySQLContainer.live
 
-  final def spec: ZSpec[TestEnvironment, Any] =
+  final def spec: Spec[TestEnvironment, Any] =
     (integrationSpec
       @@ TestAspect.parallelN(parallelismLimit)
-      @@ DbMigrationAspect.migrate()()).provideSomeLayer[TestEnvironment](containerLayer.fresh)
-  def integrationSpec: ZSpec[IntegrationTestEnv, Any]
+      @@ DbMigrationAspect.migrate()())
+      .provideSome[TestEnvironment](containerLayer)
+  def integrationSpec: Spec[IntegrationTestEnv, Any]
 
 }
