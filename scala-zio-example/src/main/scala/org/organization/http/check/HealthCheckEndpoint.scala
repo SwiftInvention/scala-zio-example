@@ -18,7 +18,7 @@ object HealthCheckEndpoint extends HealthCheckHelper with ZTapir {
       ).get
         .in("check" / "health")
         .out(emptyOutput)
-    )(_ => databaseHealthCheck.mapError(_ => InternalServerError))
+    )(_ => databaseHealthCheck.orElseFail(InternalServerError))
 
   val serverCheck: ZServerEndpoint[AppEnv, Any] =
     makeEndpointHandler(

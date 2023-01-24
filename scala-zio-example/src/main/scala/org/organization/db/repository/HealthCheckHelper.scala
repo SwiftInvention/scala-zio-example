@@ -3,7 +3,6 @@ package org.organization.db.repository
 import org.organization.AppEnv.AppRIO
 import org.organization.db.DbContext._
 import org.organization.db.DbContext.ctx._
-import zio._
 
 import javax.sql.DataSource
 
@@ -11,7 +10,7 @@ trait HealthCheckHelper {
 
   def databaseHealthCheck: AppRIO[DataSource, Unit] = {
     val q = ctx.quote {
-      infix"""SELECT 1""".as[Int]
+      sql"""SELECT 1""".as[Int]
     }
 
     /** Note: the quill effect is uninterruptible which means that if the database is unavailable,
