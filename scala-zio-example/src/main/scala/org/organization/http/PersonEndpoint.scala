@@ -23,7 +23,7 @@ object PersonEndpoint extends PersonRepository with ZTapir with TapirCodecNewTyp
       ).get
         .in("person" / "list")
         .out(jsonBody[List[PersonTO]])
-    )(_ => getPersons.map(_.map(_.toTO)).mapError(_ => InternalServerError))
+    )(_ => getPersons.mapBoth(_ => InternalServerError, _.map(_.toTO)))
 
   val allPersonList: ZServerEndpoint[AppEnv, Any] =
     makeEndpointHandler(
@@ -33,7 +33,7 @@ object PersonEndpoint extends PersonRepository with ZTapir with TapirCodecNewTyp
       ).get
         .in("person" / "list" / "all")
         .out(jsonBody[List[PersonTO]])
-    )(_ => getAllPersons.map(_.map(_.toTO)).mapError(_ => InternalServerError))
+    )(_ => getAllPersons.mapBoth(_ => InternalServerError, _.map(_.toTO)))
 
   val personByIdentifier: ZServerEndpoint[AppEnv, Any] =
     makeEndpointHandler(
@@ -45,7 +45,7 @@ object PersonEndpoint extends PersonRepository with ZTapir with TapirCodecNewTyp
         .out(jsonBody[PersonTO])
     )(identifier =>
       getByIdentifier(identifier)
-        .foldM(
+        .foldZIO(
           _ => ZIO.fail(InternalServerError),
           {
             case None         => ZIO.fail(NotFound)
@@ -64,7 +64,7 @@ object PersonEndpoint extends PersonRepository with ZTapir with TapirCodecNewTyp
         .out(jsonBody[PersonTO])
     )(_ =>
       getOldest
-        .foldM(
+        .foldZIO(
           _ => ZIO.fail(InternalServerError),
           {
             case None         => ZIO.fail(NotFound)
@@ -80,6 +80,6 @@ object PersonEndpoint extends PersonRepository with ZTapir with TapirCodecNewTyp
         "Add new person to database"
       ).post
         .in("person" / jsonBody[NewPersonTO])
-    )(newPersonTO => insert(newPersonTO.toDomain()).unit.orElseFail(InternalServerError))
+    )(newPersonTO => insert(newPersonTO.toDomain).unit.orElseFail(InternalServerError))
 
 }

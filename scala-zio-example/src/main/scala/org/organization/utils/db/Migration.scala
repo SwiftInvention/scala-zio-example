@@ -7,11 +7,11 @@ import zio._
 import javax.sql.DataSource
 
 object Migration {
-  def migrate: AppRIO[Has[DataSource], Unit] = for {
+  def migrate: AppRIO[DataSource, Unit] = for {
     ds <- ZIO.service[DataSource]
-    _  <- ZIO.effectTotal(println("Start migrating the database"))
+    _  <- Console.printLine("Start migrating the database")
 
-    _ <- ZIO.effect(
+    _ <- ZIO.attempt(
       Flyway.configure
         .locations("db/migration")
         .dataSource(ds)
@@ -20,6 +20,6 @@ object Migration {
         .migrate()
     )
 
-    _ <- ZIO.effectTotal(println("Migration successful"))
+    _ <- Console.printLine("Migration successful")
   } yield ()
 }

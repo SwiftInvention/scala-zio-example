@@ -1,13 +1,13 @@
 package org.organization
 
-import zio.test.Assertion.equalTo
-import zio.test._
+import cats.implicits.catsSyntaxEq
+import zio.test.{ZIOSpecDefault, _}
 
-object ApplicationSpec extends DefaultRunnableSpec {
-  def spec: ZSpec[Any, Nothing] =
+object ApplicationSpec extends ZIOSpecDefault {
+  def spec: Spec[Any, Nothing] =
     suite("Example unit test suite")(
       test("math works") {
-        assert(1 + 1)(equalTo(2))
+        assertTrue(1 + 1 === 2)
       }
     )
 }
