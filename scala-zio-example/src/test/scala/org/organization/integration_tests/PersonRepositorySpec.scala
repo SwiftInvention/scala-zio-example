@@ -1,14 +1,14 @@
 package org.organization.integration_tests
 
+import java.time.Instant
+import javax.sql.DataSource
+
 import org.organization.db.model.Gender.{Female, Male, NonBinary}
 import org.organization.db.model.NewPersonData
 import org.organization.db.repository.PersonRepository
 import org.organization.integration_tests.util.DatabaseIntegrationSpec
 import zio.test.Assertion.equalTo
 import zio.test._
-
-import java.time.Instant
-import javax.sql.DataSource
 
 object PersonRepositorySpec extends DatabaseIntegrationSpec with PersonRepository {
 
