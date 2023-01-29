@@ -26,6 +26,6 @@ trait HealthCheckHelper {
       *
       * Quadratisch. Praktisch. Gut.
       */
-    run(q).unit.forkDaemon.flatMap(_.join)
+    run(q).unit.disconnect
   }
 }
