@@ -5,6 +5,7 @@ import org.organization.http.PersonEndpoint
 import org.organization.http.check.HealthCheckEndpoint
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import sttp.tapir.ztapir.ZTapir
+import org.organization.BuildInfo
 
 object SwaggerApiEndpoint extends ZTapir {
   private val healthCheckEndpoints = List(
@@ -23,7 +24,7 @@ object SwaggerApiEndpoint extends ZTapir {
   private val apiEndpoints = healthCheckEndpoints ++ personEndpoints
 
   private val docEndpoints: List[ZServerEndpoint[AppEnv, Any]] = SwaggerInterpreter()
-    .fromServerEndpoints(apiEndpoints, "project", "0.1.0")
+    .fromServerEndpoints(apiEndpoints, BuildInfo.name, BuildInfo.version)
 
   val common: List[SwaggerApiEndpoint.ZServerEndpoint[AppEnv, Any]] = apiEndpoints ++ docEndpoints
 }
