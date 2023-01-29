@@ -1,11 +1,11 @@
 package org.organization.http.swagger
 
 import org.organization.AppEnv.AppEnv
+import org.organization.BuildInfo
 import org.organization.http.PersonEndpoint
 import org.organization.http.check.HealthCheckEndpoint
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import sttp.tapir.ztapir.ZTapir
-import org.organization.BuildInfo
 
 object SwaggerApiEndpoint extends ZTapir {
   private val healthCheckEndpoints = List(
