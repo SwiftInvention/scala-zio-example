@@ -1,10 +1,10 @@
 package org.organization.db.repository
 
+import javax.sql.DataSource
+
 import org.organization.AppEnv.AppRIO
 import org.organization.db.DbContext._
 import org.organization.db.DbContext.ctx._
-
-import javax.sql.DataSource
 
 trait HealthCheckHelper {
 

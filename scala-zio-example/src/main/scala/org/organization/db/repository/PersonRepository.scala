@@ -1,14 +1,14 @@
 package org.organization.db.repository
 
+import java.util.UUID
+import javax.sql.DataSource
+
 import io.scalaland.chimney.dsl.TransformerOps
 import org.organization.AppEnv.AppRIO
 import org.organization.api.model.NewType.PersonIdentifier
 import org.organization.db.DbContext._
 import org.organization.db.DbContext.ctx._
 import org.organization.db.model.{NewPersonData, PersonEnt}
-
-import java.util.UUID
-import javax.sql.DataSource
 
 trait PersonRepository {
 

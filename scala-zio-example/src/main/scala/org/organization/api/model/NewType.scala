@@ -1,10 +1,10 @@
 package org.organization.api.model
 
+import java.util.UUID
+
 import io.circe.{Decoder, Encoder}
 import io.estatico.newtype.macros.newtype
 import io.estatico.newtype.ops.toCoercibleIdOps
-
-import java.util.UUID
 
 object NewType {
 

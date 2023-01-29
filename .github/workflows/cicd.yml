@@ -37,4 +37,4 @@ jobs:
       uses: olafurpg/setup-scala@v13
 
     - name: Compile, check formatting, lint, and run tests
-      run: sbt compile scalafmtCheck "scalafixAll --check" test
+      run: sbt compile styleCheck test
