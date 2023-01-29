@@ -1,13 +1,13 @@
 package org.organization.integration_tests.util
 
+import javax.sql.DataSource
+
 import com.dimafeng.testcontainers.MySQLContainer
 import io.github.scottweaver.zio.aspect.DbMigrationAspect
 import io.github.scottweaver.zio.testcontainers.mysql.ZMySQLContainer
 import io.github.scottweaver.zio.testcontainers.mysql.ZMySQLContainer.Settings
 import zio._
 import zio.test.{ZIOSpecDefault, _}
-
-import javax.sql.DataSource
 
 /** Spins up a separate MySQL container for each test. Limits the number of tests running in
   * parallel to put an upper bound on resource usage

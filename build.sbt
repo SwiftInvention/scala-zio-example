@@ -4,10 +4,14 @@ ThisBuild / organization := "org.organization"
 ThisBuild / scalaVersion := "2.13.10"
 ThisBuild / version      := "0.1.1-SNAPSHOT"
 
+Global / onChangedBuildSource := ReloadOnSourceChanges
+
 lazy val scalaZioExample = (project in file("scala-zio-example"))
+  .enablePlugins(BuildInfoPlugin)
   .settings(
     settings
       ++ integrationTestSettings
+      ++ buildInfoSettings
       ++ Seq(name := """scala-zio-example""")
   )
 
@@ -40,12 +44,6 @@ lazy val settings = Seq(
     "-Ywarn-value-discard",    // Warn when non-Unit expression results are unused.
     "-Werror"                  // Fail the compilation if there are any warnings.
   ),
-
-  // Scalafix
-  semanticdbEnabled := true,                        // Enable SemanticDB
-  semanticdbVersion := scalafixSemanticdb.revision, // Only required for Scala 2.x
-  scalafixOnCompile := true, // Run scalafix every time on compile. Comment out when necessary
-
   testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
 )
 
@@ -56,3 +54,8 @@ lazy val integrationTestSettings =
       Test / fork := true
     )
   )
+
+lazy val buildInfoSettings = Seq(
+  buildInfoKeys    := Seq[BuildInfoKey](name, version),
+  buildInfoPackage := organization.value
+)

@@ -1,10 +1,10 @@
 package org.organization.utils
 
+import java.io.IOException
+
 import org.organization.AppEnv
 import org.organization.utils.db.Migration
 import zio.{ZIOAppDefault, _}
-
-import java.io.IOException
 
 // Executable feature to fill db by demo data
 object DemoDb extends ZIOAppDefault {
