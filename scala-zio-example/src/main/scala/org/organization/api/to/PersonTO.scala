@@ -1,9 +1,9 @@
 package org.organization.api.to
 
+import java.time.Instant
+
 import org.organization.api.model.NewType.PersonIdentifier
 import org.organization.db.model.Gender
-
-import java.time.Instant
 
 final case class PersonTO(
     identifier: PersonIdentifier,

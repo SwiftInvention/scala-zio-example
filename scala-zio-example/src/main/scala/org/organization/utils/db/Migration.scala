@@ -1,10 +1,10 @@
 package org.organization.utils.db
 
+import javax.sql.DataSource
+
 import org.flywaydb.core.Flyway
 import org.organization.AppEnv.AppRIO
 import zio._
-
-import javax.sql.DataSource
 
 object Migration {
   def migrate: AppRIO[DataSource, Unit] = for {

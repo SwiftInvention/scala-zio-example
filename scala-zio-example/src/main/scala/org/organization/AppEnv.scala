@@ -1,5 +1,7 @@
 package org.organization
 
+import javax.sql.DataSource
+
 import com.zaxxer.hikari.HikariConfig
 import io.getquill.JdbcContextConfig
 import io.getquill.jdbczio.Quill
@@ -8,8 +10,6 @@ import org.organization.config.HttpServerConfig
 import zio.Console.printLine
 import zio._
 import zio.http.Server
-
-import javax.sql.DataSource
 
 object AppEnv {
   type AppEnv = DataSource with Server

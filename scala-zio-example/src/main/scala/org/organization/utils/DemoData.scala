@@ -1,11 +1,11 @@
 package org.organization.utils
 
+import java.time.Instant
+import javax.sql.DataSource
+
 import org.organization.AppEnv.AppRIO
 import org.organization.db.model.{Gender, NewPersonData}
 import org.organization.db.repository.PersonRepository
-
-import java.time.Instant
-import javax.sql.DataSource
 
 object DemoData extends PersonRepository {
 

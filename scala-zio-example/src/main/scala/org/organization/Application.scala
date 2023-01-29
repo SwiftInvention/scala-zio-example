@@ -1,11 +1,11 @@
 package org.organization
 
+import java.io.IOException
+
 import org.organization.AppEnv.AppEnv
 import org.organization.http.AppServer
 import org.organization.utils.db.Migration
 import zio.{ZIOAppDefault, _}
-
-import java.io.IOException
 
 object Application extends ZIOAppDefault {
   private val main: ZIO[AppEnv, Throwable, Nothing] = (

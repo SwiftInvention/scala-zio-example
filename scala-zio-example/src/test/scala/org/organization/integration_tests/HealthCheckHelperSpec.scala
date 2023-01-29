@@ -1,10 +1,10 @@
 package org.organization.integration_tests
 
+import javax.sql.DataSource
+
 import org.organization.db.repository.HealthCheckHelper
 import org.organization.integration_tests.util.DatabaseIntegrationSpec
 import zio.test._
-
-import javax.sql.DataSource
 
 object HealthCheckHelperSpec extends DatabaseIntegrationSpec with HealthCheckHelper {
 
