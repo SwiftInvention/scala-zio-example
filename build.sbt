@@ -7,9 +7,11 @@ ThisBuild / version      := "0.1.1-SNAPSHOT"
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val scalaZioExample = (project in file("scala-zio-example"))
+  .enablePlugins(BuildInfoPlugin)
   .settings(
     settings
       ++ integrationTestSettings
+      ++ buildInfoSettings
       ++ Seq(name := """scala-zio-example""")
   )
 
@@ -52,3 +54,8 @@ lazy val integrationTestSettings =
       Test / fork := true
     )
   )
+
+lazy val buildInfoSettings = Seq(
+  buildInfoKeys    := Seq[BuildInfoKey](name, version),
+  buildInfoPackage := organization.value
+)
