@@ -6,3 +6,11 @@ addCommandAlias(
   "styleFix",
   "scalafixAll; scalafmtSbt; scalafmtAll"
 )
+addCommandAlias(
+  "dev",
+  "tpolecatDevMode"
+)
+addCommandAlias(
+  "ci",
+  "tpolecatCiMode"
+)
