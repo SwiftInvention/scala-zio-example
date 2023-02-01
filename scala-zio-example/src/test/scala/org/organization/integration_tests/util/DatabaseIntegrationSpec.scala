@@ -9,8 +9,8 @@ import io.github.scottweaver.zio.testcontainers.mysql.ZMySQLContainer.Settings
 import zio._
 import zio.test.{ZIOSpecDefault, _}
 
-/** Spins up a separate MySQL container for each test. Limits the number of tests running in
-  * parallel to put an upper bound on resource usage
+/** Spins up a separate MySQL container for each test. Limits the number of tests running in parallel to put an upper
+  * bound on resource usage
   */
 abstract class DatabaseIntegrationSpec extends ZIOSpecDefault {
 
