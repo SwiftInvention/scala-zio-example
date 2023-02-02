@@ -95,6 +95,7 @@ Go to `http://localhost:8080/docs`
         - `"io.github.scottweaver" %% "zio-testcontainers-mysql"` -> `"io.github.scottweaver" %% "zio-2-0-testcontainers-mysql"`
 - Fix the remaining compilation errors referring
   to the [migration guide](https://zio.dev/guides/migrate/zio-2.x-migration-guide).
+- See [PR with all the changes listed above](https://github.com/SwiftInvention/scala-zio-example/pull/38)
 
 ### Additional resources
 
