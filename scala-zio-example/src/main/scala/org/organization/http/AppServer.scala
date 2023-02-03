@@ -5,7 +5,7 @@ import org.organization.http.swagger.SwaggerApiEndpoint
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 import zio.http._
 import zio.http.middleware.HttpMiddleware
-import zio.{Console, Duration, RIO, ZIO}
+import zio.{Duration, RIO, ZIO}
 
 object AppServer {
 
@@ -19,5 +19,5 @@ object AppServer {
     httpInterpreter @@ composedMiddlewares
 
   def serve: RIO[AppEnv, Nothing] =
-    Server.install(app).flatMap(p => Console.printLine(s"Started server on port $p") *> ZIO.never)
+    Server.install(app).flatMap(p => ZIO.logInfo(s"Started server on port $p") *> ZIO.never)
 }

@@ -10,5 +10,8 @@ object Versions {
   val chimney           = "0.6.2"
   val enumeratum =
     "1.7.0" // Note: Versions above 1.7.0 add Scala 3 support and are not binary compatible with previous versions
-  val newType = "0.4.4"
+  val newType    = "0.4.4"
+  val zioLogging = "2.1.8"
+  val logback    = "1.4.5"
+  val slf4j      = "2.0.6"
 }

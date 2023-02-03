@@ -9,7 +9,7 @@ import zio.{ZIOAppDefault, _}
 
 object Application extends ZIOAppDefault {
   private val main: ZIO[AppEnv, Throwable, Nothing] = (
-    Console.printLine("Initializing application")
+    ZIO.logInfo("Initializing application")
       *> Migration.migrate
       *> AppServer.serve
   )
@@ -19,7 +19,7 @@ object Application extends ZIOAppDefault {
     exitCode <- {
       executionResult match {
         case Exit.Success(_)     => ZIO.succeed(ExitCode.success)
-        case Exit.Failure(error) => Console.printLine(error) *> ZIO.succeed(ExitCode.failure)
+        case Exit.Failure(error) => ZIO.logError(error.toString()) *> ZIO.succeed(ExitCode.failure)
       }
     }
   } yield exitCode

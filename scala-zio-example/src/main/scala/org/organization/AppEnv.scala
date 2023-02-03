@@ -7,9 +7,9 @@ import io.getquill.JdbcContextConfig
 import io.getquill.jdbczio.Quill
 import io.getquill.util.LoadConfig
 import org.organization.config.HttpServerConfig
-import zio.Console.printLine
 import zio._
 import zio.http.Server
+import zio.logging.backend.SLF4J
 
 object AppEnv {
   type AppEnv = DataSource with Server
@@ -19,7 +19,7 @@ object AppEnv {
 
   private val availableDbSchedule = Schedule
     .fixed(2000.milliseconds)
-    .tapOutput(o => printLine(s"Waiting for database to be available, retry count: $o").orDie)
+    .tapOutput(o => ZIO.logInfo(s"Waiting for database to be available, retry count: $o"))
 
   private val jdbcContextLayer: TaskLayer[JdbcContextConfig] =
     ZLayer {
@@ -37,12 +37,16 @@ object AppEnv {
           .retry(availableDbSchedule)
       }
 
+  private val logLayer: TaskLayer[Unit] =
+    zio.Runtime.removeDefaultLoggers >>> SLF4J.slf4j
+
   val buildLiveEnv: TaskLayer[AppEnv] =
-    ZLayer.make[AppEnv](
-      HttpServerConfig.layer,
-      Server.live,
-      dataSourceLayer,
-      jdbcContextLayer
-    )
+    logLayer >>>
+      ZLayer.make[AppEnv](
+        HttpServerConfig.layer,
+        Server.live,
+        dataSourceLayer,
+        jdbcContextLayer
+      )
 
 }
