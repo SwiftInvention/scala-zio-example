@@ -31,9 +31,8 @@ object Dependencies {
   ) map (_ % Compile)
 
   lazy val logDep: Seq[ModuleID] = Seq(
-    "dev.zio"       %% "zio-logging"       % Versions.zioLogging, // api
-    "dev.zio"       %% "zio-logging-slf4j" % Versions.zioLogging, // internal api
-    "ch.qos.logback" % "logback-classic"   % Versions.logback,    // backend
+    "dev.zio" %% "zio-logging"              % Versions.zioLogging,
+    "dev.zio" %% "zio-logging-slf4j-bridge" % Versions.zioLogging, // routes slf4j to zio-logging
     // with exclude reroutes other loggers (can be brought by other dependencies) to slf4j
     "org.slf4j" % "jcl-over-slf4j"   % Versions.slf4j,
     "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j,

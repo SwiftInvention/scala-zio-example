@@ -9,7 +9,6 @@ import io.getquill.util.LoadConfig
 import org.organization.config.HttpServerConfig
 import zio._
 import zio.http.Server
-import zio.logging.backend.SLF4J
 
 object AppEnv {
   type AppEnv = DataSource with Server
@@ -37,11 +36,8 @@ object AppEnv {
           .retry(availableDbSchedule)
       }
 
-  private val logLayer: TaskLayer[Unit] =
-    zio.Runtime.removeDefaultLoggers >>> SLF4J.slf4j
-
   val buildLiveEnv: TaskLayer[AppEnv] =
-    logLayer >>>
+    AppLog.live >>>
       ZLayer.make[AppEnv](
         HttpServerConfig.layer,
         Server.live,
