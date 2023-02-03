@@ -11,3 +11,4 @@ project/plugins/project/
 project/target/
 src_managed/
 target/
+log

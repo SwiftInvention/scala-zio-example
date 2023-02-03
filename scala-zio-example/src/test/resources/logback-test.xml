@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+      <layout class="ch.qos.logback.classic.PatternLayout">
+        <pattern>%d{HH:mm:ss.SSS} %-20.20thread{20} %5p %-36.36logger{36} %m%n</pattern>
+      </layout>
+    </encoder>
+  </appender>
+
+
+  <root level="WARN">
+    <appender-ref ref="STDOUT" />
+  </root>
+
+  <logger name="org.testcontainers" level="WARN" />
+  <logger name="com.github.dockerjava" level="WARN" />
+  <logger name="ch.qos.logback" level="WARN" />
+  <!-- Only relevant if you are using the db migration aspect -->
+  <logger name="org.flywaydb" level="WARN" />
+</configuration>

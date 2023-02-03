@@ -20,7 +20,9 @@ lazy val scalaZioExampleRoot = project
   .aggregate(scalaZioExample)
 
 lazy val settings = Seq(
-  libraryDependencies ++= commonDep ++ testDep ++ httpDep ++ dbDep,
+  libraryDependencies ++= commonDep ++ testDep ++ httpDep ++ dbDep ++ logDep,
+  excludeDependencies ++= logExcludeDep,
+  run / fork := true,
   tpolecatScalacOptions += ScalacOptions.other("-Ymacro-annotations"),
   testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
 )

@@ -1,4 +1,5 @@
 import sbt._
+import sbt.librarymanagement.InclExclRule
 
 object Dependencies {
 
@@ -28,6 +29,21 @@ object Dependencies {
     "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % Versions.tapir,
     "dev.zio"                     %% "zio-http"                % Versions.zioHttp
   ) map (_ % Compile)
+
+  lazy val logDep: Seq[ModuleID] = Seq(
+    "dev.zio"       %% "zio-logging"       % Versions.zioLogging, // api
+    "dev.zio"       %% "zio-logging-slf4j" % Versions.zioLogging, // internal api
+    "ch.qos.logback" % "logback-classic"   % Versions.logback,    // backend
+    // with exclude reroutes other loggers (can be brought by other dependencies) to slf4j
+    "org.slf4j" % "jcl-over-slf4j"   % Versions.slf4j,
+    "org.slf4j" % "log4j-over-slf4j" % Versions.slf4j,
+    "org.slf4j" % "jul-to-slf4j"     % Versions.slf4j
+  ) map (_ % Compile)
+
+  lazy val logExcludeDep: Seq[InclExclRule] = Seq(
+    ExclusionRule("commons-logging", "commons-logging"),
+    ExclusionRule("log4j", "log4j")
+  )
 
   lazy val testDep: Seq[ModuleID] = Seq(
     "dev.zio"               %% "zio-test"                     % Versions.zio,

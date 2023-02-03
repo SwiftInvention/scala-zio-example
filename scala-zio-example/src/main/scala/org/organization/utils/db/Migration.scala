@@ -9,7 +9,7 @@ import zio._
 object Migration {
   def migrate: AppRIO[DataSource, Unit] = for {
     ds <- ZIO.service[DataSource]
-    _  <- Console.printLine("Start migrating the database")
+    _  <- ZIO.logInfo("Start migrating the database")
 
     _ <- ZIO.attempt(
       Flyway.configure
@@ -20,6 +20,6 @@ object Migration {
         .migrate()
     )
 
-    _ <- Console.printLine("Migration successful")
+    _ <- ZIO.logInfo("Migration successful")
   } yield ()
 }
