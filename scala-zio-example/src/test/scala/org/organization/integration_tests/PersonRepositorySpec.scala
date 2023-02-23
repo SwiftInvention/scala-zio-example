@@ -1,16 +1,17 @@
 package org.organization.integration_tests
 
 import java.time.Instant
+import java.util.UUID
 import javax.sql.DataSource
 
+import org.organization.api.model.NewType.PersonIdentifier
 import org.organization.db.model.Gender.{Female, Male, NonBinary}
 import org.organization.db.model.NewPersonData
 import org.organization.db.repository.PersonRepository
-import org.organization.integration_tests.util.DatabaseIntegrationSpec
-import zio.test.Assertion.equalTo
+import org.organization.integration_tests.util.{DatabaseIntegrationSpec, SnapshotSpec}
 import zio.test._
 
-object PersonRepositorySpec extends DatabaseIntegrationSpec with PersonRepository {
+object PersonRepositorySpec extends DatabaseIntegrationSpec with SnapshotSpec with PersonRepository {
 
   def integrationSpec: Spec[DataSource, Throwable] =
     suite("PersonRepository")(
@@ -70,14 +71,21 @@ object PersonRepositorySpec extends DatabaseIntegrationSpec with PersonRepositor
             gender = NonBinary
           )
         for {
-          archivedPersonId   <- insert(archivedPerson)
-          _                  <- insert(nonArchivedPerson)
-          _                  <- archive(archivedPersonId)
-          allPersons         <- getAllPersons
+          archivedPersonId <- insert(archivedPerson)
+          _                <- insert(nonArchivedPerson)
+          _                <- archive(archivedPersonId)
+          allPersons       <- getAllPersons
+          testUuid = PersonIdentifier.fromUUID(UUID.fromString("00000000-0000-0000-0000-000000000000"))
+          allPersonsSnapshotOk <- matchesJsonSnapshot(
+            "PersonRepository/allPersons.json",
+            allPersons.map(_.toTO.copy(identifier = testUuid))
+          )
           nonArchivedPersons <- getPersons
-        } yield assertTrue(allPersons.length equals 2) &&
-          assertTrue(nonArchivedPersons.length equals 1) &&
-          assert(nonArchivedPersons.exists(_.id equals archivedPersonId))(equalTo(false))
+          nonArchivedPersonsSnapshotOk <- matchesJsonSnapshot(
+            "PersonRepository/nonArchivedPersons.json",
+            nonArchivedPersons.map(_.toTO.copy(identifier = testUuid))
+          )
+        } yield allPersonsSnapshotOk && nonArchivedPersonsSnapshotOk
       }
     )
 }
