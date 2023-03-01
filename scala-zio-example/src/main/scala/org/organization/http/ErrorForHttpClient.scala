@@ -1,6 +1,6 @@
 package org.organization.http
 
-import io.circe.generic.auto._
+import io.circe.generic.JsonCodec
 import sttp.model.StatusCode
 import sttp.tapir._
 import sttp.tapir.generic.auto._
@@ -11,10 +11,10 @@ import sttp.tapir.json.circe._
   * NB: when modifying this type you must remember to update the endpoint output encoder.
   */
 sealed trait ErrorForHttpClient
-case object NotFound                                extends ErrorForHttpClient
-final case class BadRequest(messageForUser: String) extends ErrorForHttpClient
-case object Unauthorized                            extends ErrorForHttpClient
-case object InternalServerError                     extends ErrorForHttpClient
+case object NotFound                                           extends ErrorForHttpClient
+@JsonCodec final case class BadRequest(messageForUser: String) extends ErrorForHttpClient
+case object Unauthorized                                       extends ErrorForHttpClient
+case object InternalServerError                                extends ErrorForHttpClient
 
 object ErrorForHttpClient {
   val endpointOutputEncoder: EndpointOutput.OneOf[ErrorForHttpClient, ErrorForHttpClient] =

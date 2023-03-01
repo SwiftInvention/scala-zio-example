@@ -13,4 +13,5 @@ object Versions {
   val newType    = "0.4.4"
   val zioLogging = "2.1.8"
   val slf4j      = "1.7.36"
+  val circe      = "0.14.3"
 }

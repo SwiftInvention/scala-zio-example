@@ -2,9 +2,7 @@
   {
     "birthDate" : "1970-01-01T00:00:29Z",
     "gender" : {
-      "Male" : {
-        
-      }
+      "type" : "Male"
     },
     "identifier" : "00000000-0000-0000-0000-000000000000",
     "isArchived" : true,
@@ -13,9 +11,7 @@
   {
     "birthDate" : "1970-01-01T00:00:42Z",
     "gender" : {
-      "NonBinary" : {
-        
-      }
+      "type" : "NonBinary"
     },
     "identifier" : "00000000-0000-0000-0000-000000000000",
     "isArchived" : false,
