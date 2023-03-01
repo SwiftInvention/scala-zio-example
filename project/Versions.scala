@@ -12,6 +12,6 @@ object Versions {
     "1.7.0" // Note: Versions above 1.7.0 add Scala 3 support and are not binary compatible with previous versions
   val newType    = "0.4.4"
   val zioLogging = "2.1.8"
-  val slf4j      = "1.7.36"
+  val slf4j      = "2.0.6"
   val circe      = "0.14.3"
 }
