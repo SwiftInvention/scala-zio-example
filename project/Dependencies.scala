@@ -14,8 +14,10 @@ object Dependencies {
   lazy val dbDep: Seq[ModuleID] = Seq(
     "io.getquill"  %% "quill-jdbc"           % Versions.quill,
     "io.getquill"  %% "quill-jdbc-zio"       % Versions.quill,
-    "com.beachape" %% "enumeratum-quill"     % Versions.enumeratum,
     "com.beachape" %% "enumeratum"           % Versions.enumeratum,
+    "com.beachape" %% "enumeratum-quill"     % Versions.enumeratum,
+    "com.beachape" %% "enumeratum-circe"     % Versions.enumeratum,
+    "io.circe"     %% "circe-generic-extras" % Versions.circe,
     "mysql"         % "mysql-connector-java" % Versions.mysql,
     "org.flywaydb"  % "flyway-core"          % Versions.flyway,
     "org.flywaydb"  % "flyway-mysql"         % Versions.flyway
