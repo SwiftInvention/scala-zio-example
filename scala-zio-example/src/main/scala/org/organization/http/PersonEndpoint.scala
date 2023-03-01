@@ -1,6 +1,5 @@
 package org.organization.http
 
-import io.circe.generic.auto._
 import org.organization.AppEnv.AppEnv
 import org.organization.api.model.NewType.PersonIdentifier
 import org.organization.api.to.{NewPersonTO, PersonTO}

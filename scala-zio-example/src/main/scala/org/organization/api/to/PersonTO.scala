@@ -3,9 +3,8 @@ package org.organization.api.to
 import java.time.Instant
 
 import io.circe.generic.JsonCodec
-import io.circe.generic.auto._
-import org.organization.api.model.NewType.PersonIdentifier
-import org.organization.db.model.Gender
+import org.organization.api.model.NewType._
+import org.organization.db.model._
 
 @JsonCodec
 final case class PersonTO(

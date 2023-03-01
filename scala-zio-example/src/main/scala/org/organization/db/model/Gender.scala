@@ -4,7 +4,7 @@ import enumeratum.EnumEntry.Snakecase
 import enumeratum.values._
 
 sealed abstract class Gender(val value: Int) extends IntEnumEntry with Snakecase
-object Gender extends IntEnum[Gender] with IntQuillEnum[Gender] {
+object Gender extends IntEnum[Gender] with IntQuillEnum[Gender] with IntCirceEnum[Gender] {
 
   val values: IndexedSeq[Gender] = findValues
 
