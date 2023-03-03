@@ -3,6 +3,7 @@ package org.organization.integration_tests.util
 import javax.sql.DataSource
 
 import com.dimafeng.testcontainers.MySQLContainer
+import io.github.scottweaver.models.JdbcInfo
 import io.github.scottweaver.zio.aspect.DbMigrationAspect
 import io.github.scottweaver.zio.testcontainers.mysql.ZMySQLContainer
 import io.github.scottweaver.zio.testcontainers.mysql.ZMySQLContainer.Settings
@@ -19,14 +20,15 @@ abstract class DatabaseIntegrationSpec extends ZIOSpecDefault {
   val mysqlVersion     = "8.0"
   val parallelismLimit = 4
 
-  private val containerLayer = ZLayer.succeed(
-    Settings(
-      mysqlVersion,
-      MySQLContainer.defaultDatabaseName,
-      MySQLContainer.defaultUsername,
-      MySQLContainer.defaultPassword
-    )
-  ) >+> ZMySQLContainer.live
+  private val containerLayer: ULayer[DataSource with JdbcInfo] =
+    ZLayer.succeed(
+      Settings(
+        mysqlVersion,
+        MySQLContainer.defaultDatabaseName,
+        MySQLContainer.defaultUsername,
+        MySQLContainer.defaultPassword
+      )
+    ) >+> ZMySQLContainer.live
 
   final def spec: Spec[TestEnvironment, Any] =
     (integrationSpec
