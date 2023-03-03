@@ -4,11 +4,10 @@ import sbt.librarymanagement.InclExclRule
 object Dependencies {
 
   lazy val commonDep: Seq[ModuleID] = Seq(
-    "dev.zio"                     %% "zio"           % Versions.zio,
-    "com.github.pureconfig"       %% "pureconfig"    % Versions.pureConfig,
-    "io.scalaland"                %% "chimney"       % Versions.chimney,
-    "io.estatico"                 %% "newtype"       % Versions.newType,
-    "com.softwaremill.sttp.tapir" %% "tapir-newtype" % Versions.tapir
+    "dev.zio"               %% "zio"        % Versions.zio,
+    "com.github.pureconfig" %% "pureconfig" % Versions.pureConfig,
+    "io.scalaland"          %% "chimney"    % Versions.chimney,
+    "io.estatico"           %% "newtype"    % Versions.newType
   ) map (_ % Compile)
 
   lazy val dbDep: Seq[ModuleID] = Seq(
@@ -24,12 +23,13 @@ object Dependencies {
   ) map (_ % Compile)
 
   lazy val httpDep: Seq[ModuleID] = Seq(
+    "dev.zio"                     %% "zio-http"                % Versions.zioHttp,
     "com.softwaremill.sttp.tapir" %% "tapir-core"              % Versions.tapir,
     "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % Versions.tapir,
     "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs"      % Versions.tapir,
     "com.softwaremill.sttp.tapir" %% "tapir-zio-http-server"   % Versions.tapir,
     "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % Versions.tapir,
-    "dev.zio"                     %% "zio-http"                % Versions.zioHttp
+    "com.softwaremill.sttp.tapir" %% "tapir-newtype"           % Versions.tapir
   ) map (_ % Compile)
 
   lazy val logDep: Seq[ModuleID] = Seq(
