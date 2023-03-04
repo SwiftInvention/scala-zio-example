@@ -24,7 +24,7 @@ object AppEnv {
     ZLayer {
       ZIO
         .attempt(LoadConfig("mysql"))
-        .map(JdbcContextConfig(_))
+        .map(JdbcContextConfig)
         .tap(cfg => ZIO.attempt(new HikariConfig(cfg.configProperties).validate()))
     }
 

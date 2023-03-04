@@ -6,7 +6,7 @@ import zio.{LogLevel, TaskLayer}
 
 object AppLog {
   private val loggerName =
-    LoggerNameExtractor.annotationOrTrace(Slf4jBridge.loggerNameAnnotationKey)
+    LoggerNameExtractor.annotationOrTrace(zio.logging.loggerNameAnnotationKey)
 
   private val logFormat =
     LogFormat.label("name", loggerName.toLogFormat()) + LogFormat.default
