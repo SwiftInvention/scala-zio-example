@@ -1,5 +1,5 @@
 object Versions {
-  val flyway            = "9.15.0"
+  val flyway            = "9.15.2"
   val mysql             = "8.0.32"
   val quill             = "4.6.0"
   val tapir             = "1.2.9"
@@ -7,7 +7,7 @@ object Versions {
   val pureConfig        = "0.17.2"
   val zioHttp           = "0.0.4"
   val zioTestContainers = "0.10.0"
-  val chimney           = "0.6.2"
+  val chimney           = "0.7.0"
   val enumeratum =
     "1.7.0" // Note: Versions above 1.7.0 add Scala 3 support and are not binary compatible with previous versions
   val newType    = "0.4.4"
