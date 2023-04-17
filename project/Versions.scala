@@ -7,7 +7,7 @@ object Versions {
   val pureConfig        = "0.17.2"
   val zioHttp           = "0.0.4"
   val zioTestContainers = "0.10.0"
-  val chimney           = "0.7.2"
+  val chimney           = "0.7.3"
   val enumeratum =
     "1.7.0" // Note: Versions above 1.7.0 add Scala 3 support and are not binary compatible with previous versions
   val newType    = "0.4.4"
