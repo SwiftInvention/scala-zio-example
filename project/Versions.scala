@@ -5,7 +5,7 @@ object Versions {
   val tapir             = "1.2.9"
   val zio               = "2.0.10"
   val pureConfig        = "0.17.2"
-  val zioHttp           = "0.0.5"
+  val zioHttp           = "0.0.4"
   val zioTestContainers = "0.10.0"
   val chimney           = "0.7.0"
   val enumeratum =
