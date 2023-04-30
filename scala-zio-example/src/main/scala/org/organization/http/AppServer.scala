@@ -8,15 +8,14 @@ import zio.{Duration, RIO, ZIO}
 
 object AppServer {
 
-  private val composedMiddlewares: HttpAppMiddleware[Any, Throwable] =
-    Middleware.timeout(Duration.fromSeconds(10))
+  private val composedMiddlewares: HttpAppMiddleware[AppEnv, AppEnv, Nothing, Throwable] =
+    HttpAppMiddleware.timeout(Duration.fromSeconds(10))
 
-  private val httpInterpreter =
+  private val httpInterpreter: HttpApp[AppEnv, Throwable] =
     ZioHttpInterpreter().toHttp(SwaggerApiEndpoint.common)
 
-  private val app =
+  private val app: HttpApp[AppEnv, Throwable] =
     httpInterpreter @@ composedMiddlewares
-
   def serve: RIO[AppEnv, Nothing] =
     Server
       .install(app.withDefaultErrorResponse)

@@ -1,7 +1,7 @@
 package org.organization
 
 import zio.logging.slf4j.bridge.Slf4jBridge
-import zio.logging.{LogFilter, LogFormat, LoggerNameExtractor}
+import zio.logging.{ConsoleLoggerConfig, LogFilter, LogFormat, LoggerNameExtractor}
 import zio.{LogLevel, TaskLayer}
 
 object AppLog {
@@ -20,6 +20,11 @@ object AppLog {
 
   val live: TaskLayer[Unit] =
     zio.Runtime.removeDefaultLoggers >>>
-      zio.logging.consoleJson(logFormat, logFilter) >+>
+      zio.logging.consoleJsonLogger(
+        ConsoleLoggerConfig(
+          format = logFormat,
+          filter = logFilter
+        )
+      ) >+>
       Slf4jBridge.initialize
 }
