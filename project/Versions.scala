@@ -1,5 +1,5 @@
 object Versions {
-  val flyway            = "9.17.0"
+  val flyway            = "9.19.4"
   val mysql             = "8.0.33"
   val quill             = "4.6.0"
   val tapir             = "1.3.0"
