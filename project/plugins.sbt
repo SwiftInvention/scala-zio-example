@@ -1,6 +1,6 @@
 val sbtScalafmt      = "2.5.0"
 val sbtScalafix      = "0.10.4"
-val sbtTpolecat      = "0.4.2"
+val sbtTpolecat      = "0.4.4"
 val sbtRewarn        = "0.1.3"
 val kindProjector    = "0.13.2"
 val sbtRevolver      = "0.10.0"
