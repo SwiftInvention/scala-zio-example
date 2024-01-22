@@ -11,7 +11,7 @@ object Versions {
   val enumeratum =
     "1.7.0" // Note: Versions above 1.7.0 add Scala 3 support and are not binary compatible with previous versions
   val newType    = "0.4.4"
-  val zioLogging = "2.1.11"
+  val zioLogging = "2.1.17"
   val slf4j      = "1.7.36" // We keep version 1.7.36 because it's used by quill
   val circe      = "0.14.3"
 }
