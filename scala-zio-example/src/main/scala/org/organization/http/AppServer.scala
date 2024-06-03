@@ -1,13 +1,13 @@
 package org.organization.http
 
+import scala.annotation.nowarn
+
 import org.organization.AppEnv.AppEnv
 import org.organization.http.swagger.SwaggerApiEndpoint
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 import sttp.tapir.ztapir.ZServerEndpoint
 import zio.http._
 import zio.{Duration, RIO, ZIO}
-
-import scala.annotation.nowarn
 
 object AppServer {
 
