@@ -11,10 +11,9 @@ object AppLog {
   private val logFormat =
     LogFormat.label("name", loggerName.toLogFormat()) + LogFormat.default
 
-  private val logFilter =
-    LogFilter.logLevelByGroup(
+  private val logFilter: LogFilter.LogLevelByNameConfig =
+    LogFilter.LogLevelByNameConfig(
       LogLevel.Info,
-      loggerName.toLogGroup(),
       "org.organization" -> LogLevel.Debug
     )
 

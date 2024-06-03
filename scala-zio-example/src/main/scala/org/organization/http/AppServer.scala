@@ -1,24 +1,33 @@
 package org.organization.http
 
+import scala.annotation.nowarn
+
 import org.organization.AppEnv.AppEnv
 import org.organization.http.swagger.SwaggerApiEndpoint
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
+import sttp.tapir.ztapir.ZServerEndpoint
 import zio.http._
 import zio.{Duration, RIO, ZIO}
 
 object AppServer {
 
-  private val composedMiddlewares: HttpAppMiddleware[AppEnv, AppEnv, Nothing, Throwable] =
-    HttpAppMiddleware.timeout(Duration.fromSeconds(10))
+  private val composedMiddlewares: Middleware[AppEnv] =
+    Middleware.timeout(Duration.fromSeconds(10))
 
-  private val httpInterpreter: HttpApp[AppEnv, Throwable] =
-    ZioHttpInterpreter().toHttp(SwaggerApiEndpoint.common)
+  @nowarn("msg=class HttpApp in package http is deprecated")
+  private val httpInterpreter: HttpApp[AppEnv] = {
+    val endpoints: List[ZServerEndpoint[AppEnv, Any]] = SwaggerApiEndpoint.common
+    ZioHttpInterpreter().toHttp(endpoints)
+  }
 
-  private val app: HttpApp[AppEnv, Throwable] =
+  @nowarn("msg=class HttpApp in package http is deprecated")
+  private val app: HttpApp[AppEnv] =
     httpInterpreter @@ composedMiddlewares
+
+  @nowarn("msg=method install in object Server is deprecated")
   def serve: RIO[AppEnv, Nothing] =
     Server
-      .install(app.withDefaultErrorResponse)
+      .install(app)
       .flatMap(p => ZIO.logInfo(s"Started server on port $p"))
       .zipRight(ZIO.never)
 }
