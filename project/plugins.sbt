@@ -1,10 +1,10 @@
-val sbtScalafmt      = "2.5.0"
+val sbtScalafmt      = "2.5.2"
 val sbtScalafix      = "0.10.4"
 val sbtTpolecat      = "0.4.4"
 val sbtRewarn        = "0.1.3"
-val kindProjector    = "0.13.2"
+val kindProjector    = "0.13.3"
 val sbtRevolver      = "0.10.0"
-val sbtBuildInfo     = "0.11.0"
+val sbtBuildInfo     = "0.12.0"
 val betterMonadicFor = "0.3.1"
 
 addSbtPlugin("org.scalameta"             % "sbt-scalafmt"       % sbtScalafmt)
