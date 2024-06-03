@@ -3,7 +3,7 @@ package org.organization.db.repository
 import java.util.UUID
 import javax.sql.DataSource
 
-import io.scalaland.chimney.dsl.TransformerOps
+import io.scalaland.chimney.dsl._
 import org.organization.AppEnv.AppRIO
 import org.organization.api.model.NewType.PersonIdentifier
 import org.organization.db.DbContext._
@@ -18,11 +18,15 @@ trait PersonRepository {
     MappedEncoding[UUID, PersonIdentifier](PersonIdentifier.fromUUID)
 
   def getPersons: AppRIO[DataSource, List[PersonEnt]] = {
-    run(ctx.quote { person.sortBy(_.birthDate).filter(!_.isArchived) })
+    run(ctx.quote {
+      person.sortBy(_.birthDate).filter(!_.isArchived)
+    })
   }
 
   def getAllPersons: AppRIO[DataSource, List[PersonEnt]] = {
-    run(ctx.quote { person.sortBy(_.birthDate) })
+    run(ctx.quote {
+      person.sortBy(_.birthDate)
+    })
   }
 
   def getById(id: Long): AppRIO[DataSource, Option[PersonEnt]] = {
