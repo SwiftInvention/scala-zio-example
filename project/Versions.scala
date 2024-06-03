@@ -1,9 +1,9 @@
 object Versions {
   val flyway            = "9.21.0"
-  val mysql             = "8.0.33"
+  val mysql             = "8.1.0"
   val quill             = "4.6.1"
-  val tapir             = "1.3.0"
   val zio               = "2.0.22"
+  val tapir             = "1.7.2"
   val pureConfig        = "0.17.6"
   val zioHttp           = "3.0.0-RC1"
   val zioTestContainers = "0.10.0"
