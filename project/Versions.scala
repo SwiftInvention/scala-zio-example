@@ -3,9 +3,9 @@ object Versions {
   val flyway            = "10.12.0"
   val quill             = "4.8.3"
   val zio               = "2.1.1"
-  val tapir             = "1.10.7"
+  val tapir             = "1.10.8"
   val pureConfig        = "0.17.6"
-  val zioHttp           = "3.0.0-RC7"
+  val zioHttp           = "3.0.0-RC8"
   val zioTestContainers = "0.10.0"
   val chimney           = "1.0.0"
   val enumeratum =

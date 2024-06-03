@@ -1,7 +1,5 @@
 package org.organization.http
 
-import scala.annotation.nowarn
-
 import org.organization.AppEnv.AppEnv
 import org.organization.http.swagger.SwaggerApiEndpoint
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
@@ -14,17 +12,14 @@ object AppServer {
   private val composedMiddlewares: Middleware[AppEnv] =
     Middleware.timeout(Duration.fromSeconds(10))
 
-  @nowarn("msg=class HttpApp in package http is deprecated")
-  private val httpInterpreter: HttpApp[AppEnv] = {
+  private val httpInterpreter: Routes[AppEnv, Response] = {
     val endpoints: List[ZServerEndpoint[AppEnv, Any]] = SwaggerApiEndpoint.common
     ZioHttpInterpreter().toHttp(endpoints)
   }
 
-  @nowarn("msg=class HttpApp in package http is deprecated")
-  private val app: HttpApp[AppEnv] =
+  private val app: Routes[AppEnv, Response] =
     httpInterpreter @@ composedMiddlewares
 
-  @nowarn("msg=method install in object Server is deprecated")
   def serve: RIO[AppEnv, Nothing] =
     Server
       .install(app)
