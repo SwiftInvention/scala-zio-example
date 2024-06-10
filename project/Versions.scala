@@ -2,7 +2,7 @@ object Versions {
   val mysql             = "8.4.0"
   val flyway            = "10.12.0"
   val quill             = "4.8.3"
-  val zio               = "2.1.1"
+  val zio               = "2.1.2"
   val tapir             = "1.10.8"
   val pureConfig        = "0.17.6"
   val zioHttp           = "3.0.0-RC8"
