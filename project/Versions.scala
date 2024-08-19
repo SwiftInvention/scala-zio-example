@@ -13,5 +13,5 @@ object Versions {
   val newType    = "0.4.4"
   val zioLogging = "2.3.0"
   val slf4j      = "1.7.36" // We keep version 1.7.36 because it's used by quill
-  val circe      = "0.14.3"
+  val circe      = "0.14.4"
 }
