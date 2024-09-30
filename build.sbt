@@ -1,7 +1,7 @@
 import Dependencies._
 
 ThisBuild / organization := "org.organization"
-ThisBuild / scalaVersion := "2.13.14"
+ThisBuild / scalaVersion := "2.13.15"
 ThisBuild / version      := "0.1.1-SNAPSHOT"
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
