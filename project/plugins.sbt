@@ -1,4 +1,4 @@
-val sbtScalafmt      = "2.5.2"
+val sbtScalafmt      = "2.5.5"
 val sbtScalafix      = "0.12.1"
 val sbtTpolecat      = "0.4.4"
 val sbtRewarn        = "0.1.3"
