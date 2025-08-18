@@ -57,8 +57,8 @@ trait PersonRepository {
   }
 
   def insert(newPersonData: NewPersonData): AppRIO[DataSource, Long] = {
-    val stubId: Long = 0
-    val uuid         = PersonIdentifier.fromUUID(UUID.randomUUID())
+    val stubId: Long      = 0
+    val uuid              = PersonIdentifier.fromUUID(UUID.randomUUID())
     val personEntToCreate = newPersonData
       .into[PersonEnt]
       .withFieldConst(_.id, stubId)

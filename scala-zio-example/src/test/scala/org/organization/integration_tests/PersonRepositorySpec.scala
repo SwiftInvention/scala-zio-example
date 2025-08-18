@@ -80,7 +80,7 @@ object PersonRepositorySpec extends DatabaseIntegrationSpec with SnapshotSpec wi
             "PersonRepository/allPersons.json",
             allPersons.map(_.toTO.copy(identifier = testUuid))
           )
-          nonArchivedPersons <- getPersons
+          nonArchivedPersons           <- getPersons
           nonArchivedPersonsSnapshotOk <- matchesJsonSnapshot(
             "PersonRepository/nonArchivedPersons.json",
             nonArchivedPersons.map(_.toTO.copy(identifier = testUuid))
