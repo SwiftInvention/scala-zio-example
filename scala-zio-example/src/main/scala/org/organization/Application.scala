@@ -16,7 +16,7 @@ object Application extends ZIOAppDefault {
 
   def run: IO[IOException, ExitCode] = for {
     executionResult <- main.provideLayer(AppEnv.buildLiveEnv).exit
-    exitCode <- {
+    exitCode        <- {
       executionResult match {
         case Exit.Success(_)     => ZIO.succeed(ExitCode.success)
         case Exit.Failure(error) => ZIO.logError(error.toString) *> ZIO.succeed(ExitCode.failure)
