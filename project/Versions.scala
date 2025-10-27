@@ -8,7 +8,7 @@ object Versions {
   val zioHttp           = "3.0.0-RC8"
   val zioTestContainers = "0.10.0"
   val chimney           = "1.0.0"
-  val enumeratum =
+  val enumeratum        =
     "1.7.0" // Note: Versions above 1.7.0 add Scala 3 support and are not binary compatible with previous versions
   val newType    = "0.4.4"
   val zioLogging = "2.3.0"
