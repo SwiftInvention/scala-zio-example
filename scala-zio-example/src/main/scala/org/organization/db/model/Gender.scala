@@ -7,7 +7,7 @@ import io.circe.generic.extras.semiauto.{deriveConfiguredDecoder, deriveConfigur
 import io.circe.{Decoder, Encoder}
 
 sealed abstract class Gender(val value: Int) extends IntEnumEntry with Snakecase
-object Gender extends IntEnum[Gender] with IntQuillEnum[Gender] {
+object Gender                                extends IntEnum[Gender] with IntQuillEnum[Gender] {
 
   val values: IndexedSeq[Gender] = findValues
 
