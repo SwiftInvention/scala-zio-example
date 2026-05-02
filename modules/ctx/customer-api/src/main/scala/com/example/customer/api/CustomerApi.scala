@@ -6,5 +6,6 @@ import com.example.customer.api.to.CustomerTO
 
 trait CustomerApi {
   def find(id: CustomerId): AppIO[Option[CustomerTO]]
+  def get(id: CustomerId): AppIO[CustomerTO]
   def list: AppIO[List[CustomerTO]]
 }

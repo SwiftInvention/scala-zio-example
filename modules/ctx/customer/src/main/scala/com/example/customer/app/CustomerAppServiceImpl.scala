@@ -11,6 +11,7 @@ import zio._
   */
 final class CustomerAppServiceImpl(service: CustomerService) extends CustomerAppService {
   override def find(id: CustomerId): AppIO[Option[Customer]] = service.find(id)
+  override def get(id: CustomerId): AppIO[Customer]          = service.get(id)
   override def list: AppIO[List[Customer]]                   = service.list
 }
 

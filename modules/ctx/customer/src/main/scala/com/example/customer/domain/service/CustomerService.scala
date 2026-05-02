@@ -6,5 +6,6 @@ import com.example.customer.domain.model.Customer
 
 trait CustomerService {
   def find(id: CustomerId): AppIO[Option[Customer]]
+  def get(id: CustomerId): AppIO[Customer]
   def list: AppIO[List[Customer]]
 }

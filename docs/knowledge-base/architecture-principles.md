@@ -2,7 +2,7 @@
 
 Architectural commitments the codebase adheres to.
 
-Same migration policy as `styleguide.md`: every existing violation is fixed, marked `FIXME` (intent to fix), or marked `WONTFIX` (with reason). New code introduces no unmarked violations.
+Adding a principle here requires that every existing violation is fixed, marked `FIXME` (intent to fix), or marked `WONTFIX` (with reason — legacy too painful, code slated for deletion, etc.). New code introduces no unmarked violations.
 
 Inline markers go next to the offending code, referencing the principle by its slug:
 
@@ -41,3 +41,9 @@ See [`patterns/build-deps.md`](patterns/build-deps.md).
 Within and across modules: `impl/` files may import from `app/` and `domain/`; `app/` files may import from `domain/`; `domain/` files import from neither. Convention-only — the build can't enforce this. Review catches it.
 
 See [`patterns/build-deps.md`](patterns/build-deps.md#convention-only-impl--app--domain-import-direction).
+
+## `errors` — typed errors via `AppFailure`, flowing through the `Throwable` channel
+
+Trait signatures stay `AppIO` (Throwable). Concrete errors are `AppFailure` subclasses carrying `category`, `reason`, and HTTP status. The route boundary renders any `AppFailure` as a structured `ErrorTO`; unknown throwables get wrapped as `UnhandledApiError` (500).
+
+See [`patterns/errors.md`](patterns/errors.md).

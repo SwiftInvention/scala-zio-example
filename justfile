@@ -92,5 +92,21 @@ smoke-test:
   echo
   echo "GET /customers:"
   curl -sSf http://localhost:8080/customers | jq .
+
+  echo
+  echo "GET /customers/c-001 (existing):"
+  curl -sSf http://localhost:8080/customers/c-001 | jq .
+
+  echo
+  echo "GET /customers/missing (typed-error path, expect 404 with ErrorTO body):"
+  resp=$(curl -s -w "\n%{http_code}" http://localhost:8080/customers/missing)
+  body=$(echo "$resp" | sed '$d')
+  code=$(echo "$resp" | tail -1)
+  echo "HTTP $code"
+  echo "$body" | jq .
+  if [ "$code" != "404" ]; then
+    echo "✗ expected 404, got $code"; exit 1
+  fi
+
   echo
   echo "✅ smoke test passed"

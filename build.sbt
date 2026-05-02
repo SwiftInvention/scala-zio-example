@@ -21,7 +21,7 @@ lazy val commonSettings = Seq(
 
 lazy val libCommon = (project in file("modules/lib/common"))
   .settings(commonSettings)
-  .settings(libraryDependencies ++= zioCoreDep ++ zioPreludeDep ++ zioJsonDep)
+  .settings(libraryDependencies ++= zioCoreDep ++ zioPreludeDep ++ zioJsonDep ++ enumeratumDep)
 
 // ── ctx: customer ───────────────────────────────────────────
 

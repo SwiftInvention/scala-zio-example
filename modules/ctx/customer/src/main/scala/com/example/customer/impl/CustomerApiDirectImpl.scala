@@ -15,6 +15,9 @@ final class CustomerApiDirectImpl(appService: CustomerAppService) extends Custom
   override def find(id: CustomerId): AppIO[Option[CustomerTO]] =
     appService.find(id).map(_.map(toTO))
 
+  override def get(id: CustomerId): AppIO[CustomerTO] =
+    appService.get(id).map(toTO)
+
   override def list: AppIO[List[CustomerTO]] =
     appService.list.map(_.map(toTO))
 
