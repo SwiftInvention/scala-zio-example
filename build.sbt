@@ -1,45 +1,59 @@
 import Dependencies._
 import org.typelevel.scalacoptions.ScalacOptions
 
-ThisBuild / organization := "org.organization"
+ThisBuild / organization := "com.example"
 ThisBuild / scalaVersion := "2.13.18"
 ThisBuild / version      := "0.1.1-SNAPSHOT"
 
-// quill-jdbc-zio pulls zio-json 0.7.3 (for JSON column marshalling, not exercised here);
-// zio-http pulls zio-schema-json which requires zio-json 0.9.0. Both are 0.x so early-semver
-// flags the gap as binary-incompatible. Letting the newer version win.
+// quill-jdbc-zio pulls zio-json 0.7.3; zio-http pulls zio-schema-json which requires
+// zio-json 0.9.0. Both 0.x — early-semver flags the gap. Letting the newer win.
 ThisBuild / libraryDependencySchemes += "dev.zio" %% "zio-json" % "always"
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-lazy val scalaZioExample = (project in file("scala-zio-example"))
-  .enablePlugins(BuildInfoPlugin)
-  .settings(
-    settings
-      ++ integrationTestSettings
-      ++ buildInfoSettings
-      ++ Seq(name := """scala-zio-example""")
-  )
-
-lazy val scalaZioExampleRoot = project
-  .in(file("."))
-  .aggregate(scalaZioExample)
-
-lazy val settings = Seq(
-  libraryDependencies ++= commonDep ++ testDep ++ httpDep ++ dbDep ++ logDep,
-  excludeDependencies ++= logExcludeDep,
+lazy val commonSettings = Seq(
   run / fork := true,
   tpolecatScalacOptions += ScalacOptions.other("-Ymacro-annotations"),
   testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
 )
 
-lazy val integrationTestSettings =
-  inConfig(IntegrationTest)(
-    Seq(
-      // To ensure that test containers get cleaned up immediately
-      Test / fork := true
-    )
+// ── lib ─────────────────────────────────────────────────────
+
+lazy val libCommon = (project in file("modules/lib/common"))
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= zioCoreDep ++ zioPreludeDep ++ zioJsonDep)
+
+// ── ctx: customer ───────────────────────────────────────────
+
+lazy val ctxCustomerApi = (project in file("modules/ctx/customer-api"))
+  .dependsOn(libCommon)
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= zioCoreDep ++ zioJsonDep)
+
+lazy val ctxCustomer = (project in file("modules/ctx/customer"))
+  .dependsOn(libCommon, ctxCustomerApi)
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ zioJsonDep ++ dbDep ++ chimneyDep)
+
+// ── app: server ─────────────────────────────────────────────
+
+lazy val appServer = (project in file("modules/app/server"))
+  .enablePlugins(BuildInfoPlugin)
+  .dependsOn(libCommon, ctxCustomerApi, ctxCustomer)
+  .settings(commonSettings)
+  .settings(buildInfoSettings)
+  .settings(
+    libraryDependencies ++=
+      zioCoreDep ++ zioHttpDep ++ zioJsonDep ++ pureconfigDep ++ loggingDep ++ dbDep,
+    excludeDependencies ++= logExcludeDep,
+    name := "server"
   )
+
+// ── root aggregator ─────────────────────────────────────────
+
+lazy val root = (project in file("."))
+  .aggregate(libCommon, ctxCustomerApi, ctxCustomer, appServer)
+  .settings(name := "scala-zio-example")
 
 lazy val buildInfoSettings = Seq(
   buildInfoKeys    := Seq[BuildInfoKey](name, version),

@@ -6,6 +6,8 @@ object Versions {
   val tapir             = "1.13.18"
   val pureConfig        = "0.17.10"
   val zioHttp           = "3.11.0"
+  val zioJson           = "0.9.2"
+  val zioPrelude        = "1.0.0-RC47" // Note: prelude has been RC for years; widely used in production despite the label
   val zioTestContainers = "0.10.0" // Note: upstream appears abandoned (last release 2023)
   val chimney           = "1.10.0"
   val enumeratum        = "1.9.7"

@@ -1,0 +1,56 @@
+# Module Layout
+
+Three module types under `modules/`:
+
+```
+modules/
+├── lib/<name>/        shared infrastructure (no domain content)
+├── ctx/<name>/        bounded context
+├── ctx/<name>-api/    a context's cross-context API contract
+└── app/<name>/        deployment unit (composition root + entrypoint)
+```
+
+sbt project IDs follow `<layer><CamelCaseName>`:
+
+| Folder                     | sbt ID            |
+| -------------------------- | ----------------- |
+| `modules/lib/common`       | `libCommon`       |
+| `modules/ctx/customer`     | `ctxCustomer`     |
+| `modules/ctx/customer-api` | `ctxCustomerApi`  |
+| `modules/app/server`       | `appServer`       |
+
+## Lib internal structure
+
+```
+modules/lib/<name>/src/main/scala/com/example/<name>/
+├── domain/        traits, types, errors
+└── impl/          concrete implementations
+```
+
+No `app/` — libs don't have an application surface. Same `domain` / `impl` split as a context.
+
+`lib/common` example contents:
+
+- `domain/error/AppError.scala` — base error trait
+- `domain/model/Types.scala` — effect aliases (`AppIO`, `AppRIO`)
+- `domain/model/NewTypes.scala` — cross-cutting newtype IDs
+
+## App internal structure
+
+Flat — no subfolders:
+
+```
+modules/app/<name>/src/main/scala/com/example/app/<name>/
+├── <Name>App.scala       entrypoint (extends ZIOAppDefault)
+└── <Name>Env.scala       layer composition (AppEnv type alias + wiring)
+```
+
+`server/` is the canonical example. A future `migrator/` or `worker/` would follow the same shape.
+
+## When to add what
+
+- **Shared utility used across contexts** → new `lib/`
+- **New bounded context** → `ctx/<name>/` and `ctx/<name>-api/` together
+- **New deployable unit** (worker, CLI, alternate API server) → new `app/<name>/`
+
+For the ctx internal structure see [`bounded-context.md`](bounded-context.md). For how modules connect via `build.sbt`, see [`build-deps.md`](build-deps.md).

@@ -1,0 +1,66 @@
+# Bounded Context
+
+A context is a pair of sbt modules:
+
+```
+ctx/<name>-api/   cross-context contract (trait + TOs)
+ctx/<name>/       implementation
+```
+
+Other contexts depend only on `<name>-api`. The composition root provides the impl. See [`ctx-api.md`](ctx-api.md) for what lives in the `-api` module.
+
+## Internal layout of `ctx/<name>/`
+
+```
+modules/ctx/<name>/src/main/scala/com/example/<name>/
+├── domain/                          abstractions only — no concrete impls
+│   ├── error/                       domain errors
+│   ├── model/                       entities, value types
+│   └── service/
+│       ├── <Name>Service.scala      domain service trait
+│       └── repo/
+│           └── <Name>Repo.scala     repo trait
+├── app/                             application service (special: trait + impl colocated)
+│   ├── <Name>AppService.scala
+│   └── <Name>AppServiceImpl.scala
+└── impl/                            concrete implementations
+    ├── <Name>ApiDirectImpl.scala    bridge to <name>-api contract
+    ├── service/                     mirrors domain/service/
+    │   ├── <Name>ServiceImpl.scala
+    │   └── repo/
+    │       └── <Name>RepoImpl.scala
+    └── http/
+        └── <Name>Routes.scala       frontend HTTP routes
+```
+
+`impl/service/` mirrors `domain/service/` so finding a trait's impl is a mechanical translation.
+
+## Layer chain
+
+```
+<Name>RepoImpl.layer           provides <Name>Repo, no project deps
+   ↓
+<Name>ServiceImpl.layer        takes <Name>Repo, provides <Name>Service
+   ↓
+<Name>AppServiceImpl.layer     takes <Name>Service, provides <Name>AppService
+   ↓
+<Name>ApiDirectImpl.layer      takes <Name>AppService, provides <Name>Api
+   ↓
+<Name>Routes.layer             takes <Name>Api, exposes Routes[Any, Response]
+```
+
+Each link is a thin pass-through unless it has logic to add. Domain services exist to host validation and business rules. AppService exists to orchestrate multiple domain services. The chain compresses where there's nothing to add: AppService may call Repo directly when there's no domain logic worth a Service layer, and `<Name>Service` doesn't need to exist if it would be pure delegation.
+
+## Why `app/` is the exception (impl colocated with trait)
+
+Service and Repo impls live in `impl/` because they may have multiple variants (Stub, MySQL, Postgres) chosen at composition time. AppService is different: it's a thin orchestrator tightly bound to its trait, almost always one impl, and the trait+impl pair is read together. Colocating them keeps that cohesion visible.
+
+## Import shape
+
+Within a context:
+
+- `domain/` imports nothing context-specific (only libs).
+- `app/` may import from `domain/`. Not from `impl/`.
+- `impl/` may import from `domain/`, `app/`, and `<name>-api`.
+
+The same convention holds across modules — `lib/foo/domain/` shouldn't import from `lib/bar/impl/`, etc. Build-enforced cross-module boundaries (api vs impl modules) are separate; see [`build-deps.md`](build-deps.md), including the note on convention-only boundaries.
