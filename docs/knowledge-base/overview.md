@@ -50,6 +50,5 @@ A service that exists but is never wired in `ServerEnv` is dead code.
 - zio-prelude `Newtype`s for typed IDs (`lib/common/.../NewTypes`)
 - Quill + MySQL + Flyway for DB (deps wired, repos are stubs for now)
 - enumeratum for error category/reason enums
-- chimney for TO ↔ domain mapping (deps wired; only trivial mapping in use today)
 - pureconfig for config (deps wired, no usage yet)
 - zio-logging + slf4j bridges

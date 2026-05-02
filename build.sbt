@@ -33,7 +33,7 @@ lazy val ctxCustomerApi = (project in file("modules/ctx/customer-api"))
 lazy val ctxCustomer = (project in file("modules/ctx/customer"))
   .dependsOn(libCommon, ctxCustomerApi)
   .settings(commonSettings)
-  .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ zioJsonDep ++ dbDep ++ chimneyDep)
+  .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ zioJsonDep ++ dbDep)
 
 // ── app: server ─────────────────────────────────────────────
 

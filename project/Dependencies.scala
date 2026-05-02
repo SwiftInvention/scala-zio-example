@@ -41,10 +41,6 @@ object Dependencies {
   )
 
   // ── Mapping / utility ──────────────────────────────────────
-  lazy val chimneyDep: Seq[ModuleID] = Seq(
-    "io.scalaland" %% "chimney" % Versions.chimney
-  )
-
   lazy val newtypeDep: Seq[ModuleID] = Seq(
     "io.estatico" %% "newtype" % Versions.newType
   )

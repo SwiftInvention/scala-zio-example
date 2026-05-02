@@ -47,3 +47,9 @@ See [`patterns/build-deps.md`](patterns/build-deps.md#convention-only-impl--app-
 Trait signatures stay `AppIO` (Throwable). Concrete errors are `AppFailure` subclasses carrying `category`, `reason`, and HTTP status. The route boundary renders any `AppFailure` as a structured `ErrorTO`; unknown throwables get wrapped as `UnhandledApiError` (500).
 
 See [`patterns/errors.md`](patterns/errors.md).
+
+## `to-converters` — TO ↔ domain mapping in dedicated converter objects
+
+One `<Entity>Converter` object per entity in `<ctx>/impl/to/converter/`. Hand-written, no chimney. Methods named `to<Entity>TO` and `to<Entity>`.
+
+See [`patterns/converters.md`](patterns/converters.md).
