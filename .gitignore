@@ -12,3 +12,10 @@ project/target/
 src_managed/
 target/
 log
+
+# secrets
+.env
+
+# AI
+.claude/settings.local.json
+CLAUDE.local.md

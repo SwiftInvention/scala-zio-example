@@ -1,4 +1,4 @@
-FROM sbtscala/scala-sbt:eclipse-temurin-11.0.17_8_1.8.2_2.13.10 as builder
+FROM sbtscala/scala-sbt:eclipse-temurin-21.0.8_9_1.12.10_2.13.18 AS builder
 
 COPY . . 
 

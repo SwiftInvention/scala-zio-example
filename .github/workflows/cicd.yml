@@ -8,6 +8,7 @@ on:
   pull_request: 
     types: 
       - opened
+      - reopened
       # "synchronize" means new commits pushed to the HEAD of the pull request branch
       - synchronize
 
