@@ -38,7 +38,7 @@ The `run` and `smoke-test` recipes export `APP_ENV=local` so the server loads `a
 ## Setup
 
 ```sh
-just initial-setup   # install JDK + sbt (SDKMAN) + Flyway (brew); seed application-local.conf from .example
+just initial-setup   # install JDK + sbt from .sdkmanrc; seed application-local.conf from .example
 ```
 
 Every public recipe activates the pinned SDK env at the top, so it works from any shell without manual `sdk env` first.

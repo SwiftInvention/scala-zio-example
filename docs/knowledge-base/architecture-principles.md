@@ -12,78 +12,76 @@ Inline markers go next to the offending code, referencing the principle by its s
 
 ---
 
+## `local-reasoning` — code is understandable from its signature plus its named dependencies
+
+What a piece of code does should be derivable from reading that code plus its named dependencies — without descending into the bodies of those dependencies. Types, signatures, and explicit dependency parameters form the local frame; the discipline is that the frame is honest. Applies at every scale: expression, function, class, module, context, system. Most other principles are mechanisms for preserving this property at one level or another.
+
+Pattern: [`local-reasoning.md`](patterns/local-reasoning.md)
+
+## `correct-by-construction` — make illegal states unrepresentable
+
+Domain types are shaped so the compiler proves invariants the runtime never has to. Achieved through ADTs (legal state space modeled exactly), smart constructors (invariants enforced at the construction boundary), and parse-don't-validate (untyped input converted to typed values at every boundary). Functions operating on typed values trust the invariants without re-checking.
+
+The `newtypes`, `smart-constructors`, `errors`, `config-shape`, and converter principles are instances. Pattern: [`correct-by-construction.md`](patterns/correct-by-construction.md).
+
+---
+
 ## `module-layout` — three module types: lib, ctx, app
 
-Modules live under `modules/{lib,ctx,app}/`. Each layer has a fixed internal shape. sbt project IDs follow `<layer><CamelCaseName>`.
-
-See [`patterns/module-layout.md`](patterns/module-layout.md).
+Modules live under `modules/{lib,ctx,app}/`. Each layer has a fixed internal shape. sbt project IDs follow `<layer><CamelCaseName>`. Pattern: [`module-layout.md`](patterns/module-layout.md).
 
 ## `bounded-context` — each context is a 2-module pair with domain/app/impl internals
 
-A context is `<ctx>` + `<ctx>-api`. Inside the impl module: `domain/` (abstractions), `app/` (the orchestrator trait + its impl, colocated), `impl/` (concrete adapters; `impl/service/` mirrors `domain/service/`).
-
-See [`patterns/bounded-context.md`](patterns/bounded-context.md).
-
-## `ctx-api` — cross-context calls go through `<ctx>-api`, never directly
-
-The trait + TOs live in `<ctx>-api`. The DirectClient impl lives in the ctx module and owns TO ↔ domain conversion. HTTP routes are a separate plane and don't go through the cross-context trait.
-
-See [`patterns/ctx-api.md`](patterns/ctx-api.md).
-
-## `build-deps` — module dependencies enforce the architecture
-
-`build.sbt`'s `dependsOn` is compile-time enforcement of every cross-module boundary. Naming conventions and folder layouts are conventions; the build graph is the rule.
-
-See [`patterns/build-deps.md`](patterns/build-deps.md).
+A context is `<ctx>` + `<ctx>-api`. Inside the impl module: `domain/` (abstractions), `app/` (the orchestrator trait + its impl, colocated), `impl/` (concrete adapters; `impl/service/` mirrors `domain/service/`). Pattern: [`bounded-context.md`](patterns/bounded-context.md).
 
 ## `import-direction` — imports flow `impl → app → domain`
 
-Within and across modules: `impl/` files may import from `app/` and `domain/`; `app/` files may import from `domain/`; `domain/` files import from neither. Convention-only — the build can't enforce this. Review catches it.
+Within and across modules: `impl/` may import from `app/` and `domain/`; `app/` may import from `domain/`; `domain/` imports from neither. Convention-only — review catches it. Pattern: [`build-deps.md`](patterns/build-deps.md#convention-only-impl--app--domain-import-direction).
 
-See [`patterns/build-deps.md`](patterns/build-deps.md#convention-only-impl--app--domain-import-direction).
+## `build-deps` — module dependencies enforce the architecture
 
-## `errors` — typed errors via `AppFailure`, flowing through the `Throwable` channel
+`build.sbt`'s `dependsOn` is compile-time enforcement of every cross-module boundary. Naming and folder layouts are conventions; the build graph is the rule. Pattern: [`build-deps.md`](patterns/build-deps.md).
 
-Trait signatures stay `AppIO` (Throwable). Concrete errors are `AppFailure` subclasses carrying `category`, `reason`, and HTTP status. The route boundary renders any `AppFailure` as a structured `ErrorTO`; unknown throwables get wrapped as `UnhandledApiError` (500).
+---
 
-See [`patterns/errors.md`](patterns/errors.md).
+## `ctx-api` — cross-context calls go through `<ctx>-api`, never directly
+
+The trait + TOs live in `<ctx>-api`. The DirectClient impl lives in the ctx module and owns TO ↔ domain conversion. HTTP routes are a separate plane and don't go through the cross-context trait. Pattern: [`ctx-api.md`](patterns/ctx-api.md).
 
 ## `to-converters` — TO ↔ domain mapping in dedicated converter objects
 
-One `<Entity>Converter` object per entity in `<ctx>/impl/to/converter/`. Hand-written, no chimney. Methods named `to<Entity>TO` and `to<Entity>`.
+One `<Entity>Converter` object per entity in `<ctx>/impl/to/converter/`. Hand-written, no chimney. Methods named `to<Entity>TO` and `to<Entity>`. Pattern: [`converters.md`](patterns/converters.md).
 
-See [`patterns/converters.md`](patterns/converters.md).
+---
 
-## `pe-layout` — persistence entities live with their owning ctx, not in lib
+## `newtypes` — domain ids are zio-prelude `Newtype`s, not raw `String`/`Int`
 
-PEs (`<Entity>PE`) live in `<ctx>/impl/service/repo/pg/entity/`, alongside the repo impl that uses them. They don't leak past `impl/` — repo trait signatures use domain types only. Genuinely cross-cutting PEs (audit log, outbox) go in `lib/common/impl/repo/pg/entity/`.
+Identifiers (`CustomerId`, `OrderId`) flow through the system as typed wrappers — the compiler catches argument swaps, and serialization stays flat (no wrapping objects on the wire). Centralized in `lib/common/.../domain/model/NewTypes.scala`; encodings co-located in `NewTypeEncodings`. Pattern: [`newtypes.md`](patterns/newtypes.md).
 
-See [`patterns/persistence.md`](patterns/persistence.md).
+## `smart-constructors` — validated value objects use `sealed abstract case class Foo private (...)`
 
-## `pe-converters` — PE ↔ domain mapping in dedicated converter objects
+Values with invariants (`Email`, `Phone`) construct through a smart-constructor `apply` that returns `AppIO[T]` and is the only path to a value. The triple `sealed abstract case class Foo private (...)` is load-bearing: naive `final case class Foo private (...)` leaks validation via the auto-generated `copy()`, so `abstract` is required to suppress it. Construction via `new Foo(...) {}` inside the companion. Value objects live with the owning ctx. Pattern: [`smart-constructors.md`](patterns/smart-constructors.md).
 
-Mirrors `to-converters` for the persistence boundary. One `<Entity>PEConverter` object per PE in `<ctx>/impl/service/repo/pg/converter/`. Hand-written. Methods named `to<Entity>` and `to<Entity>PE`.
+## `errors` — typed errors via `AppFailure`, flowing through the `Throwable` channel
 
-See [`patterns/persistence.md`](patterns/persistence.md).
-
-## `tx-default` — repo methods open transactions; app services may wrap
-
-Every repo method wraps its query in `Transactor.withTransaction`. App-service methods that orchestrate multiple repo calls may wrap the orchestration in another `withTransaction` — Quill's transaction is reentrant on a fiber-local connection, so nesting reuses the outer scope.
-
-See [`patterns/persistence.md`](patterns/persistence.md).
-
-## `newtypes` — domain ids and constrained value objects are zio-prelude `Newtype`s
-
-Domain identifiers (`CustomerId`) and constrained value objects (`Email`) flow through the system as zio-prelude `Newtype`s, never as raw `String`/`Int`. The compiler catches argument swaps; smart constructors fail at construction for invalid input; serialization stays flat (no wrapping objects on the wire).
-
-Ids are centralized in `lib/common/.../domain/model/NewTypes.scala`. Value objects with smart constructors live with the ctx that owns them, because their validation logic is domain-specific.
-
-See [`patterns/newtypes.md`](patterns/newtypes.md).
+Trait signatures stay `AppIO` (Throwable). Concrete errors are `AppFailure` subclasses carrying `category`, `reason`, and HTTP status. The route boundary renders any `AppFailure` as a structured `ErrorTO`; unknown throwables get wrapped as `UnhandledApiError` (500). Pattern: [`errors.md`](patterns/errors.md).
 
 ## `config-shape` — typed config, per-(app, env) files, no defaults in code
 
-Config is loaded into PureConfig case classes that fail-fast at boot. Files are per-(app, env) and self-contained — no `reference.conf`, no overlay between envs. The active env file is selected by `APP_ENV`. Each module owns its own `XConfig` (no central root config).
+PureConfig case classes loaded from per-(app, env) files at boot, fail-fast. Files are self-contained (no overlay). `APP_ENV` selects the file. Each module owns its `XConfig`; no central root.
 
-**No default values in code, anywhere.** Not on case-class fields, not in `getOrElse` fallbacks, not in `if/else` branches that produce a fallback value. Required fields are required; conceptually-optional fields are `Option[X]` and the consumer must branch on present/absent semantically (not substitute a baked-in value). The runtime value of any config key is fully determined by the active `.conf` file.
+No default values in code, anywhere — not on case-class fields, not in `getOrElse` fallbacks, not in `if/else` branches that substitute a fallback value. Conceptually-optional values are `Option[X]` with the consumer branching semantically (not on a baked-in value). Runtime config is fully determined by the active `.conf`. Pattern: [`config.md`](patterns/config.md).
 
-See [`patterns/config.md`](patterns/config.md).
+---
+
+## `pe-layout` — persistence entities live with their owning ctx, not in lib
+
+PEs (`<Entity>PE`) live in `<ctx>/impl/service/repo/pg/entity/`, alongside the repo impl that uses them. They don't leak past `impl/` — repo trait signatures use domain types only. Genuinely cross-cutting PEs (audit log, outbox) go in `lib/common/impl/repo/pg/entity/`. Pattern: [`persistence.md`](patterns/persistence.md).
+
+## `pe-converters` — PE ↔ domain mapping in dedicated converter objects
+
+Mirrors `to-converters` for the persistence boundary. One `<Entity>PEConverter` object per PE in `<ctx>/impl/service/repo/pg/converter/`. Methods named `to<Entity>` and `to<Entity>PE`. Pattern: [`persistence.md`](patterns/persistence.md).
+
+## `tx-default` — repo methods open transactions; app services may wrap
+
+Every repo method wraps its query in `Transactor.withTransaction`. App-service methods orchestrating multiple repo calls may wrap the orchestration; Quill's transaction is reentrant on a fiber-local connection, so nesting reuses the outer scope. Pattern: [`persistence.md`](patterns/persistence.md).

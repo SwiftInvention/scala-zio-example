@@ -2,7 +2,7 @@
 
 ## What this is
 
-A reference template for Scala + ZIO monoliths organized by bounded contexts. The patterns here (module layout, ctx structure, error model, etc.) are documented in [`patterns/`](patterns/) and summarized in [`architecture-principles.md`](architecture-principles.md).
+A reference template for Scala + ZIO monoliths organized by bounded contexts. Patterns are documented in [`patterns/`](patterns/) and summarized in [`architecture-principles.md`](architecture-principles.md).
 
 The example domain is intentionally thin (one context, one entity) so the patterns are visible without domain noise.
 
@@ -10,45 +10,28 @@ The example domain is intentionally thin (one context, one entity) so the patter
 
 | Folder                     | sbt ID           | Role                                            |
 | -------------------------- | ---------------- | ----------------------------------------------- |
-| `modules/lib/common`       | `libCommon`      | shared infrastructure (effects, errors, IDs)    |
+| `modules/lib/common`       | `libCommon`      | shared infrastructure (effects, errors, IDs, config, persistence) |
 | `modules/ctx/customer-api` | `ctxCustomerApi` | customer cross-context contract (trait + TOs)   |
 | `modules/ctx/customer`     | `ctxCustomer`    | customer impl (domain, app, infra)              |
 | `modules/app/server`       | `appServer`      | deployment unit — composition root + entrypoint |
 
-Module-layout convention: [`patterns/module-layout.md`](patterns/module-layout.md). Cross-module deps: [`patterns/build-deps.md`](patterns/build-deps.md).
+Module layout: [`patterns/module-layout.md`](patterns/module-layout.md). Cross-module deps: [`patterns/build-deps.md`](patterns/build-deps.md).
 
 ## HTTP server
 
-One zio-http server, default port 8080, started by `ServerApp` (`modules/app/server/.../ServerApp.scala`). Routes are owned by contexts (`customer/impl/http/CustomerRoutes.scala`) and composed at the app level.
+One zio-http server, started by `ServerApp` (`modules/app/server/.../ServerApp.scala`). Routes owned by contexts (`customer/impl/http/CustomerRoutes.scala`), composed at the app level. Host/port from `ServerConfig`.
 
 Currently exposed:
 
 - `GET /customers` — list (200, JSON array of `CustomerTO`)
-- `GET /customers/:id` — fetch one (200, or 404 + `ErrorTO` body via the typed-error path)
+- `GET /customers/:id` — fetch one (200, or 404 + `ErrorTO` body)
 
 ## Service wiring
 
-`ServerEnv.scala` is the single place that sees concrete impls and wires them. Layer chain:
+`ServerEnv.scala` is the composition root — the only place that sees concrete impls. Four tiers: config (`ConfigBootstrap` → typed `XConfig`s) → infra (datasource, transactor) → ctx (repo → service → app-service → api → routes) → http server. Adding a new ctx adds a leg to the third tier.
 
-```
-ConfigBootstrap.layer
-  → DataSourceConfig + ServerConfig (typed slices)
-    → DataSourceLayer → PgContext → Transactor
-      → CustomerRepoMySQLImpl → CustomerServiceImpl → CustomerAppServiceImpl
-        → CustomerApiDirectImpl → CustomerRoutes
-+ zio-http Server (binding from ServerConfig)
-```
-
-Config is loaded from `application-${APP_ENV}.conf` at boot (see [`patterns/config.md`](patterns/config.md)). Migrations are applied out-of-process via `just db-migrate`. A service that exists but is never wired in `ServerEnv` is dead code.
+Config loaded from `application-${APP_ENV}.conf` at boot ([`patterns/config.md`](patterns/config.md)). Migrations apply out-of-process via `just db-migrate`. A service that exists but is never wired is dead code.
 
 ## Tech stack
 
-- Scala **2.13.18**, sbt **1.12.10**, JDK **Temurin 21** (pinned via `.sdkmanrc`)
-- ZIO 2.1.x effect system
-- zio-http for HTTP
-- zio-json for JSON codecs
-- zio-prelude `Newtype`s for typed IDs (`lib/common/.../NewTypes`)
-- Quill + MySQL + Flyway for DB (deps wired, repos are stubs for now)
-- enumeratum for error category/reason enums
-- pureconfig for config (deps wired, no usage yet)
-- zio-logging + slf4j bridges
+Scala 2.13 + ZIO 2.1 + zio-http + zio-json + zio-prelude. Quill + MySQL for persistence; Flyway CLI for migrations. PureConfig for typed config. enumeratum for error enums. zio-logging + slf4j. JDK 21 + sbt 1.12, pinned via `.sdkmanrc`. Versions in `project/Versions.scala`, deps in `project/Dependencies.scala`.

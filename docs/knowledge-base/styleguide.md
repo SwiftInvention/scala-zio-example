@@ -20,3 +20,5 @@ The default name for a concrete implementation of trait `Foo` is `Foo-ImplKind-I
 The companion's layer val is named `layer` (e.g. `CustomerRepoMySQLImpl.layer`).
 
 ## `no-package-files` — don't use package.scala
+
+Top-level definitions in `package.scala` files aren't greppable by their declaration site — you can't easily find where `def foo` lives. Use named objects in named files (`Foo.scala`, with `def foo` in it) instead.

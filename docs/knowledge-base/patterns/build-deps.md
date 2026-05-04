@@ -17,7 +17,7 @@ lazy val ctxCustomerApi = (project in file("modules/ctx/customer-api"))
 lazy val ctxCustomer = (project in file("modules/ctx/customer"))
   .dependsOn(libCommon, ctxCustomerApi)
   .settings(commonSettings)
-  .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ zioJsonDep ++ dbDep ++ chimneyDep)
+  .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ zioJsonDep ++ dbDep)
 
 lazy val appServer = (project in file("modules/app/server"))
   .dependsOn(libCommon, ctxCustomerApi, ctxCustomer)
@@ -48,8 +48,8 @@ External library deps live in `project/Dependencies.scala` as named groups:
 
 - `zioCoreDep`, `zioHttpDep`, `zioJsonDep`, `zioPreludeDep`
 - `tapirDep`, `pureconfigDep`
-- `dbDep` (quill, mysql, flyway)
+- `dbDep` (quill, mysql; Flyway runs out-of-process via the CLI)
 - `loggingDep` + `logExcludeDep` (zio-logging + slf4j bridges)
-- `chimneyDep`, `enumeratumDep`, `circeDep`, `newtypeDep`
+- `enumeratumDep`, `circeDep`, `newtypeDep`
 
 Each module pulls in only what it needs. `libCommon` doesn't get HTTP or DB deps; `ctxCustomerApi` doesn't get DB or HTTP server deps; etc. Tighter deps per module make boundaries clearer at the import site.
