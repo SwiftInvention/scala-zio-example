@@ -72,6 +72,14 @@ Every repo method wraps its query in `Transactor.withTransaction`. App-service m
 
 See [`patterns/persistence.md`](patterns/persistence.md).
 
+## `newtypes` — domain ids and constrained value objects are zio-prelude `Newtype`s
+
+Domain identifiers (`CustomerId`) and constrained value objects (`Email`) flow through the system as zio-prelude `Newtype`s, never as raw `String`/`Int`. The compiler catches argument swaps; smart constructors fail at construction for invalid input; serialization stays flat (no wrapping objects on the wire).
+
+Ids are centralized in `lib/common/.../domain/model/NewTypes.scala`. Value objects with smart constructors live with the ctx that owns them, because their validation logic is domain-specific.
+
+See [`patterns/newtypes.md`](patterns/newtypes.md).
+
 ## `config-shape` — typed config, per-(app, env) files, no defaults in code
 
 Config is loaded into PureConfig case classes that fail-fast at boot. Files are per-(app, env) and self-contained — no `reference.conf`, no overlay between envs. The active env file is selected by `APP_ENV`. Each module owns its own `XConfig` (no central root config).

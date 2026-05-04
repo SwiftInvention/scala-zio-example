@@ -6,4 +6,3 @@
   ![debug configuration template](images/idea-debug-configuration-template.png)
 * Set the task to be `scalaZioExample/run`
   ![debug configuration](images/idea-debug-configuration.png)
-    
