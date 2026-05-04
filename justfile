@@ -13,13 +13,20 @@ init_env := '''
 _default:
   @ just --list --unsorted
 
-# install JDK & sbt versions pinned in .sdkmanrc
+# install JDK, sbt (SDKMAN), and seed local config from the .example
 initial-setup:
   #!/usr/bin/env bash
   set -eu
   export SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
   source "$SDKMAN_DIR/bin/sdkman-init.sh"
   sdk env install
+  for example in modules/*/src/main/resources/application-*.conf.example; do
+    target="${example%.example}"
+    if [ ! -f "$target" ]; then
+      cp "$example" "$target"
+      echo "Created $target from template"
+    fi
+  done
 
 # compile main and test sources (warnings as errors)
 compile:
@@ -54,13 +61,37 @@ run:
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
+  export APP_ENV=local
   sbt "dev; appServer/run"
 
+# start MySQL container (blocks until healthy)
+db-up:
+  docker compose up -d --wait mysql
+
+# stop MySQL container (preserves data volume)
+db-down:
+  docker compose stop mysql
+
+# tear down MySQL container and wipe data
+db-reset:
+  docker compose down -v mysql
+  just db-up
+
+# apply Flyway migrations to local MySQL (uses lib/common/.../db/migration)
+db-migrate:
+  flyway \
+    -url="jdbc:mysql://localhost:3306/localDatabase" \
+    -user=localUser \
+    -password=localPassword \
+    -locations="filesystem:modules/lib/common/src/main/resources/db/migration" \
+    migrate
+
 # spin up server, hit GET /customers, tear down
-smoke-test:
+smoke-test: db-up db-migrate
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
+  export APP_ENV=local
 
   log=$(mktemp)
   echo "Starting server (sbt run, backgrounded)..."

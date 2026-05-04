@@ -32,12 +32,12 @@ object Dependencies {
   )
 
   // ── DB ─────────────────────────────────────────────────────
+  // Note: Flyway runs out-of-process via the `flyway` CLI (see justfile + .sdkmanrc).
+  // No JVM-side Flyway dep — migrations are an explicit deployment step, not a boot-time effect.
   lazy val dbDep: Seq[ModuleID] = Seq(
     "io.getquill" %% "quill-jdbc"        % Versions.quill,
     "io.getquill" %% "quill-jdbc-zio"    % Versions.quill,
-    "com.mysql"    % "mysql-connector-j" % Versions.mysql,
-    "org.flywaydb" % "flyway-core"       % Versions.flyway,
-    "org.flywaydb" % "flyway-mysql"      % Versions.flyway
+    "com.mysql"    % "mysql-connector-j" % Versions.mysql
   )
 
   // ── Mapping / utility ──────────────────────────────────────

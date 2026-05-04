@@ -1,8 +1,8 @@
 package com.example.common.domain.error
 
-import enumeratum.{Enum, EnumEntry}
-
 import scala.collection.immutable
+
+import enumeratum.{Enum, EnumEntry}
 
 sealed trait ErrorCategory extends EnumEntry
 

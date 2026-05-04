@@ -1,0 +1,23 @@
+# Local-dev config for the `server` deployment unit.
+#
+# Copy to `application-local.conf` (gitignored) and edit as needed:
+#   cp application-local.conf.example application-local.conf
+#
+# `just initial-setup` does this automatically.
+#
+# Per the `config-shape` principle: each per-(app, env) file is fully
+# self-contained — no `reference.conf`, no overlay. Every key the app reads
+# must appear here. Adding a new field to a typed config means adding it to
+# every env's file.
+
+server {
+  host = "0.0.0.0"
+  port = 8080
+}
+
+database.data-source {
+  jdbc-url          = "jdbc:mysql://localhost:3306/localDatabase?useUnicode=true&serverTimezone=UTC"
+  user              = "localUser"
+  password          = "localPassword"
+  maximum-pool-size = 10
+}

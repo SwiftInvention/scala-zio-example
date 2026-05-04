@@ -1,9 +1,9 @@
 package com.example.customer.domain.error
 
+import scala.collection.immutable
+
 import com.example.common.domain.error.ErrorReason
 import enumeratum.{Enum, EnumEntry}
-
-import scala.collection.immutable
 
 sealed trait CustomerErrorReason extends EnumEntry with ErrorReason
 

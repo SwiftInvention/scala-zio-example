@@ -16,6 +16,11 @@ log
 # secrets
 .env
 
+# Local config — copy from the .example template, may contain throwaway local creds.
+# Other env files (application-dev.conf, application-prod.conf) are committed
+# because they only contain ${VAR} substitutions, no actual secrets.
+modules/**/src/main/resources/application-local.conf
+
 # AI
 .claude/settings.local.json
 CLAUDE.local.md

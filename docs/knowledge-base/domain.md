@@ -12,8 +12,6 @@ A customer of the system. Has an id, email, and display name.
 | `CustomerId` | Newtype-wrapped String id (in `lib/common/.../NewTypes`)               |
 | `CustomerTO` | Wire format for the cross-context API and HTTP routes (in `customer-api/api/to/`) |
 
-Three stub customers live in `CustomerRepoImpl` (Ada Lovelace, Alan Turing, Grace Hopper). Replaced by a real DB-backed repo in a future step.
-
 ## Operations
 
 Currently read-only.

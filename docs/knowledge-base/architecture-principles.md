@@ -53,3 +53,29 @@ See [`patterns/errors.md`](patterns/errors.md).
 One `<Entity>Converter` object per entity in `<ctx>/impl/to/converter/`. Hand-written, no chimney. Methods named `to<Entity>TO` and `to<Entity>`.
 
 See [`patterns/converters.md`](patterns/converters.md).
+
+## `pe-layout` — persistence entities live with their owning ctx, not in lib
+
+PEs (`<Entity>PE`) live in `<ctx>/impl/service/repo/pg/entity/`, alongside the repo impl that uses them. They don't leak past `impl/` — repo trait signatures use domain types only. Genuinely cross-cutting PEs (audit log, outbox) go in `lib/common/impl/repo/pg/entity/`.
+
+See [`patterns/persistence.md`](patterns/persistence.md).
+
+## `pe-converters` — PE ↔ domain mapping in dedicated converter objects
+
+Mirrors `to-converters` for the persistence boundary. One `<Entity>PEConverter` object per PE in `<ctx>/impl/service/repo/pg/converter/`. Hand-written. Methods named `to<Entity>` and `to<Entity>PE`.
+
+See [`patterns/persistence.md`](patterns/persistence.md).
+
+## `tx-default` — repo methods open transactions; app services may wrap
+
+Every repo method wraps its query in `Transactor.withTransaction`. App-service methods that orchestrate multiple repo calls may wrap the orchestration in another `withTransaction` — Quill's transaction is reentrant on a fiber-local connection, so nesting reuses the outer scope.
+
+See [`patterns/persistence.md`](patterns/persistence.md).
+
+## `config-shape` — typed config, per-(app, env) files, no defaults in code
+
+Config is loaded into PureConfig case classes that fail-fast at boot. Files are per-(app, env) and self-contained — no `reference.conf`, no overlay between envs. The active env file is selected by `APP_ENV`. Each module owns its own `XConfig` (no central root config).
+
+**No default values in code, anywhere.** Not on case-class fields, not in `getOrElse` fallbacks, not in `if/else` branches that produce a fallback value. Required fields are required; conceptually-optional fields are `Option[X]` and the consumer must branch on present/absent semantically (not substitute a baked-in value). The runtime value of any config key is fully determined by the active `.conf` file.
+
+See [`patterns/config.md`](patterns/config.md).

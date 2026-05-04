@@ -28,18 +28,18 @@ Currently exposed:
 
 ## Service wiring
 
-`ServerEnv.scala` is the single place that sees concrete impls and wires them. Layer chain for the customer context:
+`ServerEnv.scala` is the single place that sees concrete impls and wires them. Layer chain:
 
 ```
-CustomerRepoImpl.layer
-  → CustomerServiceImpl.layer
-    → CustomerAppServiceImpl.layer
-      → CustomerApiDirectImpl.layer
-        → CustomerRoutes.layer
-+ Server.default
+ConfigBootstrap.layer
+  → DataSourceConfig + ServerConfig (typed slices)
+    → DataSourceLayer → PgContext → Transactor
+      → CustomerRepoMySQLImpl → CustomerServiceImpl → CustomerAppServiceImpl
+        → CustomerApiDirectImpl → CustomerRoutes
++ zio-http Server (binding from ServerConfig)
 ```
 
-A service that exists but is never wired in `ServerEnv` is dead code.
+Config is loaded from `application-${APP_ENV}.conf` at boot (see [`patterns/config.md`](patterns/config.md)). Migrations are applied out-of-process via `just db-migrate`. A service that exists but is never wired in `ServerEnv` is dead code.
 
 ## Tech stack
 
