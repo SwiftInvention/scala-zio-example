@@ -8,6 +8,13 @@ object Dependencies {
     "dev.zio" %% "zio" % Versions.zio
   )
 
+  // ── ZIO test ────────────────────────────────────────────────
+  // Test-scope only. Goes in `commonSettings` so any module can have specs.
+  lazy val zioTestDep: Seq[ModuleID] = Seq(
+    "dev.zio" %% "zio-test"     % Versions.zioTest % Test,
+    "dev.zio" %% "zio-test-sbt" % Versions.zioTest % Test
+  )
+
   // ── HTTP ───────────────────────────────────────────────────
   lazy val zioHttpDep: Seq[ModuleID] = Seq(
     "dev.zio" %% "zio-http" % Versions.zioHttp

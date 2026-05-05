@@ -1,18 +1,26 @@
 package com.example.customer.impl.service.repo.pg.converter
 
-import com.example.customer.domain.model.Customer
+import com.example.common.domain.model.Types.AppIO
+import com.example.customer.domain.model.{Customer, CustomerName, Email}
 import com.example.customer.impl.service.repo.pg.entity.CustomerPE
 
 /** PE ↔ domain mapping for `Customer`.
   *
-  * Mirrors `CustomerConverter` (TO ↔ domain) on the persistence side.
-  * Hand-written, one method per direction. See the `pe-converters` principle.
+  * Mirrors `CustomerConverter` (TO ↔ domain) on the persistence side. Hand-written, one method per direction. See the
+  * `pe-converters` principle.
+  *
+  * `toCustomer` is effectful because the smart constructors validate. A failure here means a row in the DB violates a
+  * domain invariant — i.e. data drift or out-of-band write. The `Throwable` channel surfaces it; the boundary renders
+  * it as a 500-class problem.
   */
 object CustomerPEConverter {
 
-  def toCustomer(pe: CustomerPE): Customer =
-    Customer(pe.id, pe.email, pe.name)
+  def toCustomer(pe: CustomerPE): AppIO[Customer] =
+    for {
+      email <- Email(pe.email)
+      name  <- CustomerName(pe.name)
+    } yield Customer(id = pe.id, email = email, name = name)
 
   def toCustomerPE(d: Customer): CustomerPE =
-    CustomerPE(d.id, d.email, d.name)
+    CustomerPE(id = d.id, email = d.email.value, name = d.name.value)
 }

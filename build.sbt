@@ -14,14 +14,17 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 lazy val commonSettings = Seq(
   run / fork := true,
   tpolecatScalacOptions += ScalacOptions.other("-Ymacro-annotations"),
-  testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
+  testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
+  libraryDependencies ++= zioTestDep
 )
 
 // ── lib ─────────────────────────────────────────────────────
 
 lazy val libCommon = (project in file("modules/lib/common"))
   .settings(commonSettings)
-  .settings(libraryDependencies ++= zioCoreDep ++ zioPreludeDep ++ zioJsonDep ++ enumeratumDep ++ dbDep ++ pureconfigDep)
+  .settings(
+    libraryDependencies ++= zioCoreDep ++ zioPreludeDep ++ zioJsonDep ++ enumeratumDep ++ dbDep ++ pureconfigDep
+  )
 
 // ── ctx: customer ───────────────────────────────────────────
 

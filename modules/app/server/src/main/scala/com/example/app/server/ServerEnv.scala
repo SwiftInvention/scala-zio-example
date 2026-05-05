@@ -12,14 +12,10 @@ import com.example.customer.impl.service.repo.CustomerRepoMySQLImpl
 import zio._
 import zio.http.Server
 
-/** Layer composition for the server app. The single place that sees concrete
-  * implementations and wires them together.
+/** Layer composition for the server app. The single place that sees concrete implementations and wires them together.
   *
-  * Wiring order:
-  *   ConfigBootstrap (`EnvConfig`)
-  *     → DataSourceConfig + ServerConfig (typed slices)
-  *       → DataSourceLayer → PgContext → Transactor → CustomerRepoMySQLImpl
-  *       → zio-http Server (binding from ServerConfig)
+  * Wiring order: ConfigBootstrap (`EnvConfig`) → DataSourceConfig + ServerConfig (typed slices) → DataSourceLayer →
+  * PgContext → Transactor → CustomerRepoMySQLImpl → zio-http Server (binding from ServerConfig)
   *
   * Migrations are applied out-of-process (`just db-migrate`).
   */

@@ -8,8 +8,8 @@ import com.example.customer.domain.service.CustomerService
 import com.example.customer.domain.service.repo.CustomerRepo
 import zio._
 
-/** Pass-through to `CustomerRepo`. Domain-level logic (validation, business rules,
-  * cross-aggregate orchestration) lands here as it accrues.
+/** Pass-through to `CustomerRepo`. Domain-level logic (validation, business rules, cross-aggregate orchestration) lands
+  * here as it accrues.
   */
 final class CustomerServiceImpl(repo: CustomerRepo) extends CustomerService {
   override def find(id: CustomerId): AppIO[Option[Customer]] = repo.find(id)

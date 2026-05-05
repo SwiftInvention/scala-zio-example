@@ -6,16 +6,15 @@ import com.example.common.domain.service.Transactor
 import com.example.common.impl.repo.pg.PgContext
 import zio._
 
-/** Quill-backed `Transactor`. Opens a JDBC transaction on the underlying
-  * `DataSource` for the duration of the wrapped effect.
+/** Quill-backed `Transactor`. Opens a JDBC transaction on the underlying `DataSource` for the duration of the wrapped
+  * effect.
   *
-  * On failure of the wrapped effect: rolls back, propagates the original error.
-  * On unexpected SQL/JDBC exception: rolls back, fails with `DbError`.
+  * On failure of the wrapped effect: rolls back, propagates the original error. On unexpected SQL/JDBC exception: rolls
+  * back, fails with `DbError`.
   *
-  * Quill's `ZioJdbcContext.transaction` is reentrant — a nested call within
-  * the same fiber reuses the outer connection (no nested SQL transaction is
-  * opened), so app services can wrap repo calls without breaking the inner
-  * tx-per-method default.
+  * Quill's `ZioJdbcContext.transaction` is reentrant — a nested call within the same fiber reuses the outer connection
+  * (no nested SQL transaction is opened), so app services can wrap repo calls without breaking the inner tx-per-method
+  * default.
   */
 final class TransactorQuillImpl(ctx: PgContext) extends Transactor {
 

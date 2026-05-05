@@ -6,8 +6,7 @@ import com.example.customer.domain.model.Customer
 import com.example.customer.domain.service.CustomerService
 import zio._
 
-/** Pass-through to `CustomerService`. Future ops that orchestrate multiple
-  * domain services land here.
+/** Pass-through to `CustomerService`. Future ops that orchestrate multiple domain services land here.
   */
 final class CustomerAppServiceImpl(service: CustomerService) extends CustomerAppService {
   override def find(id: CustomerId): AppIO[Option[Customer]] = service.find(id)

@@ -2,8 +2,8 @@ package com.example.common.domain.error.api
 
 /** Self-typed onto `AppFailure` to carry an HTTP status code with a typed error.
   *
-  * Each concrete error mixes in one of the status traits below. The route boundary
-  * reads `errorCode` to set the response status.
+  * Each concrete error mixes in one of the status traits below. The route boundary reads `errorCode` to set the
+  * response status.
   */
 sealed trait HttpError {
   val errorCode: Int

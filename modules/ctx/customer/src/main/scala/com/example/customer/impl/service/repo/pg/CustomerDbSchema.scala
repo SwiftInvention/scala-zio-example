@@ -5,9 +5,8 @@ import com.example.customer.impl.service.repo.pg.entity.CustomerPE
 
 /** Quill schema declaration for the `customer` table.
   *
-  * Mixed into the repo impl so `customerTable` is in scope alongside the
-  * Quill DSL. Per-ctx by design — each ctx owns the schema mapping for tables
-  * its repos query against. See the `pe-layout` principle.
+  * Mixed into the repo impl so `customerTable` is in scope alongside the Quill DSL. Per-ctx by design — each ctx owns
+  * the schema mapping for tables its repos query against. See the `pe-layout` principle.
   */
 trait CustomerDbSchema {
   val ctx: PgContext

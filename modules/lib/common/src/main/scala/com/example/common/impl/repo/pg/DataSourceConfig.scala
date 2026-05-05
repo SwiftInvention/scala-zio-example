@@ -6,11 +6,10 @@ import pureconfig.ConfigReader
 import pureconfig.generic.semiauto.deriveReader
 import zio._
 
-/** Typed datasource config. Read from the `database.data-source` block of the
-  * active `application-<env>.conf`.
+/** Typed datasource config. Read from the `database.data-source` block of the active `application-<env>.conf`.
   *
-  * No defaults on the case class — fields are required. PureConfig fails-fast
-  * if any are missing. See the `config-shape` principle.
+  * No defaults on the case class — fields are required. PureConfig fails-fast if any are missing. See the
+  * `config-shape` principle.
   */
 final case class DataSourceConfig(
     jdbcUrl: String,

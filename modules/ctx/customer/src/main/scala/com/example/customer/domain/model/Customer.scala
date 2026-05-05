@@ -4,6 +4,6 @@ import com.example.common.domain.model.NewTypes.CustomerId
 
 final case class Customer(
     id: CustomerId,
-    email: String,
-    name: String
+    email: Email,
+    name: CustomerName
 )

@@ -5,11 +5,11 @@ import zio.prelude.Newtype
 
 /** Cross-cutting newtype definitions.
   *
-  * Each id is a `Newtype[String]` — operations on the underlying string are
-  * deliberately hidden. Use `apply` to construct, `unwrap` to escape.
+  * Each id is a `Newtype[String]` — operations on the underlying string are deliberately hidden. Use `apply` to
+  * construct, `unwrap` to escape.
   *
-  * The implicit `JsonCodec` on each newtype serializes to/from the underlying
-  * string (no wrapping object), so wire payloads stay flat.
+  * The implicit `JsonCodec` on each newtype serializes to/from the underlying string (no wrapping object), so wire
+  * payloads stay flat.
   */
 object NewTypes {
 

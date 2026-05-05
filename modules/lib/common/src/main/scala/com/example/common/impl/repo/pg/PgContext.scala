@@ -10,13 +10,11 @@ import zio._
 
 /** Quill MySQL JDBC context with cross-cutting encodings mixed in.
   *
-  * Repos take a `PgContext` and import its members (`import ctx._`) to use Quill
-  * DSL. The context owns query execution but not transaction boundaries — see
-  * `Transactor` for that.
+  * Repos take a `PgContext` and import its members (`import ctx._`) to use Quill DSL. The context owns query execution
+  * but not transaction boundaries — see `Transactor` for that.
   *
-  * Naming note: `PgContext` is a deliberate carry-over from prior projects that
-  * used Postgres. Keeping the name decouples ctx-impl code from the underlying
-  * SQL dialect — swapping to Postgres later is a one-line change here.
+  * Naming note: `PgContext` is a deliberate carry-over from prior projects that used Postgres. Keeping the name
+  * decouples ctx-impl code from the underlying SQL dialect — swapping to Postgres later is a one-line change here.
   */
 final case class PgContext(ds: DataSource) extends MysqlZioJdbcContext(SnakeCase) with NewTypeEncodings {
 

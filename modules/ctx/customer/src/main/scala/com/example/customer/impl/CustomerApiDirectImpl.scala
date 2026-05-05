@@ -8,8 +8,8 @@ import com.example.customer.app.CustomerAppService
 import com.example.customer.impl.to.converter.CustomerConverter._
 import zio._
 
-/** In-process implementation of `CustomerApi`. Maps domain entities to TOs at
-  * the context boundary and delegates the actual work to `CustomerAppService`.
+/** In-process implementation of `CustomerApi`. Maps domain entities to TOs at the context boundary and delegates the
+  * actual work to `CustomerAppService`.
   */
 final class CustomerApiDirectImpl(appService: CustomerAppService) extends CustomerApi {
   override def find(id: CustomerId): AppIO[Option[CustomerTO]] =

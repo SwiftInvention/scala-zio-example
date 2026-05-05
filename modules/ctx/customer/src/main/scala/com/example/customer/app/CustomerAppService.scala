@@ -6,9 +6,8 @@ import com.example.customer.domain.model.Customer
 
 /** Public API surface of the customer context, declared in domain terms.
   *
-  * The cross-context contract in `customer-api` (TO-typed) is implemented by a
-  * thin adapter (`CustomerApiDirectImpl`) that maps domain → TO at the
-  * boundary and delegates to this service.
+  * The cross-context contract in `customer-api` (TO-typed) is implemented by a thin adapter (`CustomerApiDirectImpl`)
+  * that maps domain → TO at the boundary and delegates to this service.
   */
 trait CustomerAppService {
   def find(id: CustomerId): AppIO[Option[Customer]]
