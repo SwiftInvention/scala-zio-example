@@ -56,6 +56,13 @@ style-fix:
   {{ init_env }}
   sbt "dev; styleFix"
 
+# auto-fix style, then verify style + tests in one sbt session — run before committing
+precommit-fix:
+  #!/usr/bin/env bash
+  set -eu
+  {{ init_env }}
+  sbt "dev; styleFix; ci; styleCheck; test"
+
 # run server in foreground (Ctrl+C to stop)
 run:
   #!/usr/bin/env bash

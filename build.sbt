@@ -12,7 +12,8 @@ ThisBuild / libraryDependencySchemes += "dev.zio" %% "zio-json" % "always"
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val commonSettings = Seq(
-  run / fork := true,
+  run / fork  := true,
+  Test / fork := true, // pins test cwd to the module's baseDirectory — required for SnapshotSpec's relative paths
   tpolecatScalacOptions += ScalacOptions.other("-Ymacro-annotations"),
   testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
   libraryDependencies ++= zioTestDep
@@ -34,7 +35,7 @@ lazy val ctxCustomerApi = (project in file("modules/ctx/customer-api"))
   .settings(libraryDependencies ++= zioCoreDep ++ zioJsonDep)
 
 lazy val ctxCustomer = (project in file("modules/ctx/customer"))
-  .dependsOn(libCommon, ctxCustomerApi)
+  .dependsOn(libCommon % "compile->compile;test->test", ctxCustomerApi)
   .settings(commonSettings)
   .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ zioJsonDep ++ dbDep)
 
