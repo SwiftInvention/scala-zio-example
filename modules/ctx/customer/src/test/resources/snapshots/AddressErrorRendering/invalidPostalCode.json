@@ -1,0 +1,6 @@
+{
+  "code" : 400,
+  "category" : "Customer",
+  "reason" : "InvalidPostalCode",
+  "description" : "Postal code must not be empty"
+}

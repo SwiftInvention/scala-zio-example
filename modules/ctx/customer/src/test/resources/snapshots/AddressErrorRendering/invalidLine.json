@@ -1,0 +1,6 @@
+{
+  "code" : 400,
+  "category" : "Customer",
+  "reason" : "InvalidAddressLine",
+  "description" : "Address line must not be empty"
+}

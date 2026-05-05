@@ -1,0 +1,6 @@
+{
+  "code" : 404,
+  "category" : "Customer",
+  "reason" : "AddressNotFound",
+  "description" : "Address with id=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee is not found"
+}
