@@ -33,3 +33,27 @@ final case class InvalidEmailError(message: String)
 final case class InvalidCustomerNameError(message: String)
     extends CustomerError(errorReason = InvalidName, message = message, cause = None)
     with HttpBadRequest
+
+final case class InvalidAddressLineError(message: String)
+    extends CustomerError(errorReason = InvalidAddressLine, message = message, cause = None)
+    with HttpBadRequest
+
+final case class InvalidCityError(message: String)
+    extends CustomerError(errorReason = InvalidCity, message = message, cause = None)
+    with HttpBadRequest
+
+final case class InvalidPostalCodeError(message: String)
+    extends CustomerError(errorReason = InvalidPostalCode, message = message, cause = None)
+    with HttpBadRequest
+
+final case class AddressNotFoundError private (message: String, cause: Option[Throwable])
+    extends CustomerError(errorReason = AddressNotFound, message = message, cause = cause)
+    with HttpNotFound
+
+object AddressNotFoundError {
+  def withId(id: com.example.common.domain.model.NewTypes.AddressId): AddressNotFoundError =
+    AddressNotFoundError(
+      message = s"Address with id=${com.example.common.domain.model.NewTypes.AddressId.unwrap(id)} is not found",
+      cause = None
+    )
+}

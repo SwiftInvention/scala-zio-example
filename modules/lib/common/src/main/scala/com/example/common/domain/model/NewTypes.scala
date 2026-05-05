@@ -18,4 +18,10 @@ object NewTypes {
       JsonCodec[String].transform(s => apply(s), t => unwrap(t))
   }
   type CustomerId = CustomerId.Type
+
+  object AddressId extends Newtype[String] {
+    implicit val codec: JsonCodec[Type] =
+      JsonCodec[String].transform(s => apply(s), t => unwrap(t))
+  }
+  type AddressId = AddressId.Type
 }

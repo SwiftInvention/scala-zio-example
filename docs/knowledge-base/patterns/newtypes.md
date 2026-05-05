@@ -66,4 +66,4 @@ Adding a new id: two lines here, no other module touches.
 
 For values with **validation rules** (an email format, a positive integer), use the smart-constructor recipe instead — that's a different mechanism with the validation baked into the construction. See [`smart-constructors.md`](smart-constructors.md).
 
-The middle case — "should I newtype this `Name`?" — is judgment. Plumcheck wraps almost everything semantic; we lean lighter. When in doubt: ids yes, things-with-validation yes (via smart constructors), things that are just named strings probably no.
+The middle case — "should I newtype this `Name`?" — is judgment. When in doubt: ids yes, things-with-validation yes (via smart constructors), things that are just named strings probably no.

@@ -4,10 +4,7 @@ import com.example.common.domain.model.Types.AppIO
 import com.example.customer.domain.model.{Customer, CustomerName, Email}
 import com.example.customer.impl.service.repo.pg.entity.CustomerPE
 
-/** PE ↔ domain mapping for `Customer`.
-  *
-  * Mirrors `CustomerConverter` (TO ↔ domain) on the persistence side. Hand-written, one method per direction. See the
-  * `pe-converters` principle.
+/** PE ↔ domain mapping for `Customer`. Hand-written, one method per direction. See the `pe-converters` principle.
   *
   * `toCustomer` is effectful because the smart constructors validate. A failure here means a row in the DB violates a
   * domain invariant — i.e. data drift or out-of-band write. The `Throwable` channel surfaces it; the boundary renders

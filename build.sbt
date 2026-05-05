@@ -53,10 +53,26 @@ lazy val appServer = (project in file("modules/app/server"))
     name := "server"
   )
 
+// ── app: it (integration tests) ─────────────────────────────
+// Single integration-test project per the sbt 1.9.0+ recommendation
+// Assumes infra is up — `just db-up && just db-migrate` runs externally before the test session.
+
+lazy val it = (project in file("modules/app/it"))
+  .dependsOn(
+    appServer,
+    libCommon   % "test->test",
+    ctxCustomer % "test->test"
+  )
+  .settings(commonSettings)
+  .settings(
+    publish / skip := true,
+    libraryDependencies ++= zioCoreDep ++ dbDep
+  )
+
 // ── root aggregator ─────────────────────────────────────────
 
 lazy val root = (project in file("."))
-  .aggregate(libCommon, ctxCustomerApi, ctxCustomer, appServer)
+  .aggregate(libCommon, ctxCustomerApi, ctxCustomer, appServer, it)
   .settings(name := "scala-zio-example")
 
 lazy val buildInfoSettings = Seq(

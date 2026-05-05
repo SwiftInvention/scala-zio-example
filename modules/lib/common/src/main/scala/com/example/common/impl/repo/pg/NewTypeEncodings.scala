@@ -1,6 +1,6 @@
 package com.example.common.impl.repo.pg
 
-import com.example.common.domain.model.NewTypes.CustomerId
+import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
 import io.getquill.MappedEncoding
 
 /** Quill `MappedEncoding`s for cross-cutting newtypes.
@@ -14,4 +14,9 @@ trait NewTypeEncodings {
     MappedEncoding[CustomerId, String](id => CustomerId.unwrap(id))
   implicit val customerIdDecoding: MappedEncoding[String, CustomerId] =
     MappedEncoding[String, CustomerId](s => CustomerId(s))
+
+  implicit val addressIdEncoding: MappedEncoding[AddressId, String] =
+    MappedEncoding[AddressId, String](id => AddressId.unwrap(id))
+  implicit val addressIdDecoding: MappedEncoding[String, AddressId] =
+    MappedEncoding[String, AddressId](s => AddressId(s))
 }

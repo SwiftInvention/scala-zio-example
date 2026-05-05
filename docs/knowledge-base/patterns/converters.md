@@ -32,8 +32,6 @@ Method names are entity-qualified: `to<Entity>TO` for domain → TO, `to<Entity>
 
 ## Object, not trait mixin
 
-DES uses `trait TOConverters` mixed into routes. We use objects.
-
 Trait mixin gives unqualified method names inside the inheritor (`toCustomerTO(c)` directly), at the cost of obscuring where each method comes from and forcing every consumer to extend the trait. Object + explicit import (`import CustomerConverter._`) gives the same brevity at use sites with none of the inheritance plumbing, and `CustomerConverter.toCustomerTO` is greppable.
 
 ## Hand-written, not chimney

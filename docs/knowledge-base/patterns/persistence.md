@@ -37,7 +37,7 @@ modules/ctx/<name>/src/main/scala/com/example/<name>/impl/service/repo/
 
 **Location:** `lib/common/src/main/resources/db/migration/`, not `app/server`. Any future deployment unit (worker, sync-job, batch) will share the same schema; pinning migrations to one unit forces every other unit to depend on it just for the SQL files.
 
-**Filename:** `V<date>.<seq>__<snake_case_name>.sql` — same as plumcheck. Lexicographic order ⇒ chronological order, and the date prefix avoids merge conflicts on the version counter.
+**Filename:** `V<date>.<seq>__<snake_case_name>.sql`. Lexicographic order ⇒ chronological order, and the date prefix avoids merge conflicts on the version counter.
 
 **Applied out-of-process.** Migrations run via the `flyway` CLI from a justfile recipe, not from the Scala app at boot:
 

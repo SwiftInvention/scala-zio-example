@@ -35,12 +35,19 @@ compile:
   {{ init_env }}
   sbt "ci; compile; Test / compile"
 
-# run tests
+# run tests (excludes integration tests — for those run `just test-it`)
 test:
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
-  sbt "dev; test"
+  sbt "dev; unitTest"
+
+# run integration tests against test MySQL (port 3307) — brings up + migrates the test container automatically
+test-it: db-reset-test db-migrate-test
+  #!/usr/bin/env bash
+  set -eu
+  {{ init_env }}
+  sbt "dev; it/test"
 
 # lint, check format (warnings as errors)
 style-check:
@@ -56,12 +63,13 @@ style-fix:
   {{ init_env }}
   sbt "dev; styleFix"
 
-# auto-fix style, then verify style + tests in one sbt session — run before committing
+# auto-fix style, then verify style + unit tests in one sbt session — run before committing
+# Excludes integration tests because they need infra; run `just test-it` separately when relevant.
 precommit-fix:
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
-  sbt "dev; styleFix; ci; styleCheck; test"
+  sbt "dev; styleFix; ci; styleCheck; unitTest"
 
 # run server in foreground (Ctrl+C to stop)
 run:
@@ -88,6 +96,24 @@ db-reset:
 db-migrate:
   flyway \
     -url="jdbc:mysql://localhost:3306/localDatabase" \
+    -user=localUser \
+    -password=localPassword \
+    -locations="filesystem:modules/lib/common/src/main/resources/db/migration" \
+    migrate
+
+# start integration-test MySQL container on port 3307 (blocks until healthy)
+db-up-test:
+  docker compose up -d --wait mysql-test
+
+# tear down test MySQL container and wipe data
+db-reset-test:
+  docker compose down -v mysql-test
+  just db-up-test
+
+# apply Flyway migrations to test MySQL (port 3307)
+db-migrate-test:
+  flyway \
+    -url="jdbc:mysql://localhost:3307/localDatabase" \
     -user=localUser \
     -password=localPassword \
     -locations="filesystem:modules/lib/common/src/main/resources/db/migration" \

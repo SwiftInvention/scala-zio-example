@@ -64,6 +64,7 @@ Things that destroy local reasoning, listed so they're recognizable:
 - **Mutation through aliased references.** Two consumers hold the same mutable collection; one mutates; the other's invariants break silently. Use immutable collections; treat case-class `copy` as the standard "modify."
 - **Ambient context not declared.** Reading a class field that's a singleton on an outer object, or a Scala 2 implicit-context-style "current user" pulled from a `DynamicVariable`. The signature doesn't admit the dependency exists.
 - **Stringly-typed conventions.** A `String` parameter that secretly means "must be valid JSON" or "must start with a slash" — the meaning lives in callers' heads, not in the type. Use a `Newtype` or a smart constructor.
+- **Comments that route the reader elsewhere.** *"Mirrors `FileB`"*, *"per the article we read"*, *"as we decided in the meeting"* — the meaning is in another place the reader has to chase. External refs are unreachable; internal refs rot silently when one side evolves. Describe what the file does in its own terms.
 - **Action at a distance via callbacks.** Listeners registered globally that fire from places the registration site can't trace. Avoid unless the dynamism is the point.
 - **Reflection and dynamic dispatch beyond declared signatures.** `cast`, `instanceOf`, `Class.forName` — what runs is decided by data, not types.
 
