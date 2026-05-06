@@ -1,6 +1,6 @@
 # Cross-Context API
 
-Each context exposes a TO-typed trait in its `-api` module. Other contexts depend on this for cross-context calls.
+Each context publishes a TO-typed trait in its `-api` module. That's the surface other contexts call into; nothing else from the ctx is reachable without going through it.
 
 ## Contents of `ctx/<name>-api/`
 
@@ -36,11 +36,7 @@ It takes `<Name>AppService` (domain-typed) as a constructor dep and maps domain 
 
 ## Where TO ↔ domain conversion lives, and why
 
-In `<Name>ApiDirectImpl`, in the ctx module. Reasons:
-
-- The mapping needs to see both sides — the domain entity (`Customer`, in the ctx module) and the TO (`CustomerTO`, in `<name>-api`).
-- The ctx module depends on `<name>-api`, not the other way around. Reversing that direction would let any module depending on `<name>-api` transitively see the ctx's internals — defeating the whole point of the split.
-- The ctx module is therefore the only place that compiles with both sides visible. DirectClient is its canonical home.
+The conversion happens in `<Name>ApiDirectImpl`, inside the ctx module. The reason is forced by the dependency graph: the mapping needs to see both sides — the domain entity (in the ctx module) and the TO (in `<name>-api`) — and the ctx module is the only place that compiles with both visible. Reversing the dependency, so `<name>-api` knew about the ctx's internals, would let every module depending on `<name>-api` transitively see those internals. That defeats the split.
 
 ## Relationship to HTTP routes
 

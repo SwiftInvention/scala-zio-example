@@ -1,25 +1,18 @@
 # Errors
 
-Typed errors flowing through the `Throwable` channel of `AppIO`. Trait signatures stay `AppIO[X]`; the value flowing on failure is a structured `AppFailure` subclass that the route boundary renders as `ErrorTO`.
+Every domain operation can fail. We want failures to be precise (the route boundary needs to know whether to return 404 or 500) and ergonomic (no method in any layer should have to enumerate its failure set in its return type). The compromise we land on: use ZIO's `Throwable` channel, but make the values flowing through it carry structure.
 
-## Layered structure
+A failure is an `AppFailure` — a `Throwable` subclass that knows its HTTP status, its category, and its reason. Trait signatures stay `AppIO[X]` (i.e. `IO[Throwable, X]`). At the route boundary, we pattern-match on `AppFailure` once and render it as `ErrorTO` on the wire.
 
-`lib/common/domain/error/`:
+## Anatomy of an error
 
-- `ErrorCategory.scala` — enumeratum of high-level categories (`Api`, `Backend`, `Customer`, …).
-- `ErrorReason.scala` — empty marker trait. Per-category reason enums extend it.
-- `AppFailure.scala` — abstract base. `extends Exception(message, cause)`, self-typed onto `HttpError`. Carries `category`, `reason`, `description`, `responseCode` (from the `HttpError` self-type).
-- `api/HttpError.scala` — sealed trait + status-code traits (`HttpNotFound = 404`, `HttpBadRequest = 400`, `HttpInternalServerError = 500`, …). Concrete errors mix one in to declare their HTTP status.
-- `api/ApiErrorReason.scala` + `api/ApiErrors.scala` — generic API errors (auth, validation, unhandled).
-- `backend/BackendErrorReason.scala` + `backend/BackendErrors.scala` — generic backend errors (DB, internal).
-- `api/ErrorTO.scala` — wire format `(code, category, reason, description)` + `from(e: AppFailure)` + zio-json codec.
+Errors are organized along three axes:
 
-Per-context (e.g. `customer/domain/error/`):
+- **Category** — broad, like `Api`, `Backend`, `Customer`. Groups failures by which part of the system raised them.
+- **Reason** — fine-grained within a category, like `NotFound` or `AlreadyExists`. Modeled per-category as an enumeratum sealed enum.
+- **HTTP status** — mixed in via a marker trait (`HttpNotFound = 404`, `HttpBadRequest = 400`, …). The status is part of the type, not a runtime property.
 
-- `<Cat>ErrorReason.scala` — sealed trait extending `EnumEntry with ErrorReason`. Cases: `NotFound`, etc.
-- `<Cat>Errors.scala` — abstract `<Cat>Error` base + concrete `final case class FooError(...)` mixing in an `Http*` trait.
-
-## Concrete error shape
+A concrete error pulls all three together:
 
 ```scala
 abstract class CustomerError(
@@ -41,22 +34,26 @@ object CustomerNotFoundError {
 }
 ```
 
-The companion smart constructor (`withId`) keeps message wording consistent at every call site.
+The `withId` companion method is a smart constructor — it keeps the message wording consistent across every site that raises this error.
+
+## Where the pieces live
+
+Concrete context-specific errors and their reason enums live with the context that raises them: `<ctx>/domain/error/` holds `<Cat>ErrorReason.scala` and `<Cat>Errors.scala`. Generic infrastructure — the `AppFailure` base, the `HttpError` status traits, the wire-format `ErrorTO`, and pre-built generic errors (`ApiErrors` for auth/validation/unhandled, `BackendErrors` for DB/internal) — lives in `lib/common/domain/error/`. So `CustomerNotFoundError` ships with the customer context, but the `HttpNotFound` trait it mixes in comes from `lib/common`. Before defining a new error, check whether one of the generic ones already says what you need.
 
 ## Failing with a typed error
 
-`AppIO[T] = IO[Throwable, T]`. Concrete errors are `Throwable` subclasses, so they flow through the same channel:
+`AppFailure` is a `Throwable`, so you fail with one the same way you'd fail with any throwable:
 
 ```scala
 override def get(id: CustomerId): AppIO[Customer] =
   repo.find(id).someOrFail(CustomerNotFoundError.withId(id))
 ```
 
-`.someOrFail(e)` on `IO[E, Option[A]]` returns `IO[E, A]`, failing with `e` when None.
+(`someOrFail` on `IO[E, Option[A]]` returns `IO[E, A]`, failing with the given value when the option is empty.)
 
 ## Rendering at the boundary
 
-Route handlers `mapError` to a `Response`. `AppFailure` becomes a structured 4xx/5xx with `ErrorTO` body; unknown `Throwable` gets wrapped in `UnhandledApiError` (500) so the wire format is uniform:
+Route handlers `mapError` once, turning anything raised during request handling into an HTTP response. An `AppFailure` becomes a structured 4xx/5xx with an `ErrorTO` body. Anything else — any `Throwable` that isn't an `AppFailure` — gets wrapped in `UnhandledApiError` (500), so the wire format stays uniform and a stray exception never leaks through raw.
 
 ```scala
 private def toErrorResponse(e: Throwable): Response = e match {
@@ -70,10 +67,12 @@ private def renderAppFailure(f: AppFailure): Response =
     .status(Status.fromInt(f.responseCode))
 ```
 
-## Why not typed error channels in the trait signatures
+## Why not put the failure types in the signature
 
-The alternative is `IO[<UnionOfErrors>, T]` with each method declaring its specific error variants. Pro: compile-time exhaustiveness over a method's failure set.
+The obvious alternative is what ZIO is built for: `IO[CustomerNotFoundError | InvalidEmailError, Customer]`, with the failure set declared in the type and exhaustiveness checked at compile time. We'd take that in a heartbeat — except we're on Scala 2.
 
-Con on Scala 2: the failure set is hand-maintained. Each layer either propagates the union manually (which requires Scala 3 union types to be ergonomic), or unifies to a wider `AppFailure` (loses information), or wraps in an ADT per layer (boilerplate).
+Without union types, the failure set in each signature has to be hand-maintained. Every layer either propagates a manually-spelled union (tedious), widens to a supertype like `AppFailure` (throwing away the precision we wanted), or wraps in a per-layer ADT (boilerplate that grows with every new error). None of those are good enough to justify the cost.
 
-We pick the `Throwable`-channel approach as a compromise: structure lives in the value, not the type. Routes pattern-match on `AppFailure` once at the boundary. Scala 3 union types would let us reintroduce a typed channel with the union built up automatically; until then, this shape.
+So the `Throwable`-channel approach: structure lives in the *value*, not the type. Routes pattern-match on `AppFailure` once at the boundary; layers below treat errors like any other effect failure. When we move to Scala 3, union types make a typed channel ergonomic enough to be worth revisiting.
+
+The cost we pay today: a method's signature doesn't tell you which errors it can raise — you have to read the body. Local reasoning takes a hit; we name that openly in [`local-reasoning.md`](local-reasoning.md).

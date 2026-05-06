@@ -2,13 +2,11 @@
 
 Type discipline at the heart of the codebase: shape domain types so the compiler proves the invariants the runtime never has to. *Make illegal states unrepresentable.*
 
-This is the umbrella for four interlocking techniques. They aren't separate ideas — they're the same thesis from four angles.
-
 ## ADTs — model exactly the legal states
 
 Sum types (sealed traits, enums) and product types (case classes) express exactly which states the domain admits. No more, no less.
 
-A user who is either authenticated or anonymous isn't a `User` with a nullable `authToken: Option[String]`; it's a sum type:
+Don't model a user who's either authenticated or anonymous as a single `User` with a nullable `authToken: Option[String]`. Use a sum type:
 
 ```scala
 sealed trait Visitor
@@ -34,9 +32,9 @@ The bug this kills: same value gets validated twice in some paths and zero times
 
 ## Correct by construction — the property you get
 
-ADTs + smart constructors + parse-don't-validate compose into one property: any function operating on a typed value can rely on the type's invariants without re-checking. Validation becomes a fact about the type, not a runtime obligation scattered through call sites.
+With ADTs, smart constructors, and parse-don't-validate in place, every function operating on a typed value trusts the type's invariants without re-checking.
 
-The cost is upfront — richer types, smarter boundaries. The payoff is that bugs about invalid states become compile errors instead of runtime mysteries.
+You pay upfront with richer types and smarter boundaries. In return, invalid-state bugs become compile errors.
 
 ## Where this shows up
 
@@ -64,7 +62,7 @@ case object Disabled extends FeatureSetting
 final case class Enabled(cfg: FeatureConfig) extends FeatureSetting
 ```
 
-The consumer must branch, and the branch labels carry meaning.
+The consumer has to branch.
 
 ## When the philosophy bends
 
@@ -74,4 +72,4 @@ Don't pay the type cost where it doesn't earn its keep:
 - Pure infrastructure where domain invariants don't apply (logger names, file paths)
 - Test fixtures, ad-hoc scripts
 
-The judgment: does the type protect something domain-meaningful? If "is this string valid?" is a real question, it deserves a type. If the string is just a string, it's just a string.
+The judgment: does the type protect something domain-meaningful? If "is this string valid?" is a real question, it deserves a type. If it isn't, leave the string alone.

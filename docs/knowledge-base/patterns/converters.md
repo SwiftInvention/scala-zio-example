@@ -1,6 +1,6 @@
 # TO Converters
 
-Conversion between domain entities and TOs lives in dedicated converter objects in the ctx's `impl/`. One file per entity, hand-written.
+Each entity has a converter object that translates between its domain form and its wire (TO) form. One file per entity, hand-written, in the ctx's `impl/`.
 
 ## Where they live
 

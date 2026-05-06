@@ -81,4 +81,4 @@ Some kinds of code legitimately need non-local mechanisms:
 - Performance-critical paths where mutation buys real wins (rare; isolate behind interfaces)
 - Pluggable extensibility where the dynamism is the feature
 
-The judgment: is this code's job to be local-reasonable, or is its job to be the seam where non-local concerns are organized? Composition roots are exempt from local reasoning because they *are* the place where the global view lives. That's their value.
+The judgment: is this code's job to be local-reasonable, or is its job to be the seam where non-local concerns are organized? Composition roots are exempt from local reasoning because they *are* the place where the global view lives.

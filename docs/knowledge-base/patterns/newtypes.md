@@ -1,12 +1,14 @@
 # Newtypes
 
-Wrapped primitives carrying semantic distinction at the type level. This doc covers the zio-prelude `Newtype` mechanism, used for **ids** — wrappers without validation. For value objects with validation rules (`Email`, `Phone`), see [`smart-constructors.md`](smart-constructors.md), which uses a different mechanism (`sealed abstract case class`).
+A `String` is a `String`, but a `CustomerId` and an `OrderId` shouldn't be interchangeable. A newtype gives a primitive a distinct type at compile time without changing what flows on the wire.
+
+This doc covers the zio-prelude `Newtype` mechanism — used for **ids**, which don't carry validation. For value objects with validation (`Email`, `Phone`), see [`smart-constructors.md`](smart-constructors.md); that uses a different mechanism (`sealed abstract case class`) for a different job.
 
 ## Why
 
-The bug: `findCustomer(orderId)` compiles when both ids are `String`. With a newtype, the swap is a compile error. The compiler does the work that comments and discipline don't.
+`findCustomer(orderId)` compiles when both ids are plain `String`. With newtypes, the swap is a compile error. Discipline and comments don't catch this; the compiler does.
 
-Wire shape stays flat: `JsonCodec[U].transform(apply, unwrap)` serializes the wrapped value as the underlying primitive — no `{"id": {"value": "c-001"}}` wrapping.
+Wire shape stays flat: `JsonCodec[U].transform(apply, unwrap)` serializes the wrapped value as the underlying primitive — no `{"id": {"value": "c-001"}}` wrapping object on the wire.
 
 ## Library
 

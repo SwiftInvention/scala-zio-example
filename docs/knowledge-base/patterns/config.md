@@ -122,7 +122,7 @@ def init(cfg: TelemetryConfig): UIO[Unit] = cfg.metricsSink match {
 }
 ```
 
-If `None` would mean "use this baked-in value", the field isn't really optional — it's required and the value belongs in the `.conf`.
+If `None` would mean "use this baked-in value", the field is required. Put the value in the `.conf`.
 
 ### Env-var substitution
 

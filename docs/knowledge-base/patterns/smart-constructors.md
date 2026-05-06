@@ -47,7 +47,7 @@ If the validation is genuinely effect-free and a simpler signature is preferable
 
 Smart constructors usually normalize as well as validate. `Email` lowercases and trims; `Phone` parses to E.164 format; a `URL` might canonicalize the trailing slash. Two inputs that should be equal land `==` after construction.
 
-The smart constructor isn't just a checker — it's a canonicalizer. Failure to normalize creates equality bugs that are silently context-dependent (the same email entered with different casing fails to deduplicate, etc.).
+Failure to normalize creates equality bugs that are silently context-dependent: the same email entered with different casing fails to deduplicate, two phone numbers in different formats won't match a uniqueness check, and so on.
 
 ## Codec / decoder boundary
 

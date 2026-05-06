@@ -1,13 +1,13 @@
 # Bounded Context
 
-A context is a pair of sbt modules:
+A bounded context is a pair of sbt modules — a public contract (`<name>-api`) and an implementation (`<name>`). Other contexts depend only on the contract; the composition root supplies the impl.
 
 ```
 ctx/<name>-api/   cross-context contract (trait + TOs)
 ctx/<name>/       implementation
 ```
 
-Other contexts depend only on `<name>-api`. The composition root provides the impl. See [`ctx-api.md`](ctx-api.md) for what lives in the `-api` module.
+See [`ctx-api.md`](ctx-api.md) for what lives in the `-api` module.
 
 ## Internal layout of `ctx/<name>/`
 
@@ -49,11 +49,11 @@ modules/ctx/<name>/src/main/scala/com/example/<name>/
 <Name>Routes.layer             takes <Name>Api, exposes Routes[Any, Response]
 ```
 
-Each link is a thin pass-through unless it has logic to add. Domain services exist to host validation and business rules. AppService exists to orchestrate multiple domain services. The chain compresses where there's nothing to add: AppService may call Repo directly when there's no domain logic worth a Service layer, and `<Name>Service` doesn't need to exist if it would be pure delegation.
+Each link is a thin pass-through unless it has something to add. Domain services host validation and business rules; AppService orchestrates them. When a link has nothing to add, drop it — AppService can call Repo directly when there's no domain logic worth a Service layer, and `<Name>Service` doesn't need to exist if it would be pure delegation.
 
-## Why `app/` is the exception (impl colocated with trait)
+## Why `app/` colocates trait and impl
 
-Service and Repo impls live in `impl/` because they may have multiple variants (Stub, MySQL, Postgres) chosen at composition time. AppService is different: it's a thin orchestrator tightly bound to its trait, almost always one impl, and the trait+impl pair is read together. Colocating them keeps that cohesion visible.
+Service and Repo impls live in `impl/` because they may have multiple variants — `Stub`, `MySQL`, `Postgres` — chosen at composition time. AppService is different: a thin orchestrator tightly bound to its trait, almost always one impl, and read as a trait+impl pair. Colocating them keeps that cohesion visible.
 
 ## Import shape
 
