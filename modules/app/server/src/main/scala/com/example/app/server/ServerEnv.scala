@@ -7,8 +7,8 @@ import com.example.common.impl.service.TransactorQuillImpl
 import com.example.customer.app.CustomerAppServiceImpl
 import com.example.customer.impl.CustomerApiDirectImpl
 import com.example.customer.impl.http.CustomerRoutes
-import com.example.customer.impl.service.CustomerServiceImpl
 import com.example.customer.impl.service.repo.{AddressRepoMySQLImpl, CustomerRepoMySQLImpl}
+import com.example.customer.impl.service.{AddressServiceImpl, CustomerServiceImpl}
 import zio._
 import zio.http.Server
 
@@ -43,6 +43,7 @@ object ServerEnv {
       CustomerRepoMySQLImpl.layer,
       AddressRepoMySQLImpl.layer,
       CustomerServiceImpl.layer,
+      AddressServiceImpl.layer,
       CustomerAppServiceImpl.layer,
       CustomerApiDirectImpl.layer,
       CustomerRoutes.layer,

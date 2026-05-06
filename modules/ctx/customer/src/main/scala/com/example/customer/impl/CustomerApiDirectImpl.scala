@@ -1,11 +1,12 @@
 package com.example.customer.impl
 
-import com.example.common.domain.model.NewTypes.CustomerId
+import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
 import com.example.common.domain.model.Types.AppIO
 import com.example.customer.api.CustomerApi
-import com.example.customer.api.to.CustomerTO
+import com.example.customer.api.to.{AddressTO, CustomerTO}
 import com.example.customer.app.CustomerAppService
-import com.example.customer.impl.to.converter.CustomerConverter._
+import com.example.customer.impl.to.converter.AddressConverter.toAddressTO
+import com.example.customer.impl.to.converter.CustomerConverter.toCustomerTO
 import zio._
 
 /** In-process implementation of `CustomerApi`. Maps domain entities to TOs at the context boundary and delegates the
@@ -20,6 +21,15 @@ final class CustomerApiDirectImpl(appService: CustomerAppService) extends Custom
 
   override def list: AppIO[List[CustomerTO]] =
     appService.list.map(_.map(toCustomerTO))
+
+  override def findAddress(id: AddressId): AppIO[Option[AddressTO]] =
+    appService.findAddress(id).map(_.map(toAddressTO))
+
+  override def getAddress(id: AddressId): AppIO[AddressTO] =
+    appService.getAddress(id).map(toAddressTO)
+
+  override def listAddressesForCustomer(customerId: CustomerId): AppIO[List[AddressTO]] =
+    appService.listAddressesForCustomer(customerId).map(_.map(toAddressTO))
 }
 
 object CustomerApiDirectImpl {

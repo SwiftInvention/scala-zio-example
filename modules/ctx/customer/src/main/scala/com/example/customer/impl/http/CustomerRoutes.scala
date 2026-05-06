@@ -2,15 +2,13 @@ package com.example.customer.impl.http
 
 import com.example.common.domain.error.AppFailure
 import com.example.common.domain.error.api.{ErrorTO, UnhandledApiError}
-import com.example.common.domain.model.NewTypes.CustomerId
+import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
 import com.example.customer.api.CustomerApi
-import com.example.customer.domain.service.repo.AddressRepo
-import com.example.customer.impl.to.converter.AddressConverter
 import zio._
 import zio.http._
 import zio.json._
 
-final class CustomerRoutes(api: CustomerApi, addressRepo: AddressRepo) {
+final class CustomerRoutes(api: CustomerApi) {
   val routes: Routes[Any, Response] =
     Routes(
       Method.GET / "customers" -> handler { (_: Request) =>
@@ -25,9 +23,15 @@ final class CustomerRoutes(api: CustomerApi, addressRepo: AddressRepo) {
           .mapError(toErrorResponse)
       },
       Method.GET / "customers" / string("id") / "addresses" -> handler { (id: String, _: Request) =>
-        addressRepo
-          .listForCustomer(CustomerId(id))
-          .map(addresses => Response.json(addresses.map(AddressConverter.toAddressTO).toJson))
+        api
+          .listAddressesForCustomer(CustomerId(id))
+          .map(addresses => Response.json(addresses.toJson))
+          .mapError(toErrorResponse)
+      },
+      Method.GET / "addresses" / string("id") -> handler { (id: String, _: Request) =>
+        api
+          .getAddress(AddressId(id))
+          .map(address => Response.json(address.toJson))
           .mapError(toErrorResponse)
       }
     )
@@ -44,6 +48,6 @@ final class CustomerRoutes(api: CustomerApi, addressRepo: AddressRepo) {
 }
 
 object CustomerRoutes {
-  val layer: URLayer[CustomerApi & AddressRepo, CustomerRoutes] =
-    ZLayer.fromFunction(new CustomerRoutes(_, _))
+  val layer: URLayer[CustomerApi, CustomerRoutes] =
+    ZLayer.fromFunction(new CustomerRoutes(_))
 }

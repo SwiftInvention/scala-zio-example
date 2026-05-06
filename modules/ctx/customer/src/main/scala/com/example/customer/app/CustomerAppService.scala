@@ -1,8 +1,8 @@
 package com.example.customer.app
 
-import com.example.common.domain.model.NewTypes.CustomerId
+import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
 import com.example.common.domain.model.Types.AppIO
-import com.example.customer.domain.model.Customer
+import com.example.customer.domain.model.{Address, Customer}
 
 /** Public API surface of the customer context, declared in domain terms.
   *
@@ -13,4 +13,8 @@ trait CustomerAppService {
   def find(id: CustomerId): AppIO[Option[Customer]]
   def get(id: CustomerId): AppIO[Customer]
   def list: AppIO[List[Customer]]
+
+  def findAddress(id: AddressId): AppIO[Option[Address]]
+  def getAddress(id: AddressId): AppIO[Address]
+  def listAddressesForCustomer(customerId: CustomerId): AppIO[List[Address]]
 }
