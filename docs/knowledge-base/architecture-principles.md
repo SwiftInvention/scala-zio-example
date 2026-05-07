@@ -62,9 +62,9 @@ Identifiers (`CustomerId`, `OrderId`) flow through the system as typed wrappers 
 
 Values with invariants (`Email`, `Phone`) construct through a smart-constructor `apply` that returns `AppIO[T]` and is the only path to a value. The triple `sealed abstract case class Foo private (...)` is load-bearing: naive `final case class Foo private (...)` leaks validation via the auto-generated `copy()`, so `abstract` is required to suppress it. Construction via `new Foo(...) {}` inside the companion. Value objects live with the owning ctx. Pattern: [`smart-constructors.md`](patterns/smart-constructors.md).
 
-## `errors` — typed errors via `AppFailure`, flowing through the `Throwable` channel
+## `errors` — typed `AppFailure` channel, no implicit Throwable leakage
 
-Trait signatures stay `AppIO` (Throwable). Concrete errors are `AppFailure` subclasses carrying `category`, `reason`, and HTTP status. The route boundary renders any `AppFailure` as a structured `ErrorTO`; unknown throwables get wrapped as `UnhandledApiError` (500). Pattern: [`errors.md`](patterns/errors.md).
+`AppIO[A]` is `IO[AppFailure, A]`. Every failure in the channel is one of *our* structured errors — concrete `AppFailure` subclasses carrying `category`, `reason`, and HTTP status. Raw JVM/JDBC `Throwable`s enter the channel only via explicit `mapError` at the boundary (see `Transactor`, `PgContext`, `DataSourceLayer`). The route boundary renders any `AppFailure` as a structured `ErrorTO` — no `Throwable` fallback needed, the type system guarantees there's nothing else to render. Pattern: [`errors.md`](patterns/errors.md).
 
 ## `config-shape` — typed config, per-(app, env) files, no defaults in code
 

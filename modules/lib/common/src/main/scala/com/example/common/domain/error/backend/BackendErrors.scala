@@ -21,3 +21,7 @@ final case class InternalServerError(message: String, cause: Option[Throwable])
 final case class DbError(message: String, cause: Option[Throwable])
     extends BackendError(errorReason = Database, message = message, cause = cause)
     with HttpInternalServerError
+
+final case class ConfigError(message: String, cause: Option[Throwable])
+    extends BackendError(errorReason = Config, message = message, cause = cause)
+    with HttpInternalServerError

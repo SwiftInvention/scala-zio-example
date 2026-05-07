@@ -1,7 +1,7 @@
 package com.example.customer.impl.http
 
 import com.example.common.domain.error.AppFailure
-import com.example.common.domain.error.api.{ErrorTO, UnhandledApiError}
+import com.example.common.domain.error.api.ErrorTO
 import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
 import com.example.customer.api.CustomerApi
 import zio._
@@ -14,33 +14,31 @@ final class CustomerRoutes(api: CustomerApi) {
       Method.GET / "customers" -> handler { (_: Request) =>
         api.list
           .map(customers => Response.json(customers.toJson))
-          .mapError(toErrorResponse)
+          .mapError(renderAppFailure)
       },
       Method.GET / "customers" / string("id") -> handler { (id: String, _: Request) =>
         api
           .get(CustomerId(id))
           .map(customer => Response.json(customer.toJson))
-          .mapError(toErrorResponse)
+          .mapError(renderAppFailure)
       },
       Method.GET / "customers" / string("id") / "addresses" -> handler { (id: String, _: Request) =>
         api
           .listAddressesForCustomer(CustomerId(id))
           .map(addresses => Response.json(addresses.toJson))
-          .mapError(toErrorResponse)
+          .mapError(renderAppFailure)
       },
       Method.GET / "addresses" / string("id") -> handler { (id: String, _: Request) =>
         api
           .getAddress(AddressId(id))
           .map(address => Response.json(address.toJson))
-          .mapError(toErrorResponse)
+          .mapError(renderAppFailure)
       }
     )
 
-  private def toErrorResponse(e: Throwable): Response = e match {
-    case f: AppFailure => renderAppFailure(f)
-    case other         => renderAppFailure(UnhandledApiError(message = other.getMessage, cause = Some(other)))
-  }
-
+  /** Every error in the channel is an `AppFailure` (compiler-enforced via `AppIO`'s error type), so the route boundary
+    * just renders — no `Throwable` fallback needed.
+    */
   private def renderAppFailure(f: AppFailure): Response =
     Response
       .json(ErrorTO.from(f).toJson)

@@ -2,6 +2,7 @@ package com.example.common.impl.repo.pg
 
 import javax.sql.DataSource
 
+import com.example.common.domain.error.AppFailure
 import com.example.common.domain.error.backend.DbError
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import zio._
@@ -12,10 +13,10 @@ import zio._
   */
 object DataSourceLayer {
 
-  val layer: ZLayer[DataSourceConfig, Throwable, DataSource] =
+  val layer: ZLayer[DataSourceConfig, AppFailure, DataSource] =
     ZLayer.scoped {
       ZIO.serviceWithZIO[DataSourceConfig] { cfg =>
-        val acquire: Task[HikariDataSource] =
+        val acquire: IO[AppFailure, HikariDataSource] =
           ZIO
             .attempt {
               val hc = new HikariConfig()

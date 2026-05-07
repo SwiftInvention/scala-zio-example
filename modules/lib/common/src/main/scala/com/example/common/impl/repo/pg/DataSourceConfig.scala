@@ -1,5 +1,6 @@
 package com.example.common.impl.repo.pg
 
+import com.example.common.domain.error.AppFailure
 import com.example.common.domain.model.EnvLabel
 import com.example.common.impl.config.ConfigBootstrap
 import pureconfig.ConfigReader
@@ -21,6 +22,6 @@ final case class DataSourceConfig(
 object DataSourceConfig {
   implicit val reader: ConfigReader[DataSourceConfig] = deriveReader[DataSourceConfig]
 
-  val layer: ZLayer[EnvLabel, Throwable, DataSourceConfig] =
+  val layer: ZLayer[EnvLabel, AppFailure, DataSourceConfig] =
     ZLayer.fromZIO(ConfigBootstrap.load[DataSourceConfig]("database.data-source"))
 }

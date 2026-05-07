@@ -7,8 +7,9 @@ import com.example.customer.impl.service.repo.pg.entity.CustomerPE
 /** PE ↔ domain mapping for `Customer`. Hand-written, one method per direction. See the `pe-converters` principle.
   *
   * `toCustomer` is effectful because the smart constructors validate. A failure here means a row in the DB violates a
-  * domain invariant — i.e. data drift or out-of-band write. The `Throwable` channel surfaces it; the boundary renders
-  * it as a 500-class problem.
+  * domain invariant — i.e. data drift or out-of-band write. The smart constructor's `AppFailure` propagates through the
+  * `AppIO` channel; the route boundary renders it as a 500-class problem (validation errors carry `HttpBadRequest`, but
+  * for read paths "DB row failed validation" is server-side data integrity, not user input).
   */
 object CustomerPEConverter {
 

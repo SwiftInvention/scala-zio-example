@@ -1,5 +1,8 @@
 package com.example.it.common
 
+import com.example.common.domain.error.api.HttpInternalServerError
+import com.example.common.domain.error.backend.BackendErrorReason
+import com.example.common.domain.error.{AppFailure, ErrorCategory}
 import com.example.common.domain.model.NewTypes.CustomerId
 import com.example.common.domain.service.Transactor
 import com.example.common.impl.repo.pg.PgContext
@@ -16,7 +19,14 @@ object TransactorSpec extends ZIOSpecDefault {
 
   private val testLayer = TestDb.freshSchemaLayer >+> CustomerRepoMySQLImpl.layer
 
-  private final case class TestFailure(message: String) extends RuntimeException(message)
+  /** Test-only `AppFailure` for simulating failures inside `withTransaction`. `withTransaction` takes an `AppIO[A]`, so
+    * any failure used inside it must be an `AppFailure`. Mixed in with `HttpInternalServerError` to satisfy the
+    * self-type — the HTTP code is irrelevant in tests, the value is never rendered.
+    */
+  private final case class TestFailure(message: String) extends AppFailure(message, None) with HttpInternalServerError {
+    val category: ErrorCategory    = ErrorCategory.Backend
+    val reason: BackendErrorReason = BackendErrorReason.InternalError
+  }
 
   override def spec: Spec[Any, Throwable] = suite("Transactor.withTransaction (MySQL)")(
     test("rolls back the insert when the transaction effect fails") {

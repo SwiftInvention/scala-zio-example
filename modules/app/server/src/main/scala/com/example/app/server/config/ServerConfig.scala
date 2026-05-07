@@ -1,5 +1,6 @@
 package com.example.app.server.config
 
+import com.example.common.domain.error.AppFailure
 import com.example.common.domain.model.EnvLabel
 import com.example.common.impl.config.ConfigBootstrap
 import pureconfig.ConfigReader
@@ -17,6 +18,6 @@ final case class ServerConfig(
 object ServerConfig {
   implicit val reader: ConfigReader[ServerConfig] = deriveReader[ServerConfig]
 
-  val layer: ZLayer[EnvLabel, Throwable, ServerConfig] =
+  val layer: ZLayer[EnvLabel, AppFailure, ServerConfig] =
     ZLayer.fromZIO(ConfigBootstrap.load[ServerConfig]("server"))
 }

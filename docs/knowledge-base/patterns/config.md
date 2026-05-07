@@ -33,7 +33,7 @@ Why an env var instead of `-Dconfig.resource`: same selector serves other purpos
 `ConfigBootstrap` also exposes a helper used by every `XConfig.layer`:
 
 ```scala
-def load[T: ConfigReader](path: String): ZIO[EnvLabel, Throwable, T]
+def load[T: ConfigReader](path: String): ZIO[EnvLabel, AppFailure, T]
 ```
 
 Each `XConfig` parses its own slice via this helper. The file is loaded inside the helper; HOCON's classloader caches it, so calling it from N different layers at boot is cheap.
@@ -61,7 +61,7 @@ final case class DataSourceConfig(jdbcUrl: String, user: String, password: Strin
 object DataSourceConfig {
   implicit val reader: ConfigReader[DataSourceConfig] = deriveReader[DataSourceConfig]
 
-  val layer: ZLayer[EnvLabel, Throwable, DataSourceConfig] =
+  val layer: ZLayer[EnvLabel, AppFailure, DataSourceConfig] =
     ZLayer.fromZIO(ConfigBootstrap.load[DataSourceConfig]("database.data-source"))
 }
 ```
@@ -71,7 +71,7 @@ object DataSourceConfig {
 ## Layer chain
 
 ```
-ConfigBootstrap.layer        : TaskLayer[EnvLabel]                     // parses APP_ENV
+ConfigBootstrap.layer        : ZLayer[Any, AppFailure, EnvLabel]       // parses APP_ENV
   ↓
 DataSourceConfig.layer       : ZLayer[EnvLabel, _, DataSourceConfig]   // ConfigBootstrap.load(...)
 ServerConfig.layer           : ZLayer[EnvLabel, _, ServerConfig]       // ConfigBootstrap.load(...)

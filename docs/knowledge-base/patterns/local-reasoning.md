@@ -45,7 +45,7 @@ When you find yourself adding action-at-a-distance, one of these is being violat
 
 Honest acknowledgements — these are real costs we pay, deliberately or not:
 
-**The `Throwable` channel.** `AppIO[A] = IO[Throwable, A]` doesn't tell you what failures are possible. To know what a method can fail with, you have to read the body. We chose this in `errors` (Scala 2 union types aren't ergonomic) — the cost is that exhaustive failure handling at the boundary is informal rather than compiler-checked.
+**Per-method failure precision.** `AppIO[A] = IO[AppFailure, A]` tells you the failure is one of our structured errors — not an arbitrary `Throwable` — which is enforceable in Scala 2. What it doesn't tell you is *which* `AppFailure` subclass: the channel widens to the family root. To know whether `CustomerService.get` can fail with `CustomerNotFoundError` vs `DbError`, you have to read the body. Scala 3 union types would close this gap; until then, the family-level bound is what we get.
 
 **Trait contracts not fully captured by types.** Some of our traits have semantics (laws, ordering, what counts as nesting) that types don't express. `Transactor.withTransaction[A](io: AppIO[A]): AppIO[A]` doesn't tell you that nested calls reuse the outer connection — that's documented but not encoded. A reader has to descend or know the convention. The fix when it matters: tighten the docstring to be the contract; or richer types that encode more of the law.
 

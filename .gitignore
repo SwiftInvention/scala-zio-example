@@ -13,6 +13,9 @@ src_managed/
 target/
 log
 
+# local data
+local-data
+
 # secrets
 .env
 
