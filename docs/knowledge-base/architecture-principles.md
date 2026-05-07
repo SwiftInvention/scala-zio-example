@@ -64,7 +64,7 @@ Values with invariants (`Email`, `Phone`) construct through a smart-constructor 
 
 ## `errors` — typed `AppFailure` channel, no implicit Throwable leakage
 
-`AppIO[A]` is `IO[AppFailure, A]`. Every failure in the channel is one of *our* structured errors — concrete `AppFailure` subclasses carrying `category`, `reason`, and HTTP status. Raw JVM/JDBC `Throwable`s enter the channel only via explicit `mapError` at the boundary (see `Transactor`, `PgContext`, `DataSourceLayer`). The route boundary renders any `AppFailure` as a structured `ErrorTO` — no `Throwable` fallback needed, the type system guarantees there's nothing else to render. Pattern: [`errors.md`](patterns/errors.md).
+`AppIO[A]` is `IO[AppFailure, A]`. Every failure in the channel is a concrete `AppFailure` subclass carrying `category`, `reason`, and HTTP status. Raw JVM/JDBC `Throwable`s enter only via explicit `mapError` at the boundary (`Transactor`, `PgContext`, `DataSourceLayer`). The route renders any `AppFailure` as a structured `ErrorTO` — no `Throwable` fallback. Pattern: [`errors.md`](patterns/errors.md).
 
 ## `config-shape` — typed config, per-(app, env) files, no defaults in code
 

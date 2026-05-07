@@ -1,0 +1,20 @@
+# Local-dev config for the `dev` deployment unit (one-off scripts, scratchpad experiments).
+#
+# Copy to `application-local.conf` (gitignored) and edit as needed:
+#   cp application-local.conf.example application-local.conf
+#
+# `just initial-setup` does this automatically.
+#
+# `appDev` is local-only by build (`publish / skip := true`) — it never runs in a deployed environment, so this is the
+# only env-suffixed file it ships with. There is no `application-dev.conf` or `application-prod.conf` here, by design.
+#
+# Per the `config-shape` principle: each per-(app, env) file is self-contained — no `reference.conf`, no overlay. The
+# datasource block here is intentionally a duplicate of the one in `appServer/.../application-local.conf` — they're
+# meant to point at the same local MySQL, but each app owns its own config slice.
+
+database.data-source {
+  jdbc-url          = "jdbc:mysql://localhost:3306/localDatabase?useUnicode=true&serverTimezone=UTC"
+  user              = "localUser"
+  password          = "localPassword"
+  maximum-pool-size = 5
+}

@@ -125,11 +125,11 @@ The inner `withTransaction` calls in the repo methods become no-ops (Quill's `tr
 
 The chain is:
 
-1. Quill catches the JDBC `SqlException`, surfaces it on its native `Throwable` channel.
-2. `PgContext.runQuery` wraps that as `DbError` (an `AppFailure`) via `mapError`, so per-query JDBC failures enter our typed channel at this point.
-3. Repo impls may `catchSome` on domain-meaningful constraint violations (unique-key → `AlreadyExistsError`, FK → some custom error) before the result reaches the service. Optional, only where it adds value.
-4. `Transactor.withTransaction` runs Quill's `transaction`, which widens back to `Throwable` (it can re-raise driver `SQLException`s itself). A total `mapError` narrows again: `AppFailure` passes through unchanged, `SQLException` becomes `DbError`, anything else becomes `InternalServerError` (unreachable in practice but the match must be total).
-5. Route boundary renders `AppFailure` as `ErrorTO`.
+1. Quill surfaces JDBC `SQLException` on its native `Throwable` channel.
+2. `PgContext.runQuery` wraps it as `DbError` via `mapError` — per-query JDBC failures enter the `AppFailure` channel here.
+3. Repo impls may `catchSome` on domain-meaningful constraint violations (unique-key → `AlreadyExistsError`, FK → custom error) before the result reaches the service. Optional, where it adds value.
+4. `Transactor.withTransaction` runs Quill's `transaction`, which widens back to `Throwable`. A total `mapError` narrows: `AppFailure` passes through, `SQLException` becomes `DbError`, anything else becomes `InternalServerError`.
+5. Route renders `AppFailure` as `ErrorTO`.
 
 ## Wiring
 

@@ -79,6 +79,22 @@ run:
   export APP_ENV=local
   sbt "dev; appServer/run"
 
+# run a development scratchpad (modules/app/dev/.../Experiment.scala) against local MySQL
+experiment:
+  #!/usr/bin/env bash
+  set -eu
+  {{ init_env }}
+  export APP_ENV=local
+  sbt "dev; appDev/run"
+
+# seed the example customers (Ada, Alan, Grace) into local MySQL — used by smoke-test
+seed-example:
+  #!/usr/bin/env bash
+  set -eu
+  {{ init_env }}
+  export APP_ENV=local
+  sbt "dev; appDev/runMain com.example.app.dev.actions.SeedExampleCustomers"
+
 # start MySQL container (blocks until healthy)
 db-up:
   docker compose up -d --wait mysql
@@ -120,7 +136,7 @@ db-migrate-test:
     migrate
 
 # spin up server, hit GET /customers, tear down
-smoke-test: db-up db-migrate
+smoke-test: db-up db-migrate seed-example
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}

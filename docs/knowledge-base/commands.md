@@ -29,11 +29,20 @@ just style-check     # verify only, fail on issues
 just db-up           # start MySQL container (blocks until healthy)
 just db-migrate      # apply Flyway migrations
 just run             # foreground server (Ctrl+C to stop); sets APP_ENV=local
-just smoke-test      # db-up + db-migrate + HTTP smoke (success path + typed-error path)
+just smoke-test      # db-up + db-migrate + seed-example + HTTP smoke (success path + typed-error path)
 just db-reset        # wipe data volume and restart
 ```
 
 The `run` and `smoke-test` recipes export `APP_ENV=local` so the server loads `application-local.conf`. Other envs need `APP_ENV` set explicitly.
+
+## Dev tools (`appDev`)
+
+```sh
+just experiment      # run modules/app/dev/.../Experiment.scala against local MySQL
+just seed-example    # run SeedExampleCustomers — inserts Ada/Alan/Grace into the customer table
+```
+
+Both export `APP_ENV=local`. `appDev` is local-only by build (see [`patterns/dev-tools.md`](patterns/dev-tools.md)) — no `APP_ENV=dev|prod` variants exist for it.
 
 ## Setup
 

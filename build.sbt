@@ -53,6 +53,22 @@ lazy val appServer = (project in file("modules/app/server"))
     name := "server"
   )
 
+// ── app: dev (local-only dev tools) ─────────────────────────
+// Local-only by build: `publish / skip := true` keeps the artifact off any deployment.
+// Carries one-off scripts (data seeding, scratch experiments) that share the production
+// layer stack but never need to run in a deployed environment.
+
+lazy val appDev = (project in file("modules/app/dev"))
+  .dependsOn(libCommon, ctxCustomerApi, ctxCustomer)
+  .settings(commonSettings)
+  .settings(
+    publish / skip      := true,
+    Compile / mainClass := Some("com.example.app.dev.Experiment"),
+    libraryDependencies ++= zioCoreDep ++ pureconfigDep ++ loggingDep ++ dbDep,
+    excludeDependencies ++= logExcludeDep,
+    name := "dev"
+  )
+
 // ── app: it (integration tests) ─────────────────────────────
 // Single integration-test project per the sbt 1.9.0+ recommendation
 // Assumes infra is up — `just db-up && just db-migrate` runs externally before the test session.
@@ -72,7 +88,7 @@ lazy val it = (project in file("modules/app/it"))
 // ── root aggregator ─────────────────────────────────────────
 
 lazy val root = (project in file("."))
-  .aggregate(libCommon, ctxCustomerApi, ctxCustomer, appServer, it)
+  .aggregate(libCommon, ctxCustomerApi, ctxCustomer, appServer, appDev, it)
   .settings(name := "scala-zio-example")
 
 lazy val buildInfoSettings = Seq(

@@ -8,12 +8,13 @@ The example domain is intentionally thin (one context, one entity) so the patter
 
 ## Modules
 
-| Folder                     | sbt ID           | Role                                            |
-| -------------------------- | ---------------- | ----------------------------------------------- |
-| `modules/lib/common`       | `libCommon`      | shared infrastructure (effects, errors, IDs, config, persistence) |
-| `modules/ctx/customer-api` | `ctxCustomerApi` | customer cross-context contract (trait + TOs)   |
-| `modules/ctx/customer`     | `ctxCustomer`    | customer impl (domain, app, infra)              |
-| `modules/app/server`       | `appServer`      | deployment unit — composition root + entrypoint |
+| Folder                     | sbt ID           | Role                                                                |
+| -------------------------- | ---------------- | ------------------------------------------------------------------- |
+| `modules/lib/common`       | `libCommon`      | shared infrastructure (effects, errors, IDs, config, persistence)   |
+| `modules/ctx/customer-api` | `ctxCustomerApi` | customer cross-context contract (trait + TOs)                       |
+| `modules/ctx/customer`     | `ctxCustomer`    | customer impl (domain, app, infra)                                  |
+| `modules/app/server`       | `appServer`      | deployment unit — composition root + entrypoint                     |
+| `modules/app/dev`          | `appDev`         | local-only dev tools — `Experiment` scratchpad + one-off `actions/` |
 
 Module layout: [`patterns/module-layout.md`](patterns/module-layout.md). Cross-module deps: [`patterns/build-deps.md`](patterns/build-deps.md).
 
@@ -31,6 +32,10 @@ Currently exposed:
 `ServerEnv.scala` is the composition root — the only place that sees concrete impls. Four tiers: config (`ConfigBootstrap` → typed `XConfig`s) → infra (datasource, transactor) → ctx (repo → service → app-service → api → routes) → http server. Adding a new ctx adds a leg to the third tier.
 
 Config loaded from `application-${APP_ENV}.conf` at boot ([`patterns/config.md`](patterns/config.md)). Migrations apply out-of-process via `just db-migrate`. A service that exists but is never wired is dead code.
+
+## Dev tools
+
+`appDev` is a separate deployment unit for local-only one-off scripts: data seeding, scratchpad experiments, debugging actions. Each entrypoint (`Experiment.scala`, every action under `actions/`) is its own `ZIOAppDefault` with its own `provide(...)` block — no shared composition root. `SeedExampleCustomers` is the starter action; it seeds the example customers used by the smoke test. Local-only by build: `publish / skip := true` keeps the artifact off any deployment. Pattern: [`patterns/dev-tools.md`](patterns/dev-tools.md).
 
 ## Tech stack
 
