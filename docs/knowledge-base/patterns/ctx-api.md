@@ -11,7 +11,7 @@ modules/ctx/<name>-api/src/main/scala/com/example/<name>/api/
     └── <Name>TO.scala
 ```
 
-That's it. No errors yet (deferred to a future error-refinement pass), no domain logic.
+That's it. No errors, no domain logic.
 
 ## The DirectClient impl
 

@@ -1,4 +1,4 @@
-package com.example.common.impl.repo.pg
+package com.example.common.impl.repo.sql
 
 import com.example.common.domain.error.AppFailure
 import com.example.common.domain.model.EnvLabel

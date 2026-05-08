@@ -15,6 +15,16 @@ server {
   port = 8080
 }
 
+logging {
+  format = "pretty"
+  level  = "debug"
+}
+
+otel {
+  service-name  = "scala-zio-example"
+  otlp-endpoint = "http://localhost:4318/v1/traces"
+}
+
 database.data-source {
   jdbc-url          = "jdbc:mysql://localhost:3306/localDatabase?useUnicode=true&serverTimezone=UTC"
   user              = "localUser"

@@ -1,4 +1,4 @@
-package com.example.common.impl.repo.pg
+package com.example.common.impl.repo.sql
 
 import javax.sql.DataSource
 

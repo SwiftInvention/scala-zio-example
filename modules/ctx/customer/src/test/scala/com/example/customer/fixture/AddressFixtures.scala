@@ -2,8 +2,8 @@ package com.example.customer.fixture
 
 import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
 import com.example.common.domain.model.Types.AppIO
-import com.example.common.impl.repo.pg.PgContext
-import com.example.customer.impl.service.repo.pg.entity.AddressPE
+import com.example.common.impl.repo.sql.SqlContext
+import com.example.customer.impl.service.repo.sql.entity.AddressPE
 import zio._
 
 /** Typed test fixtures for `Address`.
@@ -47,12 +47,12 @@ object AddressFixtures {
     postalCode = "00000"
   )
 
-  def seed(ctx: PgContext, pe: AddressPE): AppIO[Unit] = {
+  def seed(ctx: SqlContext, pe: AddressPE): AppIO[Unit] = {
     import ctx._
     val q = quote(querySchema[AddressPE]("address").insertValue(lift(pe)))
     ctx.runQuery(run(q)).unit
   }
 
-  def seedAll(ctx: PgContext, pes: List[AddressPE]): AppIO[Unit] =
+  def seedAll(ctx: SqlContext, pes: List[AddressPE]): AppIO[Unit] =
     ZIO.foreachDiscard(pes)(pe => seed(ctx = ctx, pe = pe))
 }

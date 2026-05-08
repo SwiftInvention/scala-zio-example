@@ -6,11 +6,9 @@ import zio._
 
 /** Validated email address.
   *
-  * Smart constructor canonicalizes (trim + lowercase) and validates against a pragmatic regex. The triple `sealed
-  * abstract case class ... private` is load-bearing — see the `smart-constructors` pattern doc for why each keyword is
-  * required (in short: `abstract` suppresses case-class auto-`copy()`, which would otherwise leak validation).
-  *
-  * Construction goes through `apply`, which is the only public path to a value.
+  * Smart constructor canonicalizes (trim + lowercase) and validates against a pragmatic regex. Construction goes
+  * through `apply`, which is the only public path to a value. See [`smart-constructors.md`](smart-constructors.md) for
+  * why the class declaration uses `sealed abstract case class ... private`.
   */
 sealed abstract case class Email private (value: String)
 

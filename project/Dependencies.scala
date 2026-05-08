@@ -75,6 +75,16 @@ object Dependencies {
     "org.slf4j" % "jul-to-slf4j"             % Versions.slf4j
   )
 
+  // ── Tracing ────────────────────────────────────────────────
+  // zio-telemetry's OpenTelemetry binding + the OTel Java SDK and OTLP HTTP exporter. semconv carries the standard
+  // attribute keys (service.name, etc.) and ships under its own groupId since 1.x.
+  lazy val telemetryDep: Seq[ModuleID] = Seq(
+    "dev.zio"                 %% "zio-opentelemetry"           % Versions.zioTelemetry,
+    "io.opentelemetry"         % "opentelemetry-sdk"           % Versions.openTelemetry,
+    "io.opentelemetry"         % "opentelemetry-exporter-otlp" % Versions.openTelemetry,
+    "io.opentelemetry.semconv" % "opentelemetry-semconv"       % Versions.openTelemetrySemconv
+  )
+
   lazy val logExcludeDep: Seq[InclExclRule] = Seq(
     ExclusionRule("commons-logging", "commons-logging"),
     ExclusionRule("log4j", "log4j")

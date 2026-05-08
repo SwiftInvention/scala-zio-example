@@ -20,7 +20,7 @@ Code that needs to handle a `Visitor` pattern-matches on it; the compiler enforc
 
 ## Smart constructors — enforce invariants at construction
 
-If a value has invariants (an `Email` matches a format; a `PositiveInt` is positive), the constructor enforces them — and is the only place that can fail. The canonical Scala recipe is `sealed abstract case class Foo private (...)` with anonymous-subclass construction inside the companion; the keyword triple is load-bearing because the obvious `final case class Foo private (...)` leaks via the auto-generated `copy()`. Full recipe, gotchas, and the codec-boundary detail: [`smart-constructors.md`](smart-constructors.md).
+If a value has invariants (an `Email` matches a format; a `PositiveInt` is positive), the constructor enforces them — and is the only place that can fail. The canonical Scala recipe is `sealed abstract case class Foo private (...)` with anonymous-subclass construction inside the companion. The naive `final case class Foo private (...)` leaks via the auto-generated `copy()`; the `abstract` keyword neutralizes that. Full recipe, gotchas, and the codec-boundary detail: [`smart-constructors.md`](smart-constructors.md).
 
 ## Parse, don't validate
 
@@ -29,6 +29,14 @@ At the boundary between untyped input (HTTP body, DB row, config file, env var) 
 The boundary is the converter (`<Entity>Converter` for HTTP, `<Entity>PEConverter` for persistence, `XConfig` parsers for config). What flows out is typed and trusted; what flows in is untyped and skeptical.
 
 The bug this kills: same value gets validated twice in some paths and zero times in others, and the type system can't tell which.
+
+## Domain types stay at the domain
+
+Smart-constructed values (`Email`, `CustomerName`, `PostalCode`) and other domain types stay at the domain layer. They don't propagate outward through the converter.
+
+A `CustomerTO` carries `email: String`, not `email: Email` — the wire format has its own constraints (JSON serialization stability, schema evolution, the set of fields exposed vs. the set modeled in the domain) and isn't a thinner `Customer`. Same for `CustomerPE` on the persistence side: it matches the schema's column shape, which may diverge from the domain (denormalized fields, computed columns, audit metadata). The converters project domain values out and parse boundary values in; pulling domain types outward across either boundary creates conflicts the boundary's constraints can't accommodate.
+
+Per-value exceptions to the outbound rule are deliberate. `CustomerId` (a `Newtype`) travels as a flat `String` over the wire via its codec but stays a typed value in Scala — worth it because typed ids prevent argument swaps at every call site that holds one. `Email`, by contrast, is internal-only: the smart-constructed type flattens to `String` outbound, since the wire receiver typically just renders it. The judgment is per-value: does the consumer at the boundary actually benefit from the type, or is the boundary just rendering / storing it?
 
 ## Correct by construction — the property you get
 

@@ -2,7 +2,8 @@ package com.example.it.http
 
 import com.example.common.domain.error.api.ErrorTO
 import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
-import com.example.common.impl.repo.pg.PgContext
+import com.example.common.impl.repo.sql.SqlContext
+import com.example.common.test.IntegrationSpec
 import com.example.customer.api.to.AddressTO
 import com.example.customer.fixture.{AddressFixtures, CustomerFixtures}
 import zio._
@@ -11,13 +12,13 @@ import zio.test.Assertion._
 import zio.test._
 
 /** End-to-end tests for the address HTTP routes. */
-object AddressHttpSpec extends ZIOSpecDefault {
+object AddressHttpSpec extends IntegrationSpec {
 
   override def spec: Spec[Any, Throwable] = suite("Address HTTP routes")(
     suite("GET /customers/:id/addresses")(
       test("returns all addresses for a customer") {
         (for {
-          ctx <- ZIO.service[PgContext]
+          ctx <- ZIO.service[SqlContext]
           _   <- CustomerFixtures.seed(ctx = ctx, pe = CustomerFixtures.adaPE)
           _ <- AddressFixtures.seedAll(
             ctx = ctx,
@@ -34,7 +35,7 @@ object AddressHttpSpec extends ZIOSpecDefault {
       },
       test("returns an empty array for a customer with no addresses") {
         (for {
-          ctx <- ZIO.service[PgContext]
+          ctx <- ZIO.service[SqlContext]
           _   <- CustomerFixtures.seed(ctx = ctx, pe = CustomerFixtures.adaPE)
           ts  <- ZIO.service[TestServer]
           r <- ts.getJson[List[AddressTO]](
@@ -46,7 +47,7 @@ object AddressHttpSpec extends ZIOSpecDefault {
     suite("GET /addresses/:id")(
       test("returns the address when present") {
         (for {
-          ctx <- ZIO.service[PgContext]
+          ctx <- ZIO.service[SqlContext]
           _   <- CustomerFixtures.seed(ctx = ctx, pe = CustomerFixtures.adaPE)
           _   <- AddressFixtures.seed(ctx = ctx, pe = AddressFixtures.adaHomePE)
           ts  <- ZIO.service[TestServer]

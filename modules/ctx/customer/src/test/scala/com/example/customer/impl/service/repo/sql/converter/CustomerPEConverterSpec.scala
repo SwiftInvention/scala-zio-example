@@ -1,4 +1,4 @@
-package com.example.customer.impl.service.repo.pg.converter
+package com.example.customer.impl.service.repo.sql.converter
 
 import com.example.customer.domain.model.CustomerGen
 import zio.test.Assertion._

@@ -5,8 +5,8 @@ import com.example.common.domain.error.backend.BackendErrorReason
 import com.example.common.domain.error.{AppFailure, ErrorCategory}
 import com.example.common.domain.model.NewTypes.CustomerId
 import com.example.common.domain.service.Transactor
-import com.example.common.impl.repo.pg.PgContext
-import com.example.common.test.TestDb
+import com.example.common.impl.repo.sql.SqlContext
+import com.example.common.test.{IntegrationSpec, TestDb}
 import com.example.customer.domain.service.repo.CustomerRepo
 import com.example.customer.fixture.CustomerFixtures
 import com.example.customer.impl.service.repo.CustomerRepoMySQLImpl
@@ -15,7 +15,7 @@ import zio.test.Assertion._
 import zio.test._
 
 /** Integration tests for `Transactor.withTransaction` against a real MySQL. */
-object TransactorSpec extends ZIOSpecDefault {
+object TransactorSpec extends IntegrationSpec {
 
   private val testLayer = TestDb.freshSchemaLayer >+> CustomerRepoMySQLImpl.layer
 
@@ -32,7 +32,7 @@ object TransactorSpec extends ZIOSpecDefault {
     test("rolls back the insert when the transaction effect fails") {
       (for {
         transactor <- ZIO.service[Transactor]
-        ctx        <- ZIO.service[PgContext]
+        ctx        <- ZIO.service[SqlContext]
         result <- transactor
           .withTransaction(CustomerFixtures.seed(ctx, CustomerFixtures.adaPE) *> ZIO.fail(TestFailure("simulated")))
           .either
@@ -42,7 +42,7 @@ object TransactorSpec extends ZIOSpecDefault {
     test("commits the insert when the transaction effect succeeds") {
       (for {
         transactor <- ZIO.service[Transactor]
-        ctx        <- ZIO.service[PgContext]
+        ctx        <- ZIO.service[SqlContext]
         _          <- transactor.withTransaction(CustomerFixtures.seed(ctx, CustomerFixtures.adaPE))
         rows       <- ZIO.serviceWithZIO[CustomerRepo](_.list)
       } yield assert(rows.map(_.id))(equalTo(List(CustomerFixtures.adaPE.id)))).provide(testLayer)
@@ -50,7 +50,7 @@ object TransactorSpec extends ZIOSpecDefault {
     test("rolls back ALL inserts when the transaction effect fails after multiple writes") {
       (for {
         transactor <- ZIO.service[Transactor]
-        ctx        <- ZIO.service[PgContext]
+        ctx        <- ZIO.service[SqlContext]
         result <- transactor
           .withTransaction(
             CustomerFixtures.seed(ctx, CustomerFixtures.adaPE) *>
@@ -65,7 +65,7 @@ object TransactorSpec extends ZIOSpecDefault {
       test("inner failure NOT caught — outer fails, BOTH inner and outer writes are rolled back") {
         (for {
           transactor <- ZIO.service[Transactor]
-          ctx        <- ZIO.service[PgContext]
+          ctx        <- ZIO.service[SqlContext]
           result <- transactor
             .withTransaction(
               CustomerFixtures.seed(ctx, CustomerFixtures.adaPE) *>
@@ -82,7 +82,7 @@ object TransactorSpec extends ZIOSpecDefault {
       ) {
         (for {
           transactor <- ZIO.service[Transactor]
-          ctx        <- ZIO.service[PgContext]
+          ctx        <- ZIO.service[SqlContext]
           _ <- transactor.withTransaction(
             CustomerFixtures.seed(ctx, CustomerFixtures.adaPE) *>
               transactor

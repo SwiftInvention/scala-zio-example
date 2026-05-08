@@ -1,7 +1,7 @@
-package com.example.customer.impl.service.repo.pg
+package com.example.customer.impl.service.repo.sql
 
-import com.example.common.impl.repo.pg.PgContext
-import com.example.customer.impl.service.repo.pg.entity.CustomerPE
+import com.example.common.impl.repo.sql.SqlContext
+import com.example.customer.impl.service.repo.sql.entity.CustomerPE
 
 /** Quill schema declaration for the `customer` table.
   *
@@ -9,7 +9,7 @@ import com.example.customer.impl.service.repo.pg.entity.CustomerPE
   * the schema mapping for tables its repos query against. See the `pe-layout` principle.
   */
 trait CustomerDbSchema {
-  val ctx: PgContext
+  val ctx: SqlContext
   import ctx._
 
   // Table name `customer` is derived by SnakeCase from the type name `CustomerPE`.

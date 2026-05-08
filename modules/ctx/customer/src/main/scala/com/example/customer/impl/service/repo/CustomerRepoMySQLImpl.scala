@@ -3,11 +3,11 @@ package com.example.customer.impl.service.repo
 import com.example.common.domain.model.NewTypes.CustomerId
 import com.example.common.domain.model.Types.AppIO
 import com.example.common.domain.service.Transactor
-import com.example.common.impl.repo.pg.PgContext
+import com.example.common.impl.repo.sql.SqlContext
 import com.example.customer.domain.model.Customer
 import com.example.customer.domain.service.repo.CustomerRepo
-import com.example.customer.impl.service.repo.pg.CustomerDbSchema
-import com.example.customer.impl.service.repo.pg.converter.CustomerPEConverter
+import com.example.customer.impl.service.repo.sql.CustomerDbSchema
+import com.example.customer.impl.service.repo.sql.converter.CustomerPEConverter
 import zio._
 
 /** MySQL-backed `CustomerRepo`.
@@ -17,7 +17,7 @@ import zio._
   *
   * Schema is assumed to exist — migrations run out-of-process via `just db-migrate`.
   */
-final class CustomerRepoMySQLImpl(val ctx: PgContext, transactor: Transactor)
+final class CustomerRepoMySQLImpl(val ctx: SqlContext, transactor: Transactor)
     extends CustomerRepo
     with CustomerDbSchema {
   import ctx._
@@ -41,6 +41,6 @@ final class CustomerRepoMySQLImpl(val ctx: PgContext, transactor: Transactor)
 }
 
 object CustomerRepoMySQLImpl {
-  val layer: URLayer[PgContext & Transactor, CustomerRepo] =
+  val layer: URLayer[SqlContext & Transactor, CustomerRepo] =
     ZLayer.fromFunction(new CustomerRepoMySQLImpl(_, _))
 }

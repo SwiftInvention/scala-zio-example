@@ -17,19 +17,24 @@ import zio._
   */
 object ConfigBootstrap {
 
+  /** Read APP_ENV and parse to `EnvLabel`, silently. Used by `AppLogger.bootstrap`, which runs before any logger is
+    * installed and so must not produce log output. Fails fast if unset/invalid.
+    */
+  val readEnvLabel: IO[AppFailure, EnvLabel] = for {
+    raw <- ZIO
+      .fromOption(sys.env.get("APP_ENV"))
+      .orElseFail(ConfigError(s"APP_ENV is not set; expected one of $validNames", cause = None))
+    label <- ZIO
+      .fromOption(EnvLabel.withNameInsensitiveOption(raw))
+      .orElseFail(ConfigError(s"APP_ENV='$raw' is not a valid EnvLabel: $validNames", cause = None))
+  } yield label
+
   /** Bootstrap layer — produces just the parsed `EnvLabel`. Downstream `XConfig.layer`s depend on `EnvLabel` and call
-    * `ConfigBootstrap.load` to parse their own slice.
+    * `ConfigBootstrap.load` to parse their own slice. Logs the resolved label at INFO; by the time this runs in the
+    * main layer chain, the configured logger is already installed via `AppLogger.bootstrap`.
     */
   val layer: ZLayer[Any, AppFailure, EnvLabel] = ZLayer.fromZIO {
-    for {
-      raw <- ZIO
-        .fromOption(sys.env.get("APP_ENV"))
-        .orElseFail(ConfigError(s"APP_ENV is not set; expected one of $validNames", cause = None))
-      label <- ZIO
-        .fromOption(EnvLabel.withNameInsensitiveOption(raw))
-        .orElseFail(ConfigError(s"APP_ENV='$raw' is not a valid EnvLabel: $validNames", cause = None))
-      _ <- ZIO.logInfo(s"APP_ENV resolved: ${label.entryName}")
-    } yield label
+    readEnvLabel.tap(label => ZIO.logInfo(s"APP_ENV resolved: ${label.entryName}"))
   }
 
   /** Load and parse a typed config slice from `application-<label>.conf`.

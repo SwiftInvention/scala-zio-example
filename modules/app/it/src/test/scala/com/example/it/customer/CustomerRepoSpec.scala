@@ -1,8 +1,8 @@
 package com.example.it.customer
 
 import com.example.common.domain.model.NewTypes.CustomerId
-import com.example.common.impl.repo.pg.PgContext
-import com.example.common.test.TestDb
+import com.example.common.impl.repo.sql.SqlContext
+import com.example.common.test.{IntegrationSpec, TestDb}
 import com.example.customer.domain.service.repo.CustomerRepo
 import com.example.customer.fixture.CustomerFixtures
 import com.example.customer.impl.service.repo.CustomerRepoMySQLImpl
@@ -17,7 +17,7 @@ import zio.test._
   *
   * Organization: one nested suite per repo method, so failures point at the method under test.
   */
-object CustomerRepoSpec extends ZIOSpecDefault {
+object CustomerRepoSpec extends IntegrationSpec {
 
   private val testLayer = TestDb.freshSchemaLayer >+> CustomerRepoMySQLImpl.layer
 
@@ -25,7 +25,7 @@ object CustomerRepoSpec extends ZIOSpecDefault {
     suite("find")(
       test("returns Some when the customer exists") {
         (for {
-          ctx    <- ZIO.service[PgContext]
+          ctx    <- ZIO.service[SqlContext]
           _      <- CustomerFixtures.seed(ctx = ctx, pe = CustomerFixtures.adaPE)
           result <- ZIO.serviceWithZIO[CustomerRepo](_.find(CustomerFixtures.adaPE.id))
         } yield assert(result.map(_.id))(equalTo(Some(CustomerFixtures.adaPE.id)))).provide(testLayer)
@@ -39,7 +39,7 @@ object CustomerRepoSpec extends ZIOSpecDefault {
     suite("list")(
       test("returns all seeded customers") {
         (for {
-          ctx    <- ZIO.service[PgContext]
+          ctx    <- ZIO.service[SqlContext]
           _      <- CustomerFixtures.seedAll(ctx = ctx, pes = List(CustomerFixtures.adaPE, CustomerFixtures.alanPE))
           result <- ZIO.serviceWithZIO[CustomerRepo](_.list)
           ids = result.map(_.id).toSet

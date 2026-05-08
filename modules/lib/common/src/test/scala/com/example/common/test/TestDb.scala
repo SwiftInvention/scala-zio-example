@@ -5,7 +5,7 @@ import javax.sql.DataSource
 
 import com.example.common.domain.error.backend.DbError
 import com.example.common.domain.service.Transactor
-import com.example.common.impl.repo.pg.PgContext
+import com.example.common.impl.repo.sql.SqlContext
 import com.example.common.impl.service.TransactorQuillImpl
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import zio._
@@ -19,7 +19,7 @@ import zio._
   * Each test that uses `freshSchemaLayer` gets:
   *   - a unique schema named `test_<uuid>`
   *   - tables cloned (structure only) from the template via `CREATE TABLE ... LIKE`
-  *   - a fresh `Transactor` + `PgContext` pointing at the schema
+  *   - a fresh `Transactor` + `SqlContext` pointing at the schema
   *   - the schema dropped on layer scope close
   *
   * Resource-cheap, parallel-safe (each test owns its namespace), and avoids the JVM bringing up infrastructure.
@@ -68,9 +68,9 @@ object TestDb {
     )
   }
 
-  /** Scoped layer: provisions a fresh MySQL schema, provides `PgContext` pointing at it, drops schema on scope close.
+  /** Scoped layer: provisions a fresh MySQL schema, provides `SqlContext` pointing at it, drops schema on scope close.
     */
-  private val freshContextLayer: ZLayer[Any, Throwable, PgContext] =
+  private val freshContextLayer: ZLayer[Any, Throwable, SqlContext] =
     ZLayer.scoped {
       val cfg = TestDbConfig.fromEnv
       for {
@@ -81,22 +81,22 @@ object TestDb {
         _      <- ZIO.addFinalizer(dropSchema(ds = setupDs, schemaName = schemaName))
         _      <- cloneTables(ds = setupDs, source = cfg.templateSchema, target = schemaName)
         testDs <- buildDataSource(cfg = cfg, schema = Some(schemaName))
-      } yield PgContext(testDs)
+      } yield SqlContext(testDs)
     }
 
-  /** Convenience: provisions fresh schema + provides both `PgContext` and `Transactor`. */
-  val freshSchemaLayer: ZLayer[Any, Throwable, Transactor & PgContext] =
+  /** Convenience: provisions fresh schema + provides both `SqlContext` and `Transactor`. */
+  val freshSchemaLayer: ZLayer[Any, Throwable, Transactor & SqlContext] =
     freshContextLayer >+> TransactorQuillImpl.layer
 
   /** Run a side-effecting SQL statement against the active test schema. */
-  def runSql(sql: String): ZIO[PgContext, Throwable, Unit] =
-    ZIO.serviceWithZIO[PgContext](ctx => runStatementOn(ds = ctx.ds, sql = sql))
+  def runSql(sql: String): ZIO[SqlContext, Throwable, Unit] =
+    ZIO.serviceWithZIO[SqlContext](ctx => runStatementOn(ds = ctx.ds, sql = sql))
 
   /** A column descriptor for meta-test comparisons. */
   final case class Column(name: String, columnType: String, isNullable: String)
 
   /** List columns of `table` in the *current* database (the one the connection is bound to). */
-  def listColumns(ctx: PgContext, table: String): Task[List[Column]] =
+  def listColumns(ctx: SqlContext, table: String): Task[List[Column]] =
     listColumnsOn(ds = ctx.ds, schema = None, table = table)
 
   /** List columns of `table` in the template schema — uses a separate short-lived connection. */
@@ -150,7 +150,7 @@ object TestDb {
   )
 
   /** List FKs of `table` in the *current* database. */
-  def listForeignKeys(ctx: PgContext, table: String): Task[List[ForeignKeyInfo]] =
+  def listForeignKeys(ctx: SqlContext, table: String): Task[List[ForeignKeyInfo]] =
     listForeignKeysOn(ds = ctx.ds, schema = None, table = table)
 
   /** List FKs of `table` in the template schema — uses a separate short-lived connection. */

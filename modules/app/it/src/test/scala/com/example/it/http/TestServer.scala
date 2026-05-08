@@ -1,10 +1,9 @@
 package com.example.it.http
 
 import com.example.common.domain.service.Transactor
-import com.example.common.impl.repo.pg.PgContext
+import com.example.common.impl.repo.sql.SqlContext
 import com.example.common.test.TestDb
 import com.example.customer.app.CustomerAppServiceImpl
-import com.example.customer.impl.CustomerApiDirectImpl
 import com.example.customer.impl.http.CustomerRoutes
 import com.example.customer.impl.service.repo.{AddressRepoMySQLImpl, CustomerRepoMySQLImpl}
 import com.example.customer.impl.service.{AddressServiceImpl, CustomerServiceImpl}
@@ -16,7 +15,7 @@ import zio.http._
   *
   * The layer composition rebuilds the production layer stack from `CustomerRepoMySQLImpl` upward, substituting two
   * pieces:
-  *   - `DataSource` / `PgContext` / `Transactor` come from `TestDb.freshSchemaLayer` (test schema, dropped on close)
+  *   - `DataSource` / `SqlContext` / `Transactor` come from `TestDb.freshSchemaLayer` (test schema, dropped on close)
   *   - `Server.Config` is hardcoded to ephemeral port (`0`); the actual bound port is read back via `Server.port`
   *
   * Tests provide `TestServer.layer` to a spec, then issue requests via `testServer.get("/customers/...")`. The
@@ -54,14 +53,13 @@ object TestServer {
   private val serverLayer: ZLayer[Any, Throwable, Server] =
     ephemeralServerConfig >>> Server.live
 
-  private val backendLayer: ZLayer[Any, Throwable, PgContext & Transactor & CustomerRoutes] =
+  private val backendLayer: ZLayer[Any, Throwable, SqlContext & Transactor & CustomerRoutes] =
     TestDb.freshSchemaLayer >+>
       CustomerRepoMySQLImpl.layer >+>
       AddressRepoMySQLImpl.layer >+>
       CustomerServiceImpl.layer >+>
       AddressServiceImpl.layer >+>
       CustomerAppServiceImpl.layer >+>
-      CustomerApiDirectImpl.layer >+>
       CustomerRoutes.layer
 
   private val testServerOnly: ZLayer[CustomerRoutes & Server, Throwable, TestServer] =
@@ -75,7 +73,13 @@ object TestServer {
       } yield TestServer(baseUrl = baseUrl)
     }
 
-  /** Full e2e environment: backend stack + running server + http client + the `TestServer` accessor. */
-  val layer: ZLayer[Any, Throwable, TestServer & Client & PgContext & Transactor] =
+  /** Full e2e environment: backend stack + running server + http client + the `TestServer` accessor.
+    *
+    * Logger setup lives at the spec level — see [[com.example.common.test.IntegrationSpec]]. Specs that extend it get
+    * [[com.example.common.test.TestLogger]] installed in their `bootstrap`, where ZIO's runtime config (default
+    * loggers, etc.) is mutable. A regular `ZLayer` here can't reach the runtime's logger set, so default loggers leak
+    * through.
+    */
+  val layer: ZLayer[Any, Throwable, TestServer & Client & SqlContext & Transactor] =
     (backendLayer ++ serverLayer) >+> testServerOnly >+> Client.default
 }

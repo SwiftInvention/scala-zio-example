@@ -9,10 +9,13 @@ object Versions {
   val zioHttp    = "3.11.0"
   val zioJson    = "0.9.2"
   val zioPrelude = "1.0.0-RC47" // Note: prelude has been RC for years; widely used in production despite the label
-  val zioTestContainers = "0.10.0" // Note: upstream appears abandoned (last release 2023)
-  val enumeratum        = "1.9.7"
-  val newType           = "0.4.4"  // Note: upstream abandoned; consider replacing with opaque types or similar
-  val zioLogging        = "2.5.3"
-  val slf4j             = "1.7.36" // We keep version 1.7.36 because it's used by quill
-  val circe             = "0.14.4" // Note: circe-generic-extras is deprecated; consider migrating
+  val zioTestContainers    = "0.10.0" // Note: upstream appears abandoned (last release 2023)
+  val enumeratum           = "1.9.7"
+  val newType              = "0.4.4"  // Note: upstream abandoned; consider replacing with opaque types or similar
+  val zioLogging           = "2.5.3"
+  val slf4j                = "1.7.36" // We keep version 1.7.36 because it's used by quill
+  val zioTelemetry         = "3.1.16" // ZIO 2.1.x compatible
+  val openTelemetry        = "1.61.0" // zio-telemetry 3.1.16's transitive OpenTelemetry SDK version
+  val openTelemetrySemconv = "1.40.0"
+  val circe                = "0.14.4" // Note: circe-generic-extras is deprecated; consider migrating
 }

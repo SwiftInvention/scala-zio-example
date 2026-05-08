@@ -4,9 +4,10 @@ import com.example.common.domain.model.NewTypes.CustomerId
 import com.example.common.domain.model.Types.AppRIO
 import com.example.common.domain.service.Transactor
 import com.example.common.impl.config.ConfigBootstrap
-import com.example.common.impl.repo.pg.{DataSourceConfig, DataSourceLayer, PgContext}
+import com.example.common.impl.logging.AppLogger
+import com.example.common.impl.repo.sql.{DataSourceConfig, DataSourceLayer, SqlContext}
 import com.example.common.impl.service.TransactorQuillImpl
-import com.example.customer.impl.service.repo.pg.entity.CustomerPE
+import com.example.customer.impl.service.repo.sql.entity.CustomerPE
 import zio._
 
 /** Seeds the example customers used by the smoke test (Ada, Alan, Grace).
@@ -21,6 +22,8 @@ import zio._
   */
 object SeedExampleCustomers extends ZIOAppDefault {
 
+  override val bootstrap: ZLayer[Any, Any, Any] = AppLogger.bootstrap
+
   private val examples: List[CustomerPE] = List(
     CustomerPE(id = CustomerId("c-001"), email = "ada@example.test", name = "Ada Lovelace"),
     CustomerPE(id = CustomerId("c-002"), email = "alan@example.test", name = "Alan Turing"),
@@ -30,9 +33,9 @@ object SeedExampleCustomers extends ZIOAppDefault {
   /** The action's effect, with its env requirement spelled out. Exposed as a val (separate from `run`) so it composes
     * into other entrypoints without dragging the runner's layer stack along.
     */
-  val seed: AppRIO[PgContext & Transactor, Unit] =
+  val seed: AppRIO[SqlContext & Transactor, Unit] =
     for {
-      ctx        <- ZIO.service[PgContext]
+      ctx        <- ZIO.service[SqlContext]
       transactor <- ZIO.service[Transactor]
       _          <- ZIO.logInfo(s"seeding ${examples.size} example customers")
       _          <- transactor.withTransaction(insertAll(ctx, examples))
@@ -41,7 +44,7 @@ object SeedExampleCustomers extends ZIOAppDefault {
 
   // Excluding Quill's `run` from the import — it collides with `ZIOAppDefault.run`. We invoke it qualified as
   // `ctx.run(q)` instead.
-  private def insertAll(ctx: PgContext, pes: List[CustomerPE]): AppRIO[Any, Unit] = {
+  private def insertAll(ctx: SqlContext, pes: List[CustomerPE]): AppRIO[Any, Unit] = {
     import ctx.{run => _, _}
     ZIO.foreachDiscard(pes) { pe =>
       val q = quote(querySchema[CustomerPE]("customer").insertValue(lift(pe)))
@@ -54,7 +57,7 @@ object SeedExampleCustomers extends ZIOAppDefault {
       ConfigBootstrap.layer,
       DataSourceConfig.layer,
       DataSourceLayer.layer,
-      PgContext.layer,
+      SqlContext.layer,
       TransactorQuillImpl.layer
     )
 }

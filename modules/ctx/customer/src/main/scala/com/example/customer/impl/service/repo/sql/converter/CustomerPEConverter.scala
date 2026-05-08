@@ -1,8 +1,8 @@
-package com.example.customer.impl.service.repo.pg.converter
+package com.example.customer.impl.service.repo.sql.converter
 
 import com.example.common.domain.model.Types.AppIO
 import com.example.customer.domain.model.{Customer, CustomerName, Email}
-import com.example.customer.impl.service.repo.pg.entity.CustomerPE
+import com.example.customer.impl.service.repo.sql.entity.CustomerPE
 
 /** PE ↔ domain mapping for `Customer`. Hand-written, one method per direction. See the `pe-converters` principle.
   *

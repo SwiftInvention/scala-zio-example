@@ -11,6 +11,8 @@ modules/ctx/<name>/src/main/scala/com/example/<name>/impl/to/converter/
 
 `impl/to/` collects TO-related impl-side concerns (currently just converters; later may grow to validators, custom codecs, etc.). It's the only place that can see both sides — the domain entity (its own module) and the TO (`<name>-api`). See [`ctx-api.md`](ctx-api.md) for why.
 
+The converter is also the place where smart-constructed domain types (`Email`, `CustomerName`) flatten to wire-side primitives — domain types stay at the domain, TOs serve the wire's own constraints. See [`correct-by-construction.md`](correct-by-construction.md#domain-types-stay-at-the-domain) for the principle.
+
 ## Shape
 
 ```scala
@@ -36,7 +38,7 @@ Trait mixin gives unqualified method names inside the inheritor (`toCustomerTO(c
 
 ## Hand-written, not chimney
 
-Every field appears in the source. Errors are immediate, no macro-expanded code to debug. chimney is the right call if a converter grows to dozens of fields with mostly-matching names — but for the typical case (single-digit fields, some renames, some type changes), hand-written is cheaper to read. We've dropped chimney from the deps until that case shows up.
+Every field appears in the source. Errors are immediate, no macro-expanded code to debug. chimney is the right call if a converter grows to dozens of fields with mostly-matching names — but for the typical case (single-digit fields, some renames, some type changes), hand-written is cheaper to read.
 
 ## At call sites
 

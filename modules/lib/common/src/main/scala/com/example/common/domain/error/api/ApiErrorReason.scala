@@ -13,7 +13,6 @@ object ApiErrorReason extends Enum[ApiErrorReason] {
   case object AuthenticationFailed    extends ApiErrorReason
   case object AuthorizationFailed     extends ApiErrorReason
   case object MalformedRequestContent extends ApiErrorReason
-  case object MissingQueryParam       extends ApiErrorReason
   case object Validation              extends ApiErrorReason
   case object UrlPathNotFound         extends ApiErrorReason
   case object UnhandledError          extends ApiErrorReason

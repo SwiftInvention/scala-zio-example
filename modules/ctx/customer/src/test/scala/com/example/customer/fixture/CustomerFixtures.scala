@@ -2,8 +2,8 @@ package com.example.customer.fixture
 
 import com.example.common.domain.model.NewTypes.CustomerId
 import com.example.common.domain.model.Types.AppIO
-import com.example.common.impl.repo.pg.PgContext
-import com.example.customer.impl.service.repo.pg.entity.CustomerPE
+import com.example.common.impl.repo.sql.SqlContext
+import com.example.customer.impl.service.repo.sql.entity.CustomerPE
 import zio._
 
 /** Typed test fixtures for `Customer`.
@@ -38,15 +38,15 @@ object CustomerFixtures {
 
   /** Insert a `CustomerPE` into the active schema. Uses Quill so the insert path mirrors the repo's writes.
     *
-    * Takes `PgContext` as a parameter (not a layer) so the resulting `AppIO` has no environment requirement — letting
+    * Takes `SqlContext` as a parameter (not a layer) so the resulting `AppIO` has no environment requirement — letting
     * it compose cleanly inside `Transactor.withTransaction(...)`, which expects `AppIO[A]`.
     */
-  def seed(ctx: PgContext, pe: CustomerPE): AppIO[Unit] = {
+  def seed(ctx: SqlContext, pe: CustomerPE): AppIO[Unit] = {
     import ctx._
     val q = quote(querySchema[CustomerPE]("customer").insertValue(lift(pe)))
     ctx.runQuery(run(q)).unit
   }
 
-  def seedAll(ctx: PgContext, pes: List[CustomerPE]): AppIO[Unit] =
+  def seedAll(ctx: SqlContext, pes: List[CustomerPE]): AppIO[Unit] =
     ZIO.foreachDiscard(pes)(pe => seed(ctx = ctx, pe = pe))
 }

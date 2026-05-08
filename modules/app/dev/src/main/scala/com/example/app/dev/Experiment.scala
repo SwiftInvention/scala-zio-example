@@ -1,19 +1,22 @@
 package com.example.app.dev
 
+import com.example.common.impl.logging.AppLogger
 import zio._
 
 /** A scratchpad for development-time experiments. Edit `experiment` to do the thing you want to try once.
   *
   * To run: `just experiment`.
   *
-  * Layers: by default, no layers are provided beyond ZIO's built-ins (`Clock`, `Console`, `Random`, etc.). The
-  * experiment doesn't connect to MySQL or load config until you ask it to — `just experiment` boots fast and works
-  * without docker running. When you need infra, add the relevant `provide(...)` arguments below.
+  * Layers: the configured logger is installed via `bootstrap` (reads APP_ENV + the `logging` block of the active conf).
+  * No DB / no zio-http until you wire them in. When you need infra, add the relevant `provide(...)` arguments to the
+  * `run` effect.
   *
   * For repeatable jobs that you might want to re-run, lift them out of here into `actions/` and add a dedicated `just`
   * recipe.
   */
 object Experiment extends ZIOAppDefault {
+
+  override val bootstrap: ZLayer[Any, Any, Any] = AppLogger.bootstrap
 
   /** Edit this. */
   private val experiment: ZIO[Any, Throwable, Unit] =
@@ -26,7 +29,7 @@ object Experiment extends ZIOAppDefault {
       //   _ <- ZIO.sleep(200.millis)  // timing log will report ~200ms
       //
       // To exercise infra, add layers in `run`'s `provide(...)` and require them here:
-      //   ctx <- ZIO.service[PgContext]
+      //   ctx <- ZIO.service[SqlContext]
       //   _   <- ZIO.logInfo(s"datasource: ${ctx.ds}")
     } yield ()
 

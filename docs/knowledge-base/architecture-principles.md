@@ -64,7 +64,7 @@ Values with invariants (`Email`, `Phone`) construct through a smart-constructor 
 
 ## `errors` — typed `AppFailure` channel, no implicit Throwable leakage
 
-`AppIO[A]` is `IO[AppFailure, A]`. Every failure in the channel is a concrete `AppFailure` subclass carrying `category`, `reason`, and HTTP status. Raw JVM/JDBC `Throwable`s enter only via explicit `mapError` at the boundary (`Transactor`, `PgContext`, `DataSourceLayer`). The route renders any `AppFailure` as a structured `ErrorTO` — no `Throwable` fallback. Pattern: [`errors.md`](patterns/errors.md).
+`AppIO[A]` is `IO[AppFailure, A]`. Every failure in the channel is a concrete `AppFailure` subclass carrying `category`, `reason`, and HTTP status. Raw JVM/JDBC `Throwable`s enter only via explicit `mapError` at the boundary (`Transactor`, `SqlContext`, `DataSourceLayer`). The route renders any `AppFailure` as a structured `ErrorTO` — no `Throwable` fallback. Pattern: [`errors.md`](patterns/errors.md).
 
 ## `config-shape` — typed config, per-(app, env) files, no defaults in code
 
@@ -76,12 +76,18 @@ No default values in code, anywhere — not on case-class fields, not in `getOrE
 
 ## `pe-layout` — persistence entities live with their owning ctx, not in lib
 
-PEs (`<Entity>PE`) live in `<ctx>/impl/service/repo/pg/entity/`, alongside the repo impl that uses them. They don't leak past `impl/` — repo trait signatures use domain types only. Genuinely cross-cutting PEs (audit log, outbox) go in `lib/common/impl/repo/pg/entity/`. Pattern: [`persistence.md`](patterns/persistence.md).
+PEs (`<Entity>PE`) live in `<ctx>/impl/service/repo/sql/entity/`, alongside the repo impl that uses them. They don't leak past `impl/` — repo trait signatures use domain types only. Genuinely cross-cutting PEs (audit log, outbox) go in `lib/common/impl/repo/sql/entity/`. Pattern: [`persistence.md`](patterns/persistence.md).
 
 ## `pe-converters` — PE ↔ domain mapping in dedicated converter objects
 
-Mirrors `to-converters` for the persistence boundary. One `<Entity>PEConverter` object per PE in `<ctx>/impl/service/repo/pg/converter/`. Methods named `to<Entity>` and `to<Entity>PE`. Pattern: [`persistence.md`](patterns/persistence.md).
+Mirrors `to-converters` for the persistence boundary. One `<Entity>PEConverter` object per PE in `<ctx>/impl/service/repo/sql/converter/`. Methods named `to<Entity>` and `to<Entity>PE`. Pattern: [`persistence.md`](patterns/persistence.md).
 
 ## `tx-default` — repo methods open transactions; app services may wrap
 
 Every repo method wraps its query in `Transactor.withTransaction`. App-service methods orchestrating multiple repo calls may wrap the orchestration; Quill's transaction is reentrant on a fiber-local connection, so nesting reuses the outer scope. Pattern: [`persistence.md`](patterns/persistence.md).
+
+---
+
+## `logging` — INFO/DEBUG/ERROR by audience, ERROR at every boundary
+
+INFO = workflow milestones an operator wants in prod logs (request completed, job started, "created N") — sparse. DEBUG = per-iteration detail an investigator wants when troubleshooting — off in deployed envs by default. WARN = recoverable failure that didn't surface but might. ERROR at every boundary where a typed failure could be lost or converted (route `mapError`, catchall handlers, forked fibers, top-level entrypoint), funneled through `LogError.tagged`. Don't fail silently — duplicate logs across boundaries are fine. Pattern: [`logging.md`](patterns/logging.md).

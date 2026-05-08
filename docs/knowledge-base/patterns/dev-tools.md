@@ -22,7 +22,7 @@ Does not belong in `appDev`:
 
 ## Each entrypoint composes its own layers
 
-No shared `DevEnv.layer`. Each `ZIOAppDefault` builds what it needs in its own `provide(...)` — an action that only touches the database provides `ConfigBootstrap`, `DataSourceConfig`, `DataSourceLayer`, `PgContext`, plus `TransactorQuillImpl` if it transacts. The action's effect declares its env at the type level (`AppRIO[PgContext & Transactor, Unit]`); the runner's `provide(...)` matches it. A god-layer would let actions grab anything from a wider env without the type reflecting that.
+No shared `DevEnv.layer`. Each `ZIOAppDefault` builds what it needs in its own `provide(...)` — an action that only touches the database provides `ConfigBootstrap`, `DataSourceConfig`, `DataSourceLayer`, `SqlContext`, plus `TransactorQuillImpl` if it transacts. The action's effect declares its env at the type level (`AppRIO[SqlContext & Transactor, Unit]`); the runner's `provide(...)` matches it. A god-layer would let actions grab anything from a wider env without the type reflecting that.
 
 Conf loads from `application-local.conf` in `appDev`'s own resources. Per `config-shape`, files are self-contained per app: `appDev` carries the `database.data-source` block, duplicated across apps that share the local MySQL.
 
@@ -30,14 +30,14 @@ Conf loads from `application-local.conf` in `appDev`'s own resources. Per `confi
 
 ```scala
 object SeedExampleCustomers extends ZIOAppDefault {
-  val seed: AppRIO[PgContext & Transactor, Unit] = ...
+  val seed: AppRIO[SqlContext & Transactor, Unit] = ...
 
   override def run: ZIO[ZIOAppArgs & Scope, Any, Any] =
     seed.provide(
       ConfigBootstrap.layer,
       DataSourceConfig.layer,
       DataSourceLayer.layer,
-      PgContext.layer,
+      SqlContext.layer,
       TransactorQuillImpl.layer
     )
 }

@@ -10,7 +10,6 @@ Here's some general info on this project:
 @docs/knowledge-base/patterns/local-reasoning.md
 
 There are also specific docs in `docs/knowledge-base/patterns/` that are not in context by default - consider reading some of those when you're working on a relevant area.
+We always have `patterns/local-reasoning.md` in the context because it's foundational philosophy we want to keep in mind at all times.
 
-We always have `patterns/local-reasoning.md` in the context because it's foundational philosophy we want to keep in mind at all times. The hardest violations to self-catch are the ones rooted in temporal locality: when you edit code or docs you do it while remembering the previous state, and that history leaks into the writing as transitional framing ("now", "no longer", "we used to") that reads natural to you and disorienting to anyone else. Vestigial code shapes (a `Map` that holds one key, an `Option` that's always `Some`, a sealed trait with one case) are the same family of problem.
-
-The counterweight: before declaring a multi-file change finished, run `/review-changes` to dispatch a fresh-eyes sweep against `local-reasoning.md`. Show the findings verbatim before fixing — soft ones have legitimate defenses worth discussing.
+There are some types of mistakes that are naturally hard to catch for you. One example is temporal locality: you edit code or docs while remembering the previous state, and that history leaks into the writing as transitional framing ("now", "no longer", "we used to") that reads natural to you but disorienting to a cold reader. The counter this and some other blind spots, run `/review-changes` to dispatch a fresh-eyes sweep against your edits. The best time to do this is right before declaring the task done, but you can also run it at intermediate checkpoints if you think the set of changes is large enough.

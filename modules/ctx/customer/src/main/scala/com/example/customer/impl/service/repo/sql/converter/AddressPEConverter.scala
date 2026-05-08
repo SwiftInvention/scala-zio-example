@@ -1,8 +1,8 @@
-package com.example.customer.impl.service.repo.pg.converter
+package com.example.customer.impl.service.repo.sql.converter
 
 import com.example.common.domain.model.Types.AppIO
 import com.example.customer.domain.model.{Address, AddressLine, City, PostalCode}
-import com.example.customer.impl.service.repo.pg.entity.AddressPE
+import com.example.customer.impl.service.repo.sql.entity.AddressPE
 
 /** PE ↔ domain mapping for `Address`.
   *

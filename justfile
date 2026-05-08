@@ -42,11 +42,12 @@ test:
   {{ init_env }}
   sbt "dev; unitTest"
 
-# run integration tests against test MySQL (port 3307) — brings up + migrates the test container automatically
-test-it: db-reset-test db-migrate-test
+# integration tests against test MySQL (:3307); silent by default, pass a level (trace|debug|info|warn|error) to see logs
+test-it level='': test-infra-reset test-db-migrate
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
+  export TEST_LOG_LEVEL='{{ level }}'
   sbt "dev; it/test"
 
 # lint, check format (warnings as errors)
@@ -63,8 +64,7 @@ style-fix:
   {{ init_env }}
   sbt "dev; styleFix"
 
-# auto-fix style, then verify style + unit tests in one sbt session — run before committing
-# Excludes integration tests because they need infra; run `just test-it` separately when relevant.
+# style-fix + style-check + unit tests in one sbt session — run before committing (skips integration tests)
 precommit-fix:
   #!/usr/bin/env bash
   set -eu
@@ -87,7 +87,7 @@ experiment:
   export APP_ENV=local
   sbt "dev; appDev/run"
 
-# seed the example customers (Ada, Alan, Grace) into local MySQL — used by smoke-test
+# seed the example customers (Ada, Alan, Grace) into local MySQL
 seed-example:
   #!/usr/bin/env bash
   set -eu
@@ -95,18 +95,18 @@ seed-example:
   export APP_ENV=local
   sbt "dev; appDev/runMain com.example.app.dev.actions.SeedExampleCustomers"
 
-# start MySQL container (blocks until healthy)
-db-up:
-  docker compose up -d --wait mysql
+# bring up local infra: MySQL on :3306, Jaeger on :4318 (OTLP HTTP) + :16686 (UI). blocks until healthy.
+local-infra-up:
+  docker compose up -d --wait mysql jaeger
 
-# stop MySQL container (preserves data volume)
-db-down:
-  docker compose stop mysql
+# stop local infra (preserves MySQL volume; Jaeger has no volume)
+local-infra-down:
+  docker compose stop mysql jaeger
 
-# tear down MySQL container and wipe data
-db-reset:
-  docker compose down -v mysql
-  just db-up
+# wipe local infra state (drops MySQL data, recreates Jaeger to clear in-memory traces) and bring it back up
+local-infra-reset:
+  docker compose down -v mysql jaeger
+  just local-infra-up
 
 # apply Flyway migrations to local MySQL (uses lib/common/.../db/migration)
 db-migrate:
@@ -117,17 +117,21 @@ db-migrate:
     -locations="filesystem:modules/lib/common/src/main/resources/db/migration" \
     migrate
 
-# start integration-test MySQL container on port 3307 (blocks until healthy)
-db-up-test:
+# bring up integration-test MySQL on :3307 (blocks until healthy)
+test-infra-up:
   docker compose up -d --wait mysql-test
 
-# tear down test MySQL container and wipe data
-db-reset-test:
+# stop integration-test MySQL (preserves volume)
+test-infra-down:
+  docker compose stop mysql-test
+
+# wipe integration-test MySQL data and bring it back up
+test-infra-reset:
   docker compose down -v mysql-test
-  just db-up-test
+  just test-infra-up
 
 # apply Flyway migrations to test MySQL (port 3307)
-db-migrate-test:
+test-db-migrate:
   flyway \
     -url="jdbc:mysql://localhost:3307/localDatabase" \
     -user=localUser \
@@ -135,41 +139,14 @@ db-migrate-test:
     -locations="filesystem:modules/lib/common/src/main/resources/db/migration" \
     migrate
 
-# spin up server, hit GET /customers, tear down
-smoke-test: db-up db-migrate seed-example
+# from any prior state, get a working local server foreground (local-infra-reset, db-migrate, seed, run)
+start-fresh-local-server: local-infra-reset db-migrate seed-example run
+
+# curl the running server's endpoints (success + typed-error 404). assumes server up on :8080
+smoke-test:
   #!/usr/bin/env bash
   set -eu
-  {{ init_env }}
-  export APP_ENV=local
 
-  log=$(mktemp)
-  echo "Starting server (sbt run, backgrounded)..."
-  sbt -no-colors "dev; appServer/run" > "$log" 2>&1 &
-  SBT_PID=$!
-  cleanup() {
-    pkill -P "$SBT_PID" 2>/dev/null || true
-    kill "$SBT_PID" 2>/dev/null || true
-    pkill -f "com.example.app.server.ServerApp" 2>/dev/null || true
-    wait 2>/dev/null || true
-    rm -f "$log"
-  }
-  trap cleanup EXIT
-
-  echo "Waiting for server to be reachable..."
-  for i in $(seq 1 90); do
-    if curl -sSf http://localhost:8080/customers > /dev/null 2>&1; then
-      echo "✓ server up after ${i}s"
-      break
-    fi
-    if ! kill -0 "$SBT_PID" 2>/dev/null; then
-      echo "✗ sbt died before server came up. Last 30 lines of log:"
-      tail -30 "$log"
-      exit 1
-    fi
-    sleep 1
-  done
-
-  echo
   echo "GET /customers:"
   curl -sSf http://localhost:8080/customers | jq .
 

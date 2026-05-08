@@ -4,7 +4,7 @@ import com.example.common.domain.error.AppFailure
 import com.example.common.domain.error.backend.{DbError, InternalServerError}
 import com.example.common.domain.model.Types.AppIO
 import com.example.common.domain.service.Transactor
-import com.example.common.impl.repo.pg.PgContext
+import com.example.common.impl.repo.sql.SqlContext
 import zio._
 
 /** Quill-backed `Transactor`. Opens a JDBC transaction on the underlying `DataSource` for the duration of the wrapped
@@ -21,7 +21,7 @@ import zio._
   * Quill's `transaction` is reentrant — a nested call within the same fiber reuses the outer connection (no nested SQL
   * transaction is opened), so app services can wrap repo calls without breaking the inner tx-per-method default.
   */
-final class TransactorQuillImpl(ctx: PgContext) extends Transactor {
+final class TransactorQuillImpl(ctx: SqlContext) extends Transactor {
 
   override def withTransaction[A](io: AppIO[A]): AppIO[A] =
     ctx
@@ -35,6 +35,6 @@ final class TransactorQuillImpl(ctx: PgContext) extends Transactor {
 }
 
 object TransactorQuillImpl {
-  val layer: URLayer[PgContext, Transactor] =
+  val layer: URLayer[SqlContext, Transactor] =
     ZLayer.fromFunction(new TransactorQuillImpl(_))
 }

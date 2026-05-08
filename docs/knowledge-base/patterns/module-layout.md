@@ -35,7 +35,7 @@ No `app/` — libs don't have an application surface. Same `domain` / `impl` spl
 - `domain/model/Types.scala` — effect aliases (`AppIO`, `AppRIO`)
 - `domain/model/NewTypes.scala` — cross-cutting newtype IDs
 - `domain/service/Transactor.scala` — transaction-boundary trait
-- `impl/repo/pg/` — Quill context, datasource, encodings
+- `impl/repo/sql/` — Quill context, datasource, encodings
 - `impl/config/` — config bootstrap
 
 ## App internal structure

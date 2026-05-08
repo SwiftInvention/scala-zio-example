@@ -2,7 +2,7 @@ package com.example.customer.domain.error
 
 import com.example.common.domain.error.api.{HttpBadRequest, HttpError, HttpNotFound}
 import com.example.common.domain.error.{AppFailure, ErrorCategory}
-import com.example.common.domain.model.NewTypes.CustomerId
+import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
 import com.example.customer.domain.error.CustomerErrorReason._
 
 abstract class CustomerError(
@@ -51,9 +51,9 @@ final case class AddressNotFoundError private (message: String, cause: Option[Th
     with HttpNotFound
 
 object AddressNotFoundError {
-  def withId(id: com.example.common.domain.model.NewTypes.AddressId): AddressNotFoundError =
+  def withId(id: AddressId): AddressNotFoundError =
     AddressNotFoundError(
-      message = s"Address with id=${com.example.common.domain.model.NewTypes.AddressId.unwrap(id)} is not found",
+      message = s"Address with id=${AddressId.unwrap(id)} is not found",
       cause = None
     )
 }

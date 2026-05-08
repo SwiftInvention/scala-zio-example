@@ -1,4 +1,4 @@
-package com.example.customer.impl.service.repo.pg.entity
+package com.example.customer.impl.service.repo.sql.entity
 
 import com.example.common.domain.model.NewTypes.CustomerId
 

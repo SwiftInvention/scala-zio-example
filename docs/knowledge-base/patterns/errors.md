@@ -61,7 +61,7 @@ override def get(id: CustomerId): AppIO[Customer] =
 JVM/JDBC/library code surfaces `Throwable`s; explicit `mapError` is the only path into the channel:
 
 ```scala
-// PgContext.runQuery — Quill produces Throwable, we wrap as DbError
+// SqlContext.runQuery — Quill produces Throwable, we wrap as DbError
 def runQuery[A](q: => QIO[A]): AppIO[A] =
   q.provideEnvironment(ZEnvironment(ds))
     .mapError(e => DbError(s"Database query failed: ${e.getMessage}", Some(e)))

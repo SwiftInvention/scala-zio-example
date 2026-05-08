@@ -1,4 +1,4 @@
-package com.example.common.impl.repo.pg
+package com.example.common.impl.repo.sql
 
 import javax.sql.DataSource
 
@@ -10,13 +10,13 @@ import zio._
 
 /** Quill MySQL JDBC context with cross-cutting encodings mixed in.
   *
-  * Repos take a `PgContext` and import its members (`import ctx._`) to use Quill DSL. The context owns query execution
+  * Repos take a `SqlContext` and import its members (`import ctx._`) to use Quill DSL. The context owns query execution
   * but not transaction boundaries — see `Transactor` for that.
   *
-  * Naming note: `PgContext` is a deliberate carry-over from prior projects that used Postgres. Keeping the name
+  * Naming note: `SqlContext` is a deliberate carry-over from prior projects that used Postgres. Keeping the name
   * decouples ctx-impl code from the underlying SQL dialect — swapping to Postgres later is a one-line change here.
   */
-final case class PgContext(ds: DataSource) extends MysqlZioJdbcContext(SnakeCase) with NewTypeEncodings {
+final case class SqlContext(ds: DataSource) extends MysqlZioJdbcContext(SnakeCase) with NewTypeEncodings {
 
   /** Runs a single query; SQL exceptions become `DbError`. */
   def runQuery[A](q: => QIO[A]): AppIO[A] =
@@ -28,8 +28,8 @@ final case class PgContext(ds: DataSource) extends MysqlZioJdbcContext(SnakeCase
     runQuery(q).map(_.headOption)
 }
 
-object PgContext {
+object SqlContext {
 
-  val layer: URLayer[DataSource, PgContext] =
-    ZLayer.fromFunction(PgContext(_))
+  val layer: URLayer[DataSource, SqlContext] =
+    ZLayer.fromFunction(SqlContext(_))
 }

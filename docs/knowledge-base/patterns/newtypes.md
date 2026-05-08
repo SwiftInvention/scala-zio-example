@@ -12,7 +12,7 @@ Wire shape stays flat: `JsonCodec[U].transform(apply, unwrap)` serializes the wr
 
 ## Library
 
-zio-prelude `Newtype`. The `io.estatico/newtype` dep listed in `Versions.scala` is unused — kept on the deps list as a marker, slated for removal. Scala 3 opaque types are the natural successor; we'll switch when we cross the 2 → 3 line.
+zio-prelude `Newtype`. Scala 3 opaque types are the natural successor; we'll switch when we cross the 2 → 3 line.
 
 ## Shape
 
@@ -41,7 +41,7 @@ Centralizing makes sense for ids specifically because they have no validation lo
 
 ## Quill `MappedEncoding`
 
-Quill needs `MappedEncoding[NT, U]` and `MappedEncoding[U, NT]` to read/write a newtype-typed column. For centralized ids, encodings live in `lib/common/.../impl/repo/pg/NewTypeEncodings.scala` and are mixed into `PgContext`:
+Quill needs `MappedEncoding[NT, U]` and `MappedEncoding[U, NT]` to read/write a newtype-typed column. For centralized ids, encodings live in `lib/common/.../impl/repo/sql/NewTypeEncodings.scala` and are mixed into `SqlContext`:
 
 ```scala
 trait NewTypeEncodings {

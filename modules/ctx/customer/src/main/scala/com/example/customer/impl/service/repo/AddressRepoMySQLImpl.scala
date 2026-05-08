@@ -3,14 +3,14 @@ package com.example.customer.impl.service.repo
 import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
 import com.example.common.domain.model.Types.AppIO
 import com.example.common.domain.service.Transactor
-import com.example.common.impl.repo.pg.PgContext
+import com.example.common.impl.repo.sql.SqlContext
 import com.example.customer.domain.model.Address
 import com.example.customer.domain.service.repo.AddressRepo
-import com.example.customer.impl.service.repo.pg.AddressDbSchema
-import com.example.customer.impl.service.repo.pg.converter.AddressPEConverter
+import com.example.customer.impl.service.repo.sql.AddressDbSchema
+import com.example.customer.impl.service.repo.sql.converter.AddressPEConverter
 import zio._
 
-final class AddressRepoMySQLImpl(val ctx: PgContext, transactor: Transactor) extends AddressRepo with AddressDbSchema {
+final class AddressRepoMySQLImpl(val ctx: SqlContext, transactor: Transactor) extends AddressRepo with AddressDbSchema {
   import ctx.extras._
   import ctx._
 
@@ -31,6 +31,6 @@ final class AddressRepoMySQLImpl(val ctx: PgContext, transactor: Transactor) ext
 }
 
 object AddressRepoMySQLImpl {
-  val layer: URLayer[PgContext & Transactor, AddressRepo] =
+  val layer: URLayer[SqlContext & Transactor, AddressRepo] =
     ZLayer.fromFunction(new AddressRepoMySQLImpl(_, _))
 }

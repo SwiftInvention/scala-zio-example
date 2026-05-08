@@ -3,35 +3,45 @@ package com.example.customer.impl.http
 import com.example.common.domain.error.AppFailure
 import com.example.common.domain.error.api.ErrorTO
 import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
-import com.example.customer.api.CustomerApi
+import com.example.common.impl.logging.LogError
+import com.example.customer.app.CustomerAppService
+import com.example.customer.impl.to.converter.AddressConverter.toAddressTO
+import com.example.customer.impl.to.converter.CustomerConverter.toCustomerTO
 import zio._
 import zio.http._
 import zio.json._
 
-final class CustomerRoutes(api: CustomerApi) {
+/** HTTP routes for the customer context. Talks to `CustomerAppService` directly (per `ctx-api`: routes are a separate
+  * plane from the cross-context API trait) and converts domain → TO at the response boundary.
+  */
+final class CustomerRoutes(appService: CustomerAppService) {
   val routes: Routes[Any, Response] =
     Routes(
       Method.GET / "customers" -> handler { (_: Request) =>
-        api.list
-          .map(customers => Response.json(customers.toJson))
+        appService.list
+          .map(customers => Response.json(customers.map(toCustomerTO).toJson))
+          .tapError(LogError.tagged("CustomerRoutes.list"))
           .mapError(renderAppFailure)
       },
       Method.GET / "customers" / string("id") -> handler { (id: String, _: Request) =>
-        api
+        appService
           .get(CustomerId(id))
-          .map(customer => Response.json(customer.toJson))
+          .map(customer => Response.json(toCustomerTO(customer).toJson))
+          .tapError(LogError.tagged("CustomerRoutes.get"))
           .mapError(renderAppFailure)
       },
       Method.GET / "customers" / string("id") / "addresses" -> handler { (id: String, _: Request) =>
-        api
+        appService
           .listAddressesForCustomer(CustomerId(id))
-          .map(addresses => Response.json(addresses.toJson))
+          .map(addresses => Response.json(addresses.map(toAddressTO).toJson))
+          .tapError(LogError.tagged("CustomerRoutes.listAddressesForCustomer"))
           .mapError(renderAppFailure)
       },
       Method.GET / "addresses" / string("id") -> handler { (id: String, _: Request) =>
-        api
+        appService
           .getAddress(AddressId(id))
-          .map(address => Response.json(address.toJson))
+          .map(address => Response.json(toAddressTO(address).toJson))
+          .tapError(LogError.tagged("CustomerRoutes.getAddress"))
           .mapError(renderAppFailure)
       }
     )
@@ -46,6 +56,6 @@ final class CustomerRoutes(api: CustomerApi) {
 }
 
 object CustomerRoutes {
-  val layer: URLayer[CustomerApi, CustomerRoutes] =
+  val layer: URLayer[CustomerAppService, CustomerRoutes] =
     ZLayer.fromFunction(new CustomerRoutes(_))
 }
