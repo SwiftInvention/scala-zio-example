@@ -4,7 +4,7 @@
 
 A reference template for Scala + ZIO monoliths organized by bounded contexts. Patterns are documented in [`patterns/`](patterns/) and summarized in [`architecture-principles.md`](architecture-principles.md).
 
-The example domain is intentionally thin (one context, one entity) so the patterns are visible without domain noise.
+The example domain is intentionally thin — one bounded context with a small entity set — so the patterns are visible without domain noise.
 
 ## Modules
 
@@ -26,6 +26,8 @@ Currently exposed:
 
 - `GET /customers` — list (200, JSON array of `CustomerTO`)
 - `GET /customers/:id` — fetch one (200, or 404 + `ErrorTO` body)
+- `GET /customers/:id/addresses` — addresses owned by a customer (200, JSON array of `AddressTO`; empty array if the customer has none or doesn't exist)
+- `GET /addresses/:id` — fetch one (200, or 404 + `ErrorTO` body)
 
 ## Service wiring
 
