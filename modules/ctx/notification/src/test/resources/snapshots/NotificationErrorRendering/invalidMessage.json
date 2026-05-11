@@ -1,0 +1,6 @@
+{
+  "code" : 400,
+  "category" : "Notification",
+  "reason" : "InvalidMessage",
+  "description" : "Notification message must not be empty"
+}

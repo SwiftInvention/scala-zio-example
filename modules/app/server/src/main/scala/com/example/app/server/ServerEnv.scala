@@ -6,10 +6,15 @@ import com.example.common.impl.repo.sql.{DataSourceConfig, DataSourceLayer, SqlC
 import com.example.common.impl.service.TransactorQuillImpl
 import com.example.common.impl.telemetry.AppTracing
 import com.example.customer.app.CustomerAppServiceImpl
+import com.example.customer.impl.CustomerApiDirectImpl
 import com.example.customer.impl.http.CustomerRoutes
 import com.example.customer.impl.service.repo.{AddressRepoMySQLImpl, CustomerRepoMySQLImpl}
 import com.example.customer.impl.service.{AddressServiceImpl, CustomerServiceImpl}
 import com.example.http.HealthRoutes
+import com.example.notification.app.NotificationAppServiceImpl
+import com.example.notification.impl.http.NotificationRoutes
+import com.example.notification.impl.service.NotificationServiceImpl
+import com.example.notification.impl.service.repo.NotificationRepoMySQLImpl
 import zio._
 import zio.http.Server
 import zio.telemetry.opentelemetry.tracing.Tracing
@@ -53,7 +58,13 @@ object ServerEnv {
       CustomerServiceImpl.layer,
       AddressServiceImpl.layer,
       CustomerAppServiceImpl.layer,
+      CustomerApiDirectImpl.layer, // cross-ctx contract — consumed by notification's app service
       CustomerRoutes.layer,
+      // ── notification ctx ──
+      NotificationRepoMySQLImpl.layer,
+      NotificationServiceImpl.layer,
+      NotificationAppServiceImpl.layer,
+      NotificationRoutes.layer,
       // ── operational ──
       HealthRoutes.layer,
       // ── route composition ──

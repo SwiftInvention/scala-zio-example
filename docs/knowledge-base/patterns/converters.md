@@ -4,7 +4,7 @@ Each entity has a converter object that translates between its domain form and i
 
 ## Where they live
 
-```
+```text
 modules/ctx/<name>/src/main/scala/com/example/<name>/impl/to/converter/
 └── <Entity>Converter.scala
 ```

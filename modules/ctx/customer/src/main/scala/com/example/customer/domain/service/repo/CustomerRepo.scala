@@ -7,4 +7,5 @@ import com.example.customer.domain.model.Customer
 trait CustomerRepo {
   def find(id: CustomerId): AppIO[Option[Customer]]
   def list: AppIO[List[Customer]]
+  def findMany(ids: Set[CustomerId]): AppIO[List[Customer]]
 }

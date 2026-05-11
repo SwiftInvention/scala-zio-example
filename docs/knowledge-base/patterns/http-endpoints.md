@@ -5,10 +5,9 @@ Routes are defined via zio-http's typed `Endpoint` API: each route's wire shape 
 - The running server, via `endpoint.implement { input => effect }.toRoutes`.
 - The OpenAPI document, via `OpenAPIGen.fromEndpoints(...)` aggregated in `ServerApp`.
 
-
 ## File layout per ctx
 
-```
+```text
 <ctx>/impl/http/
 ├── <Name>Endpoints.scala    pure Endpoint values + an `all` aggregator
 └── <Name>Routes.scala       implementations against the endpoints

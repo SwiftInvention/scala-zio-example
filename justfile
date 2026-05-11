@@ -13,13 +13,18 @@ init_env := '''
 _default:
   @ just --list --unsorted
 
-# install JDK, sbt (SDKMAN), and seed local config from the .example
+# install JDK, sbt (SDKMAN), markdownlint-cli2 (npm), and seed local config from the .example
 initial-setup:
   #!/usr/bin/env bash
   set -eu
   export SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
   source "$SDKMAN_DIR/bin/sdkman-init.sh"
   sdk env install
+  if ! command -v npm >/dev/null 2>&1; then
+    echo "✗ npm not found on PATH — install Node (e.g. via nvm) before running initial-setup" >&2
+    exit 1
+  fi
+  npm install -g markdownlint-cli2@0.22.1
   for example in modules/*/src/main/resources/application-*.conf.example; do
     target="${example%.example}"
     if [ ! -f "$target" ]; then
@@ -50,19 +55,21 @@ test-it level='': test-infra-reset test-db-migrate
   export TEST_LOG_LEVEL='{{ level }}'
   sbt "dev; it/test"
 
-# lint, check format (warnings as errors)
+# lint, check format (warnings as errors). Covers Scala (sbt) + Markdown (markdownlint-cli2).
 style-check:
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
   sbt "ci; compile; Test / compile; styleCheck"
+  markdownlint-cli2
 
-# lint with autofixes, format
+# lint with autofixes, format. Covers Scala (sbt) + Markdown (markdownlint-cli2 --fix).
 style-fix:
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
   sbt "dev; styleFix"
+  markdownlint-cli2 --fix
 
 # style-fix + style-check + unit tests in one sbt session — run before committing (skips integration tests)
 precommit-fix:
@@ -70,6 +77,7 @@ precommit-fix:
   set -eu
   {{ init_env }}
   sbt "dev; styleFix; ci; styleCheck; unitTest"
+  markdownlint-cli2 --fix
   just test-it
 
 # run server in foreground (Ctrl+C to stop)
@@ -88,13 +96,13 @@ experiment:
   export APP_ENV=local
   sbt "dev; appDev/run"
 
-# seed the example customers (Ada, Alan, Grace) into local MySQL
+# seed example fixtures (customers + notifications) into local MySQL
 seed-example:
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
   export APP_ENV=local
-  sbt "dev; appDev/runMain com.example.app.dev.actions.SeedExampleCustomers"
+  sbt "dev; appDev/runMain com.example.app.dev.actions.SeedExample"
 
 # bring up local infra: MySQL on :3306, Jaeger on :4318 (OTLP HTTP) + :16686 (UI). blocks until healthy.
 local-infra-up:
@@ -190,6 +198,33 @@ smoke-test:
   echo
   echo "GET /customers/missing (typed-error path, expect 404 with ErrorTO body):"
   resp=$(curl -s -w "\n%{http_code}" http://localhost:8080/customers/missing)
+  body=$(echo "$resp" | sed '$d')
+  code=$(echo "$resp" | tail -1)
+  echo "HTTP $code"
+  echo "$body" | jq .
+  if [ "$code" != "404" ]; then
+    echo "✗ expected 404, got $code"; exit 1
+  fi
+
+  echo
+  echo "GET /notifications (list with embedded recipient from customer ctx):"
+  curl -sSf http://localhost:8080/notifications | jq .
+
+  echo
+  echo "GET /customers/c-001/notifications (notifications scoped to one customer):"
+  curl -sSf http://localhost:8080/customers/c-001/notifications | jq .
+
+  echo
+  echo "POST /notifications (cross-ctx existence check passes — recipient c-001 exists):"
+  curl -sSf -X POST http://localhost:8080/notifications \
+    -H "Content-Type: application/json" \
+    -d '{"recipientId":"c-001","channel":"Email","message":"hello from smoke test"}' | jq .
+
+  echo
+  echo "POST /notifications with missing recipient (expect 404 propagated from customer ctx):"
+  resp=$(curl -s -w "\n%{http_code}" -X POST http://localhost:8080/notifications \
+    -H "Content-Type: application/json" \
+    -d '{"recipientId":"c-missing","channel":"Email","message":"this should 404"}')
   body=$(echo "$resp" | sed '$d')
   code=$(echo "$resp" | tail -1)
   echo "HTTP $code"

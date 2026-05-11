@@ -13,6 +13,7 @@ trait CustomerAppService {
   def find(id: CustomerId): AppIO[Option[Customer]]
   def get(id: CustomerId): AppIO[Customer]
   def list: AppIO[List[Customer]]
+  def getMany(ids: Set[CustomerId]): AppIO[Map[CustomerId, Customer]]
 
   def findAddress(id: AddressId): AppIO[Option[Address]]
   def getAddress(id: AddressId): AppIO[Address]

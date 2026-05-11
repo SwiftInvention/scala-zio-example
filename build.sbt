@@ -49,11 +49,29 @@ lazy val ctxCustomer = (project in file("modules/ctx/customer"))
   .settings(commonSettings)
   .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ dbDep)
 
+// ── ctx: notification ───────────────────────────────────────
+
+// notification-api intentionally does NOT depend on customer-api. notification's wire format references customers by
+// id only; its own `NotificationRecipientTO` is a self-contained projection (id + display name + email). This keeps the
+// two contracts independent — customer-api can evolve `CustomerTO` without rippling into notification's wire shape.
+// See `patterns/cross-context-call.md`.
+lazy val ctxNotificationApi = (project in file("modules/ctx/notification-api"))
+  .dependsOn(libCommon)
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= zioCoreDep)
+
+// ctxNotification depends on ctxCustomerApi: notification's app service composes a customer existence check + recipient
+// enrichment via `CustomerApi`. This is the only cross-context coupling — at the impl layer, against the api contract.
+lazy val ctxNotification = (project in file("modules/ctx/notification"))
+  .dependsOn(libCommon % "compile->compile;test->test", libHttp, ctxNotificationApi, ctxCustomerApi)
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ dbDep)
+
 // ── app: server ─────────────────────────────────────────────
 
 lazy val appServer = (project in file("modules/app/server"))
   .enablePlugins(BuildInfoPlugin)
-  .dependsOn(libCommon, libHttp, ctxCustomerApi, ctxCustomer)
+  .dependsOn(libCommon, libHttp, ctxCustomerApi, ctxCustomer, ctxNotificationApi, ctxNotification)
   .settings(commonSettings)
   .settings(buildInfoSettings)
   .settings(
@@ -69,7 +87,7 @@ lazy val appServer = (project in file("modules/app/server"))
 // layer stack but never need to run in a deployed environment.
 
 lazy val appDev = (project in file("modules/app/dev"))
-  .dependsOn(libCommon, ctxCustomerApi, ctxCustomer)
+  .dependsOn(libCommon, ctxCustomerApi, ctxCustomer, ctxNotificationApi, ctxNotification)
   .settings(commonSettings)
   .settings(
     publish / skip      := true,
@@ -88,7 +106,8 @@ lazy val it = (project in file("modules/app/it"))
     appServer,
     libCommon % "test->test",
     libHttp,
-    ctxCustomer % "test->test"
+    ctxCustomer     % "test->test",
+    ctxNotification % "test->test"
   )
   .settings(commonSettings)
   .settings(
@@ -99,7 +118,17 @@ lazy val it = (project in file("modules/app/it"))
 // ── root aggregator ─────────────────────────────────────────
 
 lazy val root = (project in file("."))
-  .aggregate(libCommon, libHttp, ctxCustomerApi, ctxCustomer, appServer, appDev, it)
+  .aggregate(
+    libCommon,
+    libHttp,
+    ctxCustomerApi,
+    ctxCustomer,
+    ctxNotificationApi,
+    ctxNotification,
+    appServer,
+    appDev,
+    it
+  )
   .settings(name := "scala-zio-example")
 
 lazy val buildInfoSettings = Seq(

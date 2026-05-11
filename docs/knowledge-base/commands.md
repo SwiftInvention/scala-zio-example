@@ -60,7 +60,7 @@ just run             # foreground server (Ctrl+C to stop); sets APP_ENV=local
 
 ```sh
 just experiment      # run modules/app/dev/.../Experiment.scala against local MySQL
-just seed-example    # run SeedExampleCustomers — inserts Ada/Alan/Grace into the customer table
+just seed-example    # run SeedExample — inserts Ada/Alan/Grace into customer + a few rows into notification
 ```
 
 Both export `APP_ENV=local`. `appDev` is local-only by build (see [`patterns/dev-tools.md`](patterns/dev-tools.md)) — no `APP_ENV=dev|prod` variants exist for it.
@@ -68,7 +68,7 @@ Both export `APP_ENV=local`. `appDev` is local-only by build (see [`patterns/dev
 ## Setup
 
 ```sh
-just initial-setup   # install JDK + sbt from .sdkmanrc; seed application-local.conf from .example
+just initial-setup   # install JDK + sbt (SDKMAN), markdownlint-cli2 (npm, pinned); seed application-local.conf from .example
 ```
 
 Every public recipe activates the pinned SDK env at the top, so it works from any shell without manual `sdk env` first.

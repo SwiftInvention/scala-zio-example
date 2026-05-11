@@ -29,7 +29,7 @@ Conf loads from `application-local.conf` in `appDev`'s own resources. Per `confi
 ## Action shape
 
 ```scala
-object SeedExampleCustomers extends ZIOAppDefault {
+object SeedExample extends ZIOAppDefault {
   val seed: AppRIO[SqlContext & Transactor, Unit] = ...
 
   override def run: ZIO[ZIOAppArgs & Scope, Any, Any] =
@@ -43,7 +43,7 @@ object SeedExampleCustomers extends ZIOAppDefault {
 }
 ```
 
-The val/runner split lets other entrypoints compose the action's effect without the runner's layer stack. Invocation: `sbt "appDev/runMain com.example.app.dev.actions.SeedExampleCustomers"`, fronted by a per-action `just` recipe.
+The val/runner split lets other entrypoints compose the action's effect without the runner's layer stack. Invocation: `sbt "appDev/runMain com.example.app.dev.actions.SeedExample"`, fronted by a per-action `just` recipe.
 
 ## Quill `run` collision
 

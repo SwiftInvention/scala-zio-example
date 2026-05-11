@@ -4,7 +4,7 @@ Each context publishes a TO-typed trait in its `-api` module. That's the surface
 
 ## Contents of `ctx/<name>-api/`
 
-```
+```text
 modules/ctx/<name>-api/src/main/scala/com/example/<name>/api/
 ├── <Name>Api.scala       the trait (TO-typed signatures)
 └── to/                   transfer objects (wire format)

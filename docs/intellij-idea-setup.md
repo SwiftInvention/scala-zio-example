@@ -1,4 +1,6 @@
-### Setting up debugger in Intellij IDEA
+# IntelliJ IDEA Setup
+
+## Setting up debugger in IntelliJ IDEA
 
 * Ensure that debugging is enabled for sbt
   ![sbt config](images/idea-sbt-settings.png)

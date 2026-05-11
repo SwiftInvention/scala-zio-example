@@ -38,6 +38,15 @@ final class CustomerRepoMySQLImpl(val ctx: SqlContext, transactor: Transactor)
       val q = quote(customerTable)
       ctx.runQuery(run(q)).flatMap(ZIO.foreach(_)(CustomerPEConverter.toCustomer))
     }
+
+  override def findMany(ids: Set[CustomerId]): AppIO[List[Customer]] =
+    if (ids.isEmpty) ZIO.succeed(Nil)
+    else
+      transactor.withTransaction {
+        val idList = ids.toList
+        val q      = quote(customerTable.filter(c => liftQuery(idList).contains(c.id)))
+        ctx.runQuery(run(q)).flatMap(ZIO.foreach(_)(CustomerPEConverter.toCustomer))
+      }
 }
 
 object CustomerRepoMySQLImpl {

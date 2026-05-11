@@ -22,7 +22,7 @@ Per `config-shape`, `Disabled` is "tracing genuinely off", not a placeholder for
 
 `AppTracing.live` (in `lib/common/.../impl/telemetry/`) consumes `OtelConfig` and produces `zio.telemetry.opentelemetry.tracing.Tracing`:
 
-```
+```text
 OtelConfig.layer  → OtelConfig
 AppTracing.live   → Tracing      (OTLP exporter when Enabled; OpenTelemetry.noop when Disabled)
 ```

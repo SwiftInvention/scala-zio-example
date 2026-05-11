@@ -2,7 +2,7 @@
 
 Three module types under `modules/`:
 
-```
+```text
 modules/
 ├── lib/<name>/        shared infrastructure (no domain content)
 ├── ctx/<name>/        bounded context
@@ -21,7 +21,7 @@ sbt project IDs follow `<layer><CamelCaseName>`:
 
 ## Lib internal structure
 
-```
+```text
 modules/lib/<name>/src/main/scala/com/example/<name>/
 ├── domain/        traits, types, errors
 └── impl/          concrete implementations
@@ -42,7 +42,7 @@ No `app/` — libs don't have an application surface. Same `domain` / `impl` spl
 
 Flat — no subfolders:
 
-```
+```text
 modules/app/<name>/src/main/scala/com/example/app/<name>/
 ├── <Name>App.scala       entrypoint (extends ZIOAppDefault)
 └── <Name>Env.scala       layer composition (AppEnv type alias + wiring)

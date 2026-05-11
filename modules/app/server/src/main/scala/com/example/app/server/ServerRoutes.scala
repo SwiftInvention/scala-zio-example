@@ -4,6 +4,7 @@ import com.example.BuildInfo
 import com.example.customer.impl.http.{CustomerEndpoints, CustomerRoutes}
 import com.example.http.middleware.{RequestLogging, RequestTracing}
 import com.example.http.{HealthEndpoints, HealthRoutes}
+import com.example.notification.impl.http.{NotificationEndpoints, NotificationRoutes}
 import zio._
 import zio.http._
 import zio.http.codec.PathCodec
@@ -20,21 +21,25 @@ import zio.telemetry.opentelemetry.tracing.Tracing
   *   - The OpenAPI document is built from the aggregated `<Name>Endpoints.all` lists. Doc and served behavior come from
   *     the same `Endpoint` values, so they can't drift.
   */
-final class ServerRoutes(customerRoutes: CustomerRoutes, healthRoutes: HealthRoutes) {
+final class ServerRoutes(
+    customerRoutes: CustomerRoutes,
+    notificationRoutes: NotificationRoutes,
+    healthRoutes: HealthRoutes
+) {
 
   // Title doubles as the OpenAPI JSON filename in the Swagger UI mount (`/docs/<title>.json`); keep it URL-clean
   // (no spaces or special chars).
   private val openApi = OpenAPIGen.fromEndpoints(
     title = "scala-zio-example",
     version = BuildInfo.version,
-    endpoints = CustomerEndpoints.all ++ HealthEndpoints.all
+    endpoints = CustomerEndpoints.all ++ NotificationEndpoints.all ++ HealthEndpoints.all
   )
 
   private val docsRoutes: Routes[Any, Response] =
     SwaggerUI.routes(PathCodec.empty / "docs", openApi)
 
   private val instrumentedAppRoutes: Routes[Tracing, Response] =
-    customerRoutes.routes
+    (customerRoutes.routes ++ notificationRoutes.routes)
       .@@(RequestTracing.span)
       .@@(RequestLogging.accessLog)
       .@@(RequestLogging.requestId)
@@ -44,6 +49,6 @@ final class ServerRoutes(customerRoutes: CustomerRoutes, healthRoutes: HealthRou
 }
 
 object ServerRoutes {
-  val layer: URLayer[CustomerRoutes & HealthRoutes, ServerRoutes] =
-    ZLayer.fromFunction(new ServerRoutes(_, _))
+  val layer: URLayer[CustomerRoutes & NotificationRoutes & HealthRoutes, ServerRoutes] =
+    ZLayer.fromFunction(new ServerRoutes(_, _, _))
 }

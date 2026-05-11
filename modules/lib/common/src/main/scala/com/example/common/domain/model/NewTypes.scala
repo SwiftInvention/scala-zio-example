@@ -25,4 +25,10 @@ object NewTypes {
       Schema[String].transform(s => apply(s), t => unwrap(t))
   }
   type AddressId = AddressId.Type
+
+  object NotificationId extends Newtype[String] {
+    implicit val schema: Schema[Type] =
+      Schema[String].transform(s => apply(s), t => unwrap(t))
+  }
+  type NotificationId = NotificationId.Type
 }

@@ -2,7 +2,7 @@
 
 A bounded context is a pair of sbt modules — a public contract (`<name>-api`) and an implementation (`<name>`). Other contexts depend only on the contract; the composition root supplies the impl.
 
-```
+```text
 ctx/<name>-api/   cross-context contract (trait + TOs)
 ctx/<name>/       implementation
 ```
@@ -11,7 +11,7 @@ See [`ctx-api.md`](ctx-api.md) for what lives in the `-api` module.
 
 ## Internal layout of `ctx/<name>/`
 
-```
+```text
 modules/ctx/<name>/src/main/scala/com/example/<name>/
 ├── domain/                          abstractions only — no concrete impls
 │   ├── error/                       domain errors
@@ -38,7 +38,7 @@ modules/ctx/<name>/src/main/scala/com/example/<name>/
 
 ## Layer chain
 
-```
+```text
 <Name>RepoImpl.layer           provides <Name>Repo, no project deps
    ↓
 <Name>ServiceImpl.layer        takes <Name>Repo, provides <Name>Service

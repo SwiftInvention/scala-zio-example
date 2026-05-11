@@ -4,17 +4,19 @@
 
 A reference template for Scala + ZIO monoliths organized by bounded contexts. Patterns are documented in [`patterns/`](patterns/) and summarized in [`architecture-principles.md`](architecture-principles.md).
 
-The example domain is intentionally thin — one bounded context with a small entity set — so the patterns are visible without domain noise.
+The example domain is intentionally thin — two bounded contexts where one calls the other through its `-api` contract — so the patterns are visible without domain noise.
 
 ## Modules
 
-| Folder                     | sbt ID           | Role                                                                |
-| -------------------------- | ---------------- | ------------------------------------------------------------------- |
-| `modules/lib/common`       | `libCommon`      | shared infrastructure (effects, errors, IDs, config, persistence)   |
-| `modules/ctx/customer-api` | `ctxCustomerApi` | customer cross-context contract (trait + TOs)                       |
-| `modules/ctx/customer`     | `ctxCustomer`    | customer impl (domain, app, infra)                                  |
-| `modules/app/server`       | `appServer`      | deployment unit — composition root + entrypoint                     |
-| `modules/app/dev`          | `appDev`         | local-only dev tools — `Experiment` scratchpad + one-off `actions/` |
+| Folder                         | sbt ID               | Role                                                                |
+| ------------------------------ | -------------------- | ------------------------------------------------------------------- |
+| `modules/lib/common`           | `libCommon`          | shared infrastructure (effects, errors, IDs, config, persistence)   |
+| `modules/ctx/customer-api`     | `ctxCustomerApi`     | customer cross-context contract (trait + TOs)                       |
+| `modules/ctx/customer`         | `ctxCustomer`        | customer impl (domain, app, infra)                                  |
+| `modules/ctx/notification-api` | `ctxNotificationApi` | notification cross-context contract (TOs only — no consumer yet)    |
+| `modules/ctx/notification`     | `ctxNotification`    | notification impl; depends on `ctxCustomerApi` for recipient lookup |
+| `modules/app/server`           | `appServer`          | deployment unit — composition root + entrypoint                     |
+| `modules/app/dev`              | `appDev`             | local-only dev tools — `Experiment` scratchpad + one-off `actions/` |
 
 Module layout: [`patterns/module-layout.md`](patterns/module-layout.md). Cross-module deps: [`patterns/build-deps.md`](patterns/build-deps.md).
 
@@ -32,6 +34,10 @@ Application endpoints:
 - `GET /customers/:id` — fetch one (200, or 404 + `ErrorTO` body)
 - `GET /customers/:id/addresses` — addresses owned by a customer (200, JSON array of `AddressTO`; empty array if the customer has none or doesn't exist)
 - `GET /addresses/:id` — fetch one (200, or 404 + `ErrorTO` body)
+- `POST /notifications` — create a notification (201, `NotificationWithRecipientTO`; 404 + `ErrorTO` if the recipient customer doesn't exist — propagated unchanged from the customer ctx)
+- `GET /notifications` — list with embedded recipient (200, JSON array of `NotificationWithRecipientTO`)
+- `GET /notifications/:id` — fetch one with embedded recipient (200, or 404)
+- `GET /customers/:id/notifications` — notifications for a customer (200, JSON array of `NotificationTO`; recipient implied by path so not embedded)
 
 Operational endpoints:
 
@@ -41,13 +47,13 @@ Operational endpoints:
 
 ## Service wiring
 
-`ServerEnv.scala` is the composition root — the only place that sees concrete impls. Four tiers: config (`ConfigBootstrap` → typed `XConfig`s) → infra (datasource, transactor) → ctx (repo → service → app-service → api → routes) → http server. Adding a new ctx adds a leg to the third tier.
+`ServerEnv.scala` is the composition root — the only place that sees concrete impls. Four tiers: config (`ConfigBootstrap` → typed `XConfig`s) → infra (datasource, transactor) → ctx (repo → service → app-service → api → routes) → http server. Adding a new ctx adds a leg to the third tier. Cross-context coupling shows up in the wiring too: notification's app-service requires `CustomerApi`, so `CustomerApiDirectImpl.layer` is provided ahead of `NotificationAppServiceImpl.layer`. See [`patterns/cross-context-call.md`](patterns/cross-context-call.md).
 
 Config loaded from `application-${APP_ENV}.conf` at boot ([`patterns/config.md`](patterns/config.md)). Migrations apply out-of-process via `just db-migrate`. A service that exists but is never wired is dead code.
 
 ## Dev tools
 
-`appDev` is a separate deployment unit for local-only one-off scripts: data seeding, scratchpad experiments, debugging actions. Each entrypoint (`Experiment.scala`, every action under `actions/`) is its own `ZIOAppDefault` with its own `provide(...)` block — no shared composition root. `SeedExampleCustomers` is the starter action; it seeds the example customers used by the smoke test. Local-only by build: `publish / skip := true` keeps the artifact off any deployment. Pattern: [`patterns/dev-tools.md`](patterns/dev-tools.md).
+`appDev` is a separate deployment unit for local-only one-off scripts: data seeding, scratchpad experiments, debugging actions. Each entrypoint (`Experiment.scala`, every action under `actions/`) is its own `ZIOAppDefault` with its own `provide(...)` block — no shared composition root. `SeedExample` is the starter action; it seeds the example customers and notifications used by the smoke test. Local-only by build: `publish / skip := true` keeps the artifact off any deployment. Pattern: [`patterns/dev-tools.md`](patterns/dev-tools.md).
 
 ## Tech stack
 

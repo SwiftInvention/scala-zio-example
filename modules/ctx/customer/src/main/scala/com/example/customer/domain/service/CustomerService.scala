@@ -8,4 +8,7 @@ trait CustomerService {
   def find(id: CustomerId): AppIO[Option[Customer]]
   def get(id: CustomerId): AppIO[Customer]
   def list: AppIO[List[Customer]]
+
+  /** Batch lookup. Returned map omits any id that doesn't resolve. */
+  def getMany(ids: Set[CustomerId]): AppIO[Map[CustomerId, Customer]]
 }

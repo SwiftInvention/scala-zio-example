@@ -4,7 +4,7 @@ Quill + MySQL + Flyway, with explicit transaction boundaries.
 
 ## Layout
 
-```
+```text
 modules/lib/common/src/main/scala/com/example/common/
 ├── domain/service/
 │   └── Transactor.scala                 trait — transaction boundary
@@ -137,7 +137,7 @@ The chain is:
 
 ## Wiring
 
-```
+```text
 ConfigBootstrap.layer  → DataSourceConfig.layer
                           → DataSourceLayer.layer
                             → SqlContext.layer

@@ -7,10 +7,15 @@ import com.example.common.impl.repo.sql.SqlContext
 import com.example.common.impl.telemetry.AppTracing
 import com.example.common.test.TestDb
 import com.example.customer.app.CustomerAppServiceImpl
+import com.example.customer.impl.CustomerApiDirectImpl
 import com.example.customer.impl.http.CustomerRoutes
 import com.example.customer.impl.service.repo.{AddressRepoMySQLImpl, CustomerRepoMySQLImpl}
 import com.example.customer.impl.service.{AddressServiceImpl, CustomerServiceImpl}
 import com.example.http.HealthRoutes
+import com.example.notification.app.NotificationAppServiceImpl
+import com.example.notification.impl.http.NotificationRoutes
+import com.example.notification.impl.service.NotificationServiceImpl
+import com.example.notification.impl.service.repo.NotificationRepoMySQLImpl
 import zio._
 import zio.http._
 import zio.schema.Schema
@@ -51,9 +56,32 @@ final case class TestServer(baseUrl: String) {
         .mapError(msg => new RuntimeException(s"Failed to parse response body: $msg — body was: $body"))
     } yield JsonResponse(status = response.status, body = parsed)
   }
+
+  /** Issue a POST with a typed JSON body, decode the response into `Resp`. Mirrors `getJson` — both the request and the
+    * response go through `Schema`-derived codecs, so the call site stays free of zio-json plumbing.
+    */
+  def postJson[Req, Resp](path: String, body: Req)(implicit
+      reqSchema: Schema[Req],
+      respSchema: Schema[Resp]
+  ): ZIO[Client, Throwable, JsonResponse[Resp]] = {
+    val reqEncoder  = SchemaJsonCodec.jsonCodec(reqSchema).encoder
+    val respDecoder = SchemaJsonCodec.jsonCodec(respSchema).decoder
+    val payload     = reqEncoder.encodeJson(body, indent = None).toString
+    for {
+      url <- ZIO.fromEither(URL.decode(s"$baseUrl$path"))
+      request = Request
+        .post(url, Body.fromString(payload))
+        .addHeader(Header.ContentType(MediaType.application.json))
+      response <- ZIO.serviceWithZIO[Client](_.batched(request))
+      bodyStr  <- response.body.asString
+      parsed <- ZIO
+        .fromEither(respDecoder.decodeJson(bodyStr))
+        .mapError(msg => new RuntimeException(s"Failed to parse response body: $msg — body was: $bodyStr"))
+    } yield JsonResponse(status = response.status, body = parsed)
+  }
 }
 
-/** Result of `TestServer.getJson` — case class instead of a tuple to avoid Scala 2 for-comp destructuring friction. */
+/** Status + parsed body for `TestServer.getJson` / `postJson`. */
 final case class JsonResponse[A](status: Status, body: A)
 
 object TestServer {
@@ -68,16 +96,30 @@ object TestServer {
     ZLayer.succeed(OtelConfig(serviceName = "scala-zio-example-test", tracing = OtelTracing.Disabled))
 
   private val backendLayer: ZLayer[Any, Throwable, SqlContext & Transactor & ServerRoutes & Tracing] =
-    TestDb.freshSchemaLayer >+>
-      CustomerRepoMySQLImpl.layer >+>
-      AddressRepoMySQLImpl.layer >+>
-      CustomerServiceImpl.layer >+>
-      AddressServiceImpl.layer >+>
-      CustomerAppServiceImpl.layer >+>
-      CustomerRoutes.layer >+>
-      HealthRoutes.layer >+>
-      (testOtelConfig >>> AppTracing.live) >+>
+    ZLayer.make[SqlContext & Transactor & ServerRoutes & Tracing](
+      // ── persistence (test substitution: fresh schema per spec) ──
+      TestDb.freshSchemaLayer,
+      // ── tracing (no-op, configured Disabled) ──
+      testOtelConfig,
+      AppTracing.live,
+      // ── customer ctx ──
+      CustomerRepoMySQLImpl.layer,
+      AddressRepoMySQLImpl.layer,
+      CustomerServiceImpl.layer,
+      AddressServiceImpl.layer,
+      CustomerAppServiceImpl.layer,
+      CustomerApiDirectImpl.layer,
+      CustomerRoutes.layer,
+      // ── notification ctx ──
+      NotificationRepoMySQLImpl.layer,
+      NotificationServiceImpl.layer,
+      NotificationAppServiceImpl.layer,
+      NotificationRoutes.layer,
+      // ── operational ──
+      HealthRoutes.layer,
+      // ── route composition ──
       ServerRoutes.layer
+    )
 
   private val testServerOnly: ZLayer[ServerRoutes & Server & Tracing, Throwable, TestServer] =
     ZLayer.scoped {
@@ -90,12 +132,8 @@ object TestServer {
       } yield TestServer(baseUrl = baseUrl)
     }
 
-  /** Full e2e environment: backend stack + running server + http client + the `TestServer` accessor.
-    *
-    * Logger setup lives at the spec level — see [[com.example.common.test.IntegrationSpec]]. Specs that extend it get
-    * [[com.example.common.test.TestLogger]] installed in their `bootstrap`, where ZIO's runtime config (default
-    * loggers, etc.) is mutable. A regular `ZLayer` here can't reach the runtime's logger set, so default loggers leak
-    * through.
+  /** Full e2e environment: backend stack + running server + http client + the `TestServer` accessor. Logger setup lives
+    * at the spec level via `TestLogger` in `IntegrationSpec.bootstrap` — ZLayer can't reach the runtime's logger set.
     */
   val layer: ZLayer[Any, Throwable, TestServer & Client & SqlContext & Transactor] =
     (backendLayer ++ serverLayer) >+> testServerOnly >+> Client.default

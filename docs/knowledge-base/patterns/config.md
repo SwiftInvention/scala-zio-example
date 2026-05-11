@@ -4,7 +4,7 @@ PureConfig case classes loaded from per-(app, env) HOCON files at boot. Fail-fas
 
 ## Files
 
-```
+```text
 modules/<app>/src/main/resources/
 ├── application-local.conf.example   committed; canonical local-dev shape with throwaway values
 ├── application-local.conf           gitignored; copied from .example by `just initial-setup`
@@ -70,7 +70,7 @@ object DataSourceConfig {
 
 ## Layer chain
 
-```
+```text
 ConfigBootstrap.layer        : ZLayer[Any, AppFailure, EnvLabel]       // parses APP_ENV
   ↓
 DataSourceConfig.layer       : ZLayer[EnvLabel, _, DataSourceConfig]   // ConfigBootstrap.load(...)

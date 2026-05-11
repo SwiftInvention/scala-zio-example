@@ -13,9 +13,10 @@ final class CustomerAppServiceImpl(
     customerService: CustomerService,
     addressService: AddressService
 ) extends CustomerAppService {
-  override def find(id: CustomerId): AppIO[Option[Customer]] = customerService.find(id)
-  override def get(id: CustomerId): AppIO[Customer]          = customerService.get(id)
-  override def list: AppIO[List[Customer]]                   = customerService.list
+  override def find(id: CustomerId): AppIO[Option[Customer]]                   = customerService.find(id)
+  override def get(id: CustomerId): AppIO[Customer]                            = customerService.get(id)
+  override def list: AppIO[List[Customer]]                                     = customerService.list
+  override def getMany(ids: Set[CustomerId]): AppIO[Map[CustomerId, Customer]] = customerService.getMany(ids)
 
   override def findAddress(id: AddressId): AppIO[Option[Address]] = addressService.find(id)
   override def getAddress(id: AddressId): AppIO[Address]          = addressService.get(id)

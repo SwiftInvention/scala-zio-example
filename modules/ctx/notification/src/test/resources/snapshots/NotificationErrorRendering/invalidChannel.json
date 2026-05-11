@@ -1,0 +1,6 @@
+{
+  "code" : 400,
+  "category" : "Notification",
+  "reason" : "InvalidChannel",
+  "description" : "Unknown notification channel: 'Pager'. Allowed: Email, Sms, InApp"
+}
