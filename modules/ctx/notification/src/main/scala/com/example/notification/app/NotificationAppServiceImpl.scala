@@ -31,8 +31,8 @@ final class NotificationAppServiceImpl(
       recipientId: CustomerId,
       channel: NotificationChannel,
       message: NotificationMessage
-  ): AppIO[NotificationWithRecipient] =
-    for {
+  ): AppIO[NotificationWithRecipient] = {
+    val build = for {
       recipientTO <- customerApi.get(recipientId)
       now         <- Clock.instant
       uuid        <- Random.nextUUID
@@ -46,23 +46,63 @@ final class NotificationAppServiceImpl(
       created <- notificationService.create(notification)
     } yield NotificationWithRecipient(notification = created, recipient = toRecipient(recipientTO))
 
+    build.tap(result =>
+      ZIO.logAnnotate(
+        Set(
+          LogAnnotation(key = "notification_id", value = result.notification.id.toString),
+          LogAnnotation(key = "recipient_id", value = result.recipient.id.toString),
+          LogAnnotation(key = "channel", value = result.notification.channel.entryName)
+        )
+      )(ZIO.logInfo("notification created"))
+    )
+  }
+
   override def get(id: NotificationId): AppIO[NotificationWithRecipient] =
-    for {
+    (for {
       notification <- notificationService.get(id)
       recipients   <- customerApi.getMany(Set(notification.recipientId))
       enriched     <- zipOne(notification, recipients)
-    } yield enriched
+    } yield enriched).tap(result =>
+      ZIO.logAnnotate(
+        Set(
+          LogAnnotation(key = "notification_id", value = result.notification.id.toString),
+          LogAnnotation(key = "recipient_id", value = result.recipient.id.toString)
+        )
+      )(ZIO.logInfo("notification fetched"))
+    )
 
   override def list: AppIO[List[NotificationWithRecipient]] =
-    for {
+    (for {
       notifications <- notificationService.list
       recipientIds = notifications.iterator.map(_.recipientId).toSet
+      _ <- ZIO.logAnnotate(
+        Set(
+          LogAnnotation(key = "notification_count", value = notifications.size.toString),
+          LogAnnotation(key = "recipient_count", value = recipientIds.size.toString)
+        )
+      )(ZIO.logDebug("enriching notifications with recipients"))
       recipients <- customerApi.getMany(recipientIds)
       enriched   <- ZIO.foreach(notifications)(zipOne(_, recipients))
-    } yield enriched
+    } yield enriched).tap(result =>
+      ZIO.logAnnotate(
+        Set(
+          LogAnnotation(key = "notification_count", value = result.size.toString),
+          LogAnnotation(key = "recipient_count", value = result.iterator.map(_.recipient.id).toSet.size.toString)
+        )
+      )(ZIO.logInfo("listed notifications"))
+    )
 
   override def listForRecipient(recipientId: CustomerId): AppIO[List[Notification]] =
-    notificationService.listForRecipient(recipientId)
+    notificationService
+      .listForRecipient(recipientId)
+      .tap(result =>
+        ZIO.logAnnotate(
+          Set(
+            LogAnnotation(key = "recipient_id", value = recipientId.toString),
+            LogAnnotation(key = "count", value = result.size.toString)
+          )
+        )(ZIO.logInfo("listed notifications for recipient"))
+      )
 
   private def zipOne(
       n: Notification,

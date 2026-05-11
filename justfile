@@ -1,19 +1,25 @@
 set dotenv-load := true
 
-# Activates JDK & sbt versions from .sdkmanrc.
-# Prepended to every public recipe so they don't depend on shell state.
+# Activates JDK & sbt versions from .sdkmanrc when SDKMAN is installed.
+# No-op when SDKMAN isn't present (CI provides JDK/sbt via setup actions),
+# so recipes work in both environments without branching.
 init_env := '''
     export SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
-    set +u
-    source "$SDKMAN_DIR/bin/sdkman-init.sh" >/dev/null
-    sdk env >/dev/null
-    set -u
+    if [ -f "$SDKMAN_DIR/bin/sdkman-init.sh" ]; then
+      set +u
+      source "$SDKMAN_DIR/bin/sdkman-init.sh" >/dev/null
+      sdk env >/dev/null
+      set -u
+    fi
 '''
 
 _default:
   @ just --list --unsorted
 
+# ── Setup ─────────────────────────────────────────────────────────────────────
+
 # install JDK, sbt (SDKMAN), markdownlint-cli2 (npm), and seed local config from the .example
+[group('setup')]
 initial-setup:
   #!/usr/bin/env bash
   set -eu
@@ -33,7 +39,10 @@ initial-setup:
     fi
   done
 
+# ── Dev loop ──────────────────────────────────────────────────────────────────
+
 # compile main and test sources (warnings as errors)
+[group('dev loop')]
 compile:
   #!/usr/bin/env bash
   set -eu
@@ -41,6 +50,7 @@ compile:
   sbt "ci; compile; Test / compile"
 
 # run tests (excludes integration tests — for those run `just test-it`)
+[group('dev loop')]
 test:
   #!/usr/bin/env bash
   set -eu
@@ -48,6 +58,7 @@ test:
   sbt "dev; unitTest"
 
 # integration tests against test MySQL (:3307); silent by default, pass a level (trace|debug|info|warn|error) to see logs
+[group('dev loop')]
 test-it level='': test-infra-reset test-db-migrate
   #!/usr/bin/env bash
   set -eu
@@ -56,6 +67,7 @@ test-it level='': test-infra-reset test-db-migrate
   sbt "dev; it/test"
 
 # lint, check format (warnings as errors). Covers Scala (sbt) + Markdown (markdownlint-cli2).
+[group('dev loop')]
 style-check:
   #!/usr/bin/env bash
   set -eu
@@ -64,6 +76,7 @@ style-check:
   markdownlint-cli2
 
 # lint with autofixes, format. Covers Scala (sbt) + Markdown (markdownlint-cli2 --fix).
+[group('dev loop')]
 style-fix:
   #!/usr/bin/env bash
   set -eu
@@ -72,6 +85,7 @@ style-fix:
   markdownlint-cli2 --fix
 
 # style-fix + style-check + unit tests in one sbt session — run before committing (skips integration tests)
+[group('dev loop')]
 precommit-fix:
   #!/usr/bin/env bash
   set -eu
@@ -80,7 +94,10 @@ precommit-fix:
   markdownlint-cli2 --fix
   just test-it
 
+# ── Run ───────────────────────────────────────────────────────────────────────
+
 # run server in foreground (Ctrl+C to stop)
+[group('run')]
 run:
   #!/usr/bin/env bash
   set -eu
@@ -89,6 +106,7 @@ run:
   sbt "dev; appServer/run"
 
 # run a development scratchpad (modules/app/dev/.../Experiment.scala) against local MySQL
+[group('run')]
 experiment:
   #!/usr/bin/env bash
   set -eu
@@ -97,6 +115,7 @@ experiment:
   sbt "dev; appDev/run"
 
 # seed example fixtures (customers + notifications) into local MySQL
+[group('run')]
 seed-example:
   #!/usr/bin/env bash
   set -eu
@@ -104,54 +123,8 @@ seed-example:
   export APP_ENV=local
   sbt "dev; appDev/runMain com.example.app.dev.actions.SeedExample"
 
-# bring up local infra: MySQL on :3306, Jaeger on :4318 (OTLP HTTP) + :16686 (UI). blocks until healthy.
-local-infra-up:
-  docker compose up -d --wait mysql jaeger
-
-# stop local infra (preserves MySQL volume; Jaeger has no volume)
-local-infra-down:
-  docker compose stop mysql jaeger
-
-# wipe local infra state (drops MySQL data, recreates Jaeger to clear in-memory traces) and bring it back up
-local-infra-reset:
-  docker compose down -v mysql jaeger
-  just local-infra-up
-
-# apply Flyway migrations to local MySQL (uses lib/common/.../db/migration)
-db-migrate:
-  flyway \
-    -url="jdbc:mysql://localhost:3306/localDatabase" \
-    -user=localUser \
-    -password=localPassword \
-    -locations="filesystem:modules/lib/common/src/main/resources/db/migration" \
-    migrate
-
-# bring up integration-test MySQL on :3307 (blocks until healthy)
-test-infra-up:
-  docker compose up -d --wait mysql-test
-
-# stop integration-test MySQL (preserves volume)
-test-infra-down:
-  docker compose stop mysql-test
-
-# wipe integration-test MySQL data and bring it back up
-test-infra-reset:
-  docker compose down -v mysql-test
-  just test-infra-up
-
-# apply Flyway migrations to test MySQL (port 3307)
-test-db-migrate:
-  flyway \
-    -url="jdbc:mysql://localhost:3307/localDatabase" \
-    -user=localUser \
-    -password=localPassword \
-    -locations="filesystem:modules/lib/common/src/main/resources/db/migration" \
-    migrate
-
-# from any prior state, get a working local server foreground (local-infra-reset, db-migrate, seed, run)
-start-fresh-local-server: local-infra-reset db-migrate seed-example run
-
 # curl the running server's endpoints (success + typed-error 404). assumes server up on :8080
+[group('run')]
 smoke-test:
   #!/usr/bin/env bash
   set -eu
@@ -235,3 +208,89 @@ smoke-test:
 
   echo
   echo "✅ smoke test passed"
+
+# ── Dev infra ─────────────────────────────────────────────────────────────────
+
+# bring up local infra: MySQL on :3306, Jaeger on :4318 (OTLP HTTP) + :16686 (UI). blocks until healthy.
+[group('dev infra')]
+local-infra-up:
+  docker compose up -d --wait mysql jaeger
+
+# stop local infra (preserves MySQL volume; Jaeger has no volume)
+[group('dev infra')]
+local-infra-down:
+  docker compose stop mysql jaeger
+
+# wipe local infra state (drops MySQL data, recreates Jaeger to clear in-memory traces) and bring it back up
+[group('dev infra')]
+local-infra-reset:
+  docker compose down -v mysql jaeger
+  just local-infra-up
+
+# apply Flyway migrations to local MySQL (uses lib/common/.../db/migration)
+[group('dev infra')]
+db-migrate:
+  flyway \
+    -url="jdbc:mysql://localhost:3306/localDatabase" \
+    -user=localUser \
+    -password=localPassword \
+    -locations="filesystem:modules/lib/common/src/main/resources/db/migration" \
+    migrate
+
+# ── Test infra ────────────────────────────────────────────────────────────────
+
+# bring up integration-test MySQL on :3307 (blocks until healthy). Separate compose project from dev infra.
+[group('test infra')]
+test-infra-up:
+  docker compose -p scala-zio-example-test -f docker-compose.test.yml up -d --wait mysql
+
+# stop integration-test MySQL (preserves volume)
+[group('test infra')]
+test-infra-down:
+  docker compose -p scala-zio-example-test -f docker-compose.test.yml stop mysql
+
+# wipe integration-test MySQL data and bring it back up
+[group('test infra')]
+test-infra-reset:
+  docker compose -p scala-zio-example-test -f docker-compose.test.yml down -v
+  just test-infra-up
+
+# apply Flyway migrations to test MySQL (port 3307)
+[group('test infra')]
+test-db-migrate:
+  flyway \
+    -url="jdbc:mysql://localhost:3307/localDatabase" \
+    -user=localUser \
+    -password=localPassword \
+    -locations="filesystem:modules/lib/common/src/main/resources/db/migration" \
+    migrate
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+
+# build the server docker image as `scala-zio-example-server:<version>` and `:latest` via sbt-native-packager
+[group('docker')]
+docker-build:
+  #!/usr/bin/env bash
+  set -eu
+  {{ init_env }}
+  sbt "appServer/Docker/publishLocal"
+
+# bring up the dockerized server alongside infra (uses the most recent `docker-build` output). blocks until healthy.
+[group('docker')]
+docker-run:
+  docker compose up -d --wait server
+
+# stop the dockerized server (preserves infra)
+[group('docker')]
+docker-stop:
+  docker compose stop server
+
+# ── End-to-end ────────────────────────────────────────────────────────────────
+
+# from any prior state, get a working local server foreground (local-infra-reset, db-migrate, seed, run)
+[group('end-to-end')]
+start-fresh-local-server: local-infra-reset db-migrate seed-example run
+
+# from any prior state, get a working dockerized server (local-infra-reset, db-migrate, seed, docker-build, docker-run)
+[group('end-to-end')]
+start-fresh-docker-server: local-infra-reset db-migrate seed-example docker-build docker-run

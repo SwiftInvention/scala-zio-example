@@ -51,7 +51,7 @@ object TestDb {
   }
 
   object TestDbConfig {
-    // Default port `3307` points at the dedicated `mysql-test` container (see docker-compose.yml).
+    // Default port `3307` points at the dedicated test mysql container (see docker-compose.test.yml).
     // This isolates integration test runs from the local dev MySQL on 3306 — `just db-reset` and
     // a running local server can't interfere with tests, and vice versa.
     //

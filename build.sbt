@@ -16,7 +16,13 @@ lazy val commonSettings = Seq(
   Test / fork := true, // pins test cwd to the module's baseDirectory — required for SnapshotSpec's relative paths
   tpolecatScalacOptions += ScalacOptions.other("-Ymacro-annotations"),
   testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
-  libraryDependencies ++= zioTestDep
+  libraryDependencies ++= zioTestDep,
+  // Scaladoc isn't a deliverable in this codebase — patterns/ docs cover what readers need, and no
+  // module publishes a doc jar for external consumption. Disabled globally so packaging tasks (notably
+  // JavaAppPackaging's Universal mapping for the docker image) don't drag in doc.jars or trip on
+  // doc-link errors under warnings-as-errors.
+  Compile / doc / sources                := Seq.empty,
+  Compile / packageDoc / publishArtifact := false
 )
 
 // ── lib ─────────────────────────────────────────────────────
@@ -70,15 +76,24 @@ lazy val ctxNotification = (project in file("modules/ctx/notification"))
 // ── app: server ─────────────────────────────────────────────
 
 lazy val appServer = (project in file("modules/app/server"))
-  .enablePlugins(BuildInfoPlugin)
+  .enablePlugins(BuildInfoPlugin, JavaAppPackaging, DockerPlugin)
   .dependsOn(libCommon, libHttp, ctxCustomerApi, ctxCustomer, ctxNotificationApi, ctxNotification)
   .settings(commonSettings)
   .settings(buildInfoSettings)
+  .settings(dockerSettings)
   .settings(
     libraryDependencies ++=
       zioCoreDep ++ zioHttpDep ++ pureconfigDep ++ loggingDep ++ dbDep,
     excludeDependencies ++= logExcludeDep,
-    name := "server"
+    name := "server",
+    // Keep application-local.conf{,.example} out of the packaged jar — `local` is the only
+    // env meant to run on a developer host, not in a container, and the file may carry
+    // throwaway dev creds. The resources stay on `sbt run`'s classpath (Compile/classes),
+    // so local-dev keeps working; only the published jar is filtered.
+    Compile / packageBin / mappings ~= {
+      val excluded = Set("application-local.conf", "application-local.conf.example")
+      _.filterNot { case (_, path) => excluded(path) }
+    }
   )
 
 // ── app: dev (local-only dev tools) ─────────────────────────
@@ -134,4 +149,25 @@ lazy val root = (project in file("."))
 lazy val buildInfoSettings = Seq(
   buildInfoKeys    := Seq[BuildInfoKey](name, version),
   buildInfoPackage := organization.value
+)
+
+// Docker image settings for the `server` deployment unit. Produces
+// `scala-zio-example-server:<version>` and `:latest` via
+// `sbt appServer/Docker/publishLocal` (see `patterns/docker-build.md`).
+lazy val dockerSettings = Seq(
+  dockerBaseImage        := "eclipse-temurin:21-jre-noble",
+  Docker / packageName   := "scala-zio-example-server",
+  Docker / version       := version.value,
+  dockerUpdateLatest     := true,
+  dockerExposedPorts     := Seq(8080),
+  dockerRepository       := None,
+  Docker / daemonUserUid := Some("1001"),
+  Docker / daemonUser    := "app",
+  Docker / daemonGroup   := "app",
+  dockerLabels := Map(
+    "org.opencontainers.image.title"       -> "scala-zio-example-server",
+    "org.opencontainers.image.description" -> "Reference Scala+ZIO server",
+    "org.opencontainers.image.version"     -> version.value,
+    "org.opencontainers.image.source"      -> "https://github.com/VKFisher/scala-zio-example"
+  )
 )

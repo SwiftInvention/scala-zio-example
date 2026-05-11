@@ -36,8 +36,11 @@ object ServerApp extends ZIOAppDefault {
 
 The split is **operator vs investigator**:
 
-- **INFO** — workflow milestones an operator wants to see in production logs. Real change happened: request completed, job started, app booted, "created N", "processed N", "kicked off async X." Method invocations alone don't justify INFO — if the only thing you'd say is "method called", don't log it. Reads typically don't get INFO-level logs (the access log + spans cover them); writes log on completion with counts/ids/significant outputs.
-- **DEBUG** — per-iteration / per-call operational chatter. "Querying X", "skipping because Y", "already exists, no-op", per-row branch decisions, intermediate values. Off in deployed envs by default; the investigator turns it on.
+- **INFO** — notable events an operator wants to see in production logs. This is the high-signal layer — what you scan first when chasing a bug. Three kinds of INFO sites:
+  - *Per app-service call.* Every public app-service method logs once at completion, carrying outcome as annotations (ids, counts, branch taken). Long-running calls additionally log at start so in-flight work is visible. App-service is the natural per-request boundary — HTTP-driven and cross-context calls both pass through here, so a single line covers both surfaces.
+  - *Notable events at lower layers.* When a domain service or repo does something an operator would want to know about — retry succeeded after N attempts, fallback path taken, cache invalidated, stale row repaired — it logs at INFO too.
+  - *Process lifecycle and dev actions.* Boot, shutdown, config resolution, seed/migration milestones (`ServerApp`, `ConfigBootstrap`, `SeedExample`).
+- **DEBUG** — per-iteration / per-call operational chatter. "Querying X", "skipping because Y", "already exists, no-op", per-row branch decisions, intermediate values. Lives at the layer where the interesting thing happens — mid-orchestration in an app service (e.g. `NotificationAppServiceImpl.list` annotates the dedup'd recipient count before the cross-context batch fetch), at a branch in a domain service (e.g. `CustomerServiceImpl.getMany` logs the empty-id-set short-circuit), inside a repo. Off in deployed envs by default; the investigator turns it on.
 - **WARN** — recoverable failures that didn't surface to a user but might next time.
 - **ERROR** — failures that surfaced or broke behavior. See "Error logs at boundaries" below for where they fire.
 
@@ -96,16 +99,26 @@ The build excludes legacy `commons-logging` and `log4j` 1.x in favor of `jcl-ove
 
 ## Adding context to a log line
 
-Use `ZIO.logAnnotate(key -> value)` for structured context, not string interpolation:
+Use `ZIO.logAnnotate` for structured context, not string interpolation. The annotation renders as a key in JSON and `key=value` after the message in pretty:
 
 ```scala
-// preferred — annotation renders as a key in JSON, `key=value` after the message in pretty
-ZIO.logAnnotate("customer_id", id.toString) {
-  ZIO.logInfo("customer fetched")
+// preferred — single-key form uses the (String, String) overload
+ZIO.logAnnotate("notification_id", id.toString) {
+  ZIO.logInfo("notification created")
+}
+
+// multi-key form takes a Set[LogAnnotation]
+ZIO.logAnnotate(
+  Set(
+    LogAnnotation(key = "notification_id", value = id.toString),
+    LogAnnotation(key = "recipient_id", value = recipientId.toString)
+  )
+) {
+  ZIO.logInfo("notification created")
 }
 
 // avoid — context is opaque to log aggregators
-ZIO.logInfo(s"customer fetched: id=$id")
+ZIO.logInfo(s"notification created: id=$id recipient=$recipientId")
 ```
 
 Annotations propagate through fiber-locals to all log calls inside the scope, including ones inside libraries that use slf4j (provided the bridge is installed).

@@ -20,7 +20,7 @@ final class CustomerServiceImpl(repo: CustomerRepo) extends CustomerService {
   override def list: AppIO[List[Customer]] = repo.list
 
   override def getMany(ids: Set[CustomerId]): AppIO[Map[CustomerId, Customer]] =
-    if (ids.isEmpty) ZIO.succeed(Map.empty)
+    if (ids.isEmpty) ZIO.logDebug("empty id set, returning empty map").as(Map.empty)
     else repo.findMany(ids).map(_.iterator.map(c => c.id -> c).toMap)
 }
 

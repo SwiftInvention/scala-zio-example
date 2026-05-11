@@ -65,6 +65,17 @@ just seed-example    # run SeedExample — inserts Ada/Alan/Grace into customer 
 
 Both export `APP_ENV=local`. `appDev` is local-only by build (see [`patterns/dev-tools.md`](patterns/dev-tools.md)) — no `APP_ENV=dev|prod` variants exist for it.
 
+## Docker
+
+```sh
+just docker-build                  # build the server image via sbt-native-packager
+just docker-run                    # bring up the dockerized server alongside infra
+just docker-stop                   # stop just the dockerized server
+just start-fresh-docker-server     # from any state → local-infra-reset → db-migrate → seed → docker-build → docker-run
+```
+
+The image carries `application-dev.conf` and `application-prod.conf` only — `application-local.conf` is filtered out (the `local` env is for host runs, not containers). Compose-local uses `APP_ENV=dev` and fills the `${VAR}` substitutions from `docker-compose.yml`'s `environment:` block. See [`patterns/docker-build.md`](patterns/docker-build.md).
+
 ## Setup
 
 ```sh
