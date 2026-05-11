@@ -14,7 +14,7 @@
 
 logging {
   format = "pretty"
-  level  = "debug"
+  level  = "info"
 }
 
 database.data-source {

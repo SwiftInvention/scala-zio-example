@@ -30,10 +30,11 @@ modules/ctx/<name>/src/main/scala/com/example/<name>/
     │   └── repo/
     │       └── <Name>RepoImpl.scala
     └── http/
-        └── <Name>Routes.scala       frontend HTTP routes
+        ├── <Name>Endpoints.scala    typed endpoint definitions (wire shape, no behavior)
+        └── <Name>Routes.scala       implementations against <Name>Endpoints
 ```
 
-`impl/service/` mirrors `domain/service/` so finding a trait's impl is a mechanical translation.
+`impl/service/` mirrors `domain/service/` so finding a trait's impl is a mechanical translation. See [`http-endpoints.md`](http-endpoints.md) for how `<Name>Endpoints` definitions feed both the routes and the OpenAPI document.
 
 ## Layer chain
 
@@ -43,11 +44,11 @@ modules/ctx/<name>/src/main/scala/com/example/<name>/
 <Name>ServiceImpl.layer        takes <Name>Repo, provides <Name>Service
    ↓
 <Name>AppServiceImpl.layer     takes <Name>Service, provides <Name>AppService
-   ↓
-<Name>ApiDirectImpl.layer      takes <Name>AppService, provides <Name>Api
-   ↓
-<Name>Routes.layer             takes <Name>Api, exposes Routes[Any, Response]
+   ├─→ <Name>ApiDirectImpl.layer   takes <Name>AppService, provides <Name>Api    (cross-context plane)
+   └─→ <Name>Routes.layer          takes <Name>AppService, exposes Routes[Any, Response]   (HTTP plane)
 ```
+
+`<Name>AppService` is the fan-out point: the cross-context bridge (`<Name>ApiDirectImpl`) and the HTTP routes are sibling consumers, not chained. See [`ctx-api.md`](ctx-api.md#relationship-to-http-routes) for why the HTTP plane bypasses `<Name>Api`.
 
 Each link is a thin pass-through unless it has something to add. Domain services host validation and business rules; AppService orchestrates them. When a link has nothing to add, drop it — AppService can call Repo directly when there's no domain logic worth a Service layer, and `<Name>Service` doesn't need to exist if it would be pure delegation.
 

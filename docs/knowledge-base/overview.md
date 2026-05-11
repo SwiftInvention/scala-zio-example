@@ -20,14 +20,24 @@ Module layout: [`patterns/module-layout.md`](patterns/module-layout.md). Cross-m
 
 ## HTTP server
 
-One zio-http server, started by `ServerApp` (`modules/app/server/.../ServerApp.scala`). Routes owned by contexts (`customer/impl/http/CustomerRoutes.scala`), composed at the app level. Host/port from `ServerConfig`.
+One zio-http server, started by `ServerApp` (`modules/app/server/.../ServerApp.scala`). Routes are defined via zio-http's typed `Endpoint` API: each context has an `<Name>Endpoints.scala` (pure definitions) plus a `<Name>Routes.scala` (implementations against those endpoints), both colocated in `impl/http/`. The split lets the same `Endpoint` values feed both the running routes and the OpenAPI document. Pattern: [`patterns/http-endpoints.md`](patterns/http-endpoints.md).
 
-Currently exposed:
+Application routes are owned by contexts (`customer/impl/http/`); operational routes (health probes), the typed-Endpoint wire-format errors (`ApiFailure`), and the shared HTTP middleware (`RequestLogging`, `RequestTracing`) live in `lib/http` so multiple server deployments wire the same probes. `ServerApp` instantiates `ServerRoutes` (in `app/server/`), which composes the route graph and aggregates `<Name>Endpoints.all` from each contributor for OpenAPI generation. Host/port from `ServerConfig`.
+
+Application routes get the full middleware chain (tracing, access log, request id). Operational routes (health, ready, docs) are served bare so that probes and doc fetches don't flood traces and access logs.
+
+Application endpoints:
 
 - `GET /customers` — list (200, JSON array of `CustomerTO`)
 - `GET /customers/:id` — fetch one (200, or 404 + `ErrorTO` body)
 - `GET /customers/:id/addresses` — addresses owned by a customer (200, JSON array of `AddressTO`; empty array if the customer has none or doesn't exist)
 - `GET /addresses/:id` — fetch one (200, or 404 + `ErrorTO` body)
+
+Operational endpoints:
+
+- `GET /health` — liveness probe; always 200 if the process is up. No DB call. Wire as a k8s `livenessProbe`.
+- `GET /ready` — readiness probe; 200 if the DB is reachable (`SELECT 1`), 503 otherwise. Wire as a k8s `readinessProbe`.
+- `GET /docs` — Swagger UI for the API. The OpenAPI spec is at `/docs/scala-zio-example.json` (filename derived from the title in `ServerRoutes`).
 
 ## Service wiring
 
@@ -41,4 +51,4 @@ Config loaded from `application-${APP_ENV}.conf` at boot ([`patterns/config.md`]
 
 ## Tech stack
 
-Scala 2.13 + ZIO 2.1 + zio-http + zio-json + zio-prelude. Quill + MySQL for persistence; Flyway CLI for migrations. PureConfig for typed config. enumeratum for error enums. zio-logging + slf4j. JDK 21 + sbt 1.12, pinned via `.sdkmanrc`. Versions in `project/Versions.scala`, deps in `project/Dependencies.scala`.
+Scala 2.13 + ZIO 2.1 + zio-http + zio-schema + zio-prelude. Quill + MySQL for persistence; Flyway CLI for migrations. PureConfig for typed config. enumeratum for error enums. zio-telemetry + OpenTelemetry SDK for tracing. zio-logging + slf4j. JDK 21 + sbt 1.12, pinned via `.sdkmanrc`. Versions in `project/Versions.scala`, deps in `project/Dependencies.scala`.

@@ -9,6 +9,7 @@ import com.example.customer.app.CustomerAppServiceImpl
 import com.example.customer.impl.http.CustomerRoutes
 import com.example.customer.impl.service.repo.{AddressRepoMySQLImpl, CustomerRepoMySQLImpl}
 import com.example.customer.impl.service.{AddressServiceImpl, CustomerServiceImpl}
+import com.example.http.HealthRoutes
 import zio._
 import zio.http.Server
 import zio.telemetry.opentelemetry.tracing.Tracing
@@ -24,7 +25,7 @@ import zio.telemetry.opentelemetry.tracing.Tracing
   * Migrations are applied out-of-process (`just db-migrate`).
   */
 object ServerEnv {
-  type AppEnv = CustomerRoutes & Server & ServerConfig & Tracing
+  type AppEnv = ServerRoutes & Server & ServerConfig & Tracing
 
   /** Translates `ServerConfig` to zio-http's `Server.Config` and produces a `Server`. */
   private val httpServerLayer: ZLayer[ServerConfig, Throwable, Server] = {
@@ -53,6 +54,10 @@ object ServerEnv {
       AddressServiceImpl.layer,
       CustomerAppServiceImpl.layer,
       CustomerRoutes.layer,
+      // ── operational ──
+      HealthRoutes.layer,
+      // ── route composition ──
+      ServerRoutes.layer,
       // ── http ──
       httpServerLayer
     )

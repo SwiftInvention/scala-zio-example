@@ -4,17 +4,17 @@ description: Multi-dimensional fresh-eyes review of working-tree changes. Three 
 
 # review-changes
 
-Three sub-agents in parallel, each enforcing a different standard against the current working-tree diff.
+Three sub-agents in parallel, each looking at the working-tree diff through a different lens. The fresh-eyes property is the value — none of them have your context.
 
-The dimensions:
+Dimensions:
 
 - **Docs & comments** — prose quality. Local-reasoning at the prose level; "perfect is nothing left to cut away" against hedging, defensive framing, and over-justification.
-- **Principle adherence** — does the code follow the codebase's documented principles and style rules? Includes code-level local-reasoning and correct-by-construction.
+- **Principle adherence** — whether the code follows the codebase's documented principles and style rules. Includes code-level local-reasoning and correct-by-construction.
 - **Domain & task-specific choices** — domain-model fitness, plus design decisions outside the documented principles (deps, abstractions, idioms, edge cases).
 
 ## How to invoke
 
-In a **single message with three Agent tool calls** (subagent_type: `general-purpose`, parallel), dispatch the prompts below verbatim. Then triage before presenting (see "Presenting the results").
+In one message, dispatch all three Agent tool calls (subagent_type: `general-purpose`) so they run in parallel. The prompts below are starting points — adapt scope to the actual diff if it helps. Triage their output before presenting (see "Presenting the results").
 
 ---
 
@@ -28,7 +28,7 @@ Two checks:
 
 Read `docs/knowledge-base/patterns/local-reasoning.md` — the "Local reasoning applies to docs, too" section is the standard.
 
-Flag:
+Things to look for:
 
 1. Transitional / version-aware framing: "now", "no longer", "previously", "we used to", "as we changed", "the refactor", "recently".
 2. Diff-describing prose: "shorter than before", "we removed X", "this addresses the problem of Y" — describes a change, not the artifact.
@@ -41,33 +41,33 @@ A cross-reference that names what's at the destination is fine ("see `local-reas
 
 The audience is a skilled, experienced reader. Trust them. Cut anything that smooths over a confidence gap rather than informing.
 
-Flag:
+Things to look for:
 
 1. **Hedging** the prose doesn't need: "probably", "generally", "mostly", "tends to", "in most cases" when the real claim is unhedged.
-2. **Defensive framing**: "load-bearing", "does real work", "subtle but important", "the triple X is required because" — reaching for emphasis where the artifact stands without it. Once or twice in a doc is fine; pattern is the smell.
+2. **Defensive framing**: "load-bearing", "does real work", "subtle but important", "the triple X is required because" — reaching for emphasis where the artifact stands without it.
 3. **Pre-empting objections nobody raised**: "you might think X but actually Y" when X wasn't on the table.
 4. **Triple-explaining one idea**: same point made three different ways, hoping one lands.
 5. **Over-citation**: "per the X principle" repeated when the surrounding text already invokes it; principle slugs in every paragraph instead of once.
 6. **"Note:" / "Important:" tags** carrying no info beyond emphasis.
-7. **Justifications addressed to an imagined skeptic** — paragraphs that argue with someone who isn't there. The reader is a peer who'd accept the choice. State, don't argue.
+7. **Justifications addressed to an imagined skeptic** — paragraphs that argue with someone who isn't there.
 
-What stays: real reasoning that informs the reader of a non-obvious mechanism (e.g. "Quill's transaction is reentrant on a fiber-local connection, so nested calls reuse the outer scope" — the reader benefits from knowing this). What goes: defensive emphasis on choices that don't need defending.
+Real reasoning that informs the reader of a non-obvious mechanism stays (e.g. "Quill's transaction is reentrant on a fiber-local connection, so nested calls reuse the outer scope" — the reader benefits from knowing this). Defensive emphasis on choices that don't need defending goes.
 
 ### Reporting
 
-For each finding: `file:line — quoted phrase — local-reasoning OR cut-to-bone — what to cut or rephrase`. Be selective. Cap at 7. If none, say so. Verdict: Solid / Minor cleanup needed / Substantial cleanup needed. Don't fix; report. ~250 words.
+For each finding: `file:line — quoted phrase — local-reasoning OR cut-to-bone — what to cut or rephrase`. When in doubt, flag it — a noted concern is cheap to dismiss, a missed one compounds. End with a verdict (Solid / Minor cleanup needed / Substantial cleanup needed) and skip the report if you didn't find anything.
 
 ---
 
 ## Agent 2 — Principle adherence
 
-You're reviewing code for adherence to the codebase's documented principles and style rules. Prose in `.md` docs and Scala doc comments is out of scope — focus on the resulting code.
+You're reviewing code for adherence to the codebase's documented principles and style rules. Prose in `.md` docs and Scala doc comments is out of scope.
 
 **Read first:**
 - `docs/knowledge-base/architecture-principles.md` — the principle list.
 - `docs/knowledge-base/styleguide.md` — the style rules.
 - `docs/knowledge-base/patterns/local-reasoning.md` — for code-level local-reasoning checks (vestigial generality, action-at-a-distance, hidden state).
-- `docs/knowledge-base/patterns/correct-by-construction.md` — for the type-discipline checks (legal-state space, smart constructors, parse-don't-validate, domain types stay at the domain).
+- `docs/knowledge-base/patterns/correct-by-construction.md` — for type-discipline checks (legal-state space, smart constructors, parse-don't-validate, domain types stay at the domain).
 
 Read the relevant `patterns/<...>.md` for any specific principle you need to disambiguate.
 
@@ -81,9 +81,9 @@ Read the relevant `patterns/<...>.md` for any specific principle you need to dis
 - Names that capture transition: `newRouteHandler`, `RefactoredFoo`, `FooV2`, `useCachedX = true` flags whose `false` branch is dead.
 - Shared mutable state, ambient context not declared in signatures, action-at-a-distance.
 
-A violation is real when a rule applies and the resulting code doesn't match. Pre-existing violations marked `FIXME` / `WONTFIX` are not in scope — only flag what the change introduces or leaves unmarked.
+A violation is real when a rule applies and the resulting code doesn't match. Pre-existing violations marked `FIXME` / `WONTFIX` are out of scope — focus on what the change introduces or leaves unmarked.
 
-For each finding: `file:line — quoted code — \`principle-slug\` or \`style-rule-slug\` — why it violates`. Cap at 7. If none, say so. Verdict. Don't fix. ~300 words.
+For each finding: `file:line — quoted code — \`principle-slug\` or \`style-rule-slug\` — why it violates`. When in doubt, flag it — a noted concern is cheap to dismiss, a missed one compounds. End with a verdict; skip the report if the diff is clean.
 
 ---
 
@@ -115,21 +115,15 @@ You're reviewing two adjacent things:
 4. Idiom choices — did the change reach for the right framework abstraction, or roll its own when the framework had one?
 5. Edge cases the design doesn't handle (empty inputs, concurrent calls, failure modes, cleanup)?
 
-For each finding: `file:line or area — what's coded — what's at issue — what would tighten it — confidence (strong / soft)`. Be selective; false positives erode signal more than missed findings. Cap at 7. If none, say so. Verdict. Don't fix. ~300 words.
+For each finding: `file:line or area — what's coded — what's at issue — what would tighten it — confidence (strong / soft)`. When in doubt, flag it as soft — a noted concern is cheap to dismiss, a missed one compounds. The `confidence` field is the calibration mechanism; use it. End with a verdict.
 
 ---
 
 ## Presenting the results
 
-You'll be consuming and triaging the agents' output before the user sees it. Don't dump the three reports verbatim and ask "what do you want to act on?" — that pushes synthesis onto the user. Categorize each finding and present a brief summary the user can scan and challenge.
+You're triaging the agents' output before the user sees it. The failure mode to avoid: dumping all three reports verbatim with "what do you want to act on?" — that pushes synthesis onto the user. Instead, categorize and apply where you can.
 
-Categories:
-
-- **Obvious yes** — clear issue, fix is mechanical and low-risk. Stale references, prose to cut, type narrowing the chain already supports, dead config. Apply directly, then list with a one-line reason each.
-- **Obvious no** — the agent flagged it soft, the issue is interop with an external API, out-of-scope, or genuinely defensible from current state. Skip, list with a one-line reason.
-- **Murky** — judgment calls about scope, naming, design trade-offs. Ask via `AskUserQuestion` (group related findings into one question where possible).
-
-Output shape:
+A shape that's worked:
 
 ```
 ## Obvious yes (applied)
@@ -139,7 +133,13 @@ Output shape:
 - <finding-id> — <one-line reason>
 
 ## Murky (your call)
-<AskUserQuestion>
+<AskUserQuestion if there's a real decision; otherwise just describe>
 ```
 
-Mention each finding so the user can challenge any triage decision. If they push back on something you marked obvious, accept and re-categorize. Verbatim reports stay available if the user asks for them.
+- **Obvious yes** — clear issue, fix is mechanical and low-risk. Stale references, prose to cut, type narrowing the chain already supports, dead config. Apply directly.
+- **Obvious no** — the agent flagged it soft, the issue is interop with an external API, out-of-scope, or genuinely defensible from current state. Skip.
+- **Murky** — judgment calls about scope, naming, design trade-offs. If there's a real decision to surface, ask via `AskUserQuestion` (group related findings into one question). If not, describe and move on — don't manufacture a question because the structure expects one.
+
+List every finding with its category and one-line reason — the triage is visible, not a black box. The full agent reports remain in the conversation; refer back if a finding needs more context.
+
+When repeated invocations within a session start producing only marginal findings, say so — "diminishing returns" is a useful signal back to the user that the diff is settled.

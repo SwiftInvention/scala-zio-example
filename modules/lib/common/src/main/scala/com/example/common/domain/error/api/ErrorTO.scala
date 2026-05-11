@@ -1,13 +1,13 @@
 package com.example.common.domain.error.api
 
 import com.example.common.domain.error.AppFailure
-import zio.json.{DeriveJsonCodec, JsonCodec}
+import zio.schema.{DeriveSchema, Schema}
 
 /** Wire format for any `AppFailure` rendered at the HTTP boundary. */
 final case class ErrorTO(code: Int, category: String, reason: String, description: String)
 
 object ErrorTO {
-  implicit val codec: JsonCodec[ErrorTO] = DeriveJsonCodec.gen[ErrorTO]
+  implicit val schema: Schema[ErrorTO] = DeriveSchema.gen[ErrorTO]
 
   def from(e: AppFailure): ErrorTO =
     ErrorTO(

@@ -5,6 +5,8 @@ import java.nio.file.{Files, Paths}
 
 import zio._
 import zio.json._
+import zio.schema.Schema
+import zio.schema.codec.{JsonCodec => SchemaJsonCodec}
 import zio.test._
 
 /** JSON snapshot ("golden") testing helpers, mixed into a `ZIOSpecDefault`.
@@ -29,9 +31,13 @@ trait SnapshotSpec {
     sys.env.get("SNAPSHOT_UPDATE").contains("true") ||
       sys.props.get("snapshot.update").contains("true")
 
-  /** Snapshot a value as pretty-printed JSON (2-space indent), via zio-json. */
-  def matchesJsonSnapshot[A: JsonEncoder](name: String, value: A): UIO[TestResult] =
+  /** Snapshot a value as pretty-printed JSON (2-space indent). The encoder is derived from the value's `Schema` via
+    * zio-schema-json — TOs and newtypes carry only `Schema` instances, the zio-json codec materializes here.
+    */
+  def matchesJsonSnapshot[A](name: String, value: A)(implicit schema: Schema[A]): UIO[TestResult] = {
+    implicit val codec: JsonCodec[A] = SchemaJsonCodec.jsonCodec(schema)
     matchesStringSnapshot(name = name, actual = value.toJsonPretty)
+  }
 
   private def matchesStringSnapshot(name: String, actual: String): UIO[TestResult] = {
     val path = snapshotRoot.resolve(name)

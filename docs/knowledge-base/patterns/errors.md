@@ -43,6 +43,8 @@ The `withId` smart constructor keeps the message wording consistent across raise
 
 `AppFailure` extends `Exception` for cause chaining — concrete errors hold a raw `Option[Throwable]` so JVM-origin stack traces survive. The `Exception`-ness is internal plumbing; the channel type is `AppFailure`.
 
+Errors use plain `final case class ... private`, not the `sealed abstract case class` triple from [`smart-constructors`](smart-constructors.md). The smart-constructor dance exists to suppress `copy()` so validated invariants can't be bypassed; errors don't carry validated invariants worth protecting (a `copy`d `CustomerNotFoundError` with a different message is still a well-formed error).
+
 ## Where the pieces live
 
 Context-specific errors and reason enums live with the context: `<ctx>/domain/error/` holds `<Cat>ErrorReason.scala` and `<Cat>Errors.scala`. Generic infrastructure — `AppFailure`, the `HttpError` status traits, `ErrorTO`, pre-built generic errors (`ApiErrors`, `BackendErrors`) — lives in `lib/common/domain/error/`. Check the generic ones before defining a new error.

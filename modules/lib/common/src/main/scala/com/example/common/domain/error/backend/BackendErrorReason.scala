@@ -13,4 +13,5 @@ object BackendErrorReason extends Enum[BackendErrorReason] {
   case object InternalError extends BackendErrorReason
   case object Database      extends BackendErrorReason
   case object Config        extends BackendErrorReason
+  case object Timeout       extends BackendErrorReason
 }

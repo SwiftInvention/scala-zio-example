@@ -25,32 +25,40 @@ lazy val libCommon = (project in file("modules/lib/common"))
   .settings(commonSettings)
   .settings(
     libraryDependencies ++=
-      zioCoreDep ++ zioPreludeDep ++ zioJsonDep ++ enumeratumDep ++ dbDep ++ pureconfigDep ++ loggingDep ++ telemetryDep,
+      zioCoreDep ++ zioPreludeDep ++ zioSchemaDep ++ enumeratumDep ++ dbDep ++ pureconfigDep ++ loggingDep ++ telemetryDep,
     excludeDependencies ++= logExcludeDep
   )
+
+// HTTP-flavored cross-cutting infrastructure: ApiFailure (typed-Endpoint wire format), shared probes (HealthRoutes),
+// shared middleware (RequestLogging, RequestTracing), and the ServerRoutes composer used by every deployment unit.
+// Sits above libCommon so the cross-context contract (`ctxCustomerApi`) doesn't transitively pull a server framework.
+lazy val libHttp = (project in file("modules/lib/http"))
+  .dependsOn(libCommon)
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ telemetryDep)
 
 // ── ctx: customer ───────────────────────────────────────────
 
 lazy val ctxCustomerApi = (project in file("modules/ctx/customer-api"))
   .dependsOn(libCommon)
   .settings(commonSettings)
-  .settings(libraryDependencies ++= zioCoreDep ++ zioJsonDep)
+  .settings(libraryDependencies ++= zioCoreDep)
 
 lazy val ctxCustomer = (project in file("modules/ctx/customer"))
-  .dependsOn(libCommon % "compile->compile;test->test", ctxCustomerApi)
+  .dependsOn(libCommon % "compile->compile;test->test", libHttp, ctxCustomerApi)
   .settings(commonSettings)
-  .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ zioJsonDep ++ dbDep)
+  .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ dbDep)
 
 // ── app: server ─────────────────────────────────────────────
 
 lazy val appServer = (project in file("modules/app/server"))
   .enablePlugins(BuildInfoPlugin)
-  .dependsOn(libCommon, ctxCustomerApi, ctxCustomer)
+  .dependsOn(libCommon, libHttp, ctxCustomerApi, ctxCustomer)
   .settings(commonSettings)
   .settings(buildInfoSettings)
   .settings(
     libraryDependencies ++=
-      zioCoreDep ++ zioHttpDep ++ zioJsonDep ++ pureconfigDep ++ loggingDep ++ dbDep,
+      zioCoreDep ++ zioHttpDep ++ pureconfigDep ++ loggingDep ++ dbDep,
     excludeDependencies ++= logExcludeDep,
     name := "server"
   )
@@ -78,7 +86,8 @@ lazy val appDev = (project in file("modules/app/dev"))
 lazy val it = (project in file("modules/app/it"))
   .dependsOn(
     appServer,
-    libCommon   % "test->test",
+    libCommon % "test->test",
+    libHttp,
     ctxCustomer % "test->test"
   )
   .settings(commonSettings)
@@ -90,7 +99,7 @@ lazy val it = (project in file("modules/app/it"))
 // ── root aggregator ─────────────────────────────────────────
 
 lazy val root = (project in file("."))
-  .aggregate(libCommon, ctxCustomerApi, ctxCustomer, appServer, appDev, it)
+  .aggregate(libCommon, libHttp, ctxCustomerApi, ctxCustomer, appServer, appDev, it)
   .settings(name := "scala-zio-example")
 
 lazy val buildInfoSettings = Seq(

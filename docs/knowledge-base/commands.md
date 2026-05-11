@@ -2,14 +2,27 @@
 
 Commands an agent reaches for while iterating.
 
-## Compile and test
+## Iteration loop
+
+Three commands in iteration-cost order — pick the right one for the moment:
 
 ```sh
-just compile         # main + test, warnings as errors
-just test            # run tests (no specs yet — recipe is in place)
+just compile         # tight loop: compile main + test, warnings as errors
+just style-fix       # chunk closer: auto-fix formatting + scalafix; rewrites files
+just precommit-fix   # done-gate: style-fix + style-check + unit tests + integration tests
 ```
 
-Per-spec sbt invocations:
+`compile` is the fast feedback loop while writing code — reach for it after each edit while you're working through compile errors or shaping a function. `style-fix` runs scalafmt and scalafix; reach for it after a logical chunk of work, not between every keystroke (the file rewrites surprise you mid-edit). `precommit-fix` is the expected gate before declaring a code-touching task complete — it formats, lints, and runs the full test suite (including IT against test MySQL, which it brings up itself).
+
+`style-check` exists for verify-only without rewrites:
+
+```sh
+just style-check     # verify formatting + lint, fail on issues; no rewrites
+```
+
+## Targeted tests
+
+Per-spec sbt invocations when iterating on a specific spec:
 
 ```sh
 sbt "ctxCustomer/testOnly *SpecName"
@@ -19,13 +32,6 @@ TEST_LOG_LEVEL=debug sbt "it/testOnly *SpecName"         # see logs while debugg
 ```
 
 Integration specs are silent by default; `TEST_LOG_LEVEL=trace|debug|info|warn|error|fatal` enables a pretty console logger at the requested level. The env var inherits into sbt's forked test JVM. See [`patterns/logging.md`](patterns/logging.md#test-runs).
-
-## Formatting and linting
-
-```sh
-just style-fix       # auto-fix formatting + scalafix
-just style-check     # verify only, fail on issues
-```
 
 ## Running locally
 

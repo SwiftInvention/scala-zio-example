@@ -70,6 +70,7 @@ precommit-fix:
   set -eu
   {{ init_env }}
   sbt "dev; styleFix; ci; styleCheck; unitTest"
+  just test-it
 
 # run server in foreground (Ctrl+C to stop)
 run:
@@ -147,6 +148,38 @@ smoke-test:
   #!/usr/bin/env bash
   set -eu
 
+  echo "GET /health (liveness — always 200, no DB):"
+  code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health)
+  echo "HTTP $code"
+  if [ "$code" != "200" ]; then
+    echo "✗ expected 200, got $code"; exit 1
+  fi
+
+  echo
+  echo "GET /ready (readiness — DB ping, expect 200):"
+  code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/ready)
+  echo "HTTP $code"
+  if [ "$code" != "200" ]; then
+    echo "✗ expected 200, got $code"; exit 1
+  fi
+
+  echo
+  echo "GET /docs (Swagger UI HTML, expect 200):"
+  code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/docs)
+  echo "HTTP $code"
+  if [ "$code" != "200" ]; then
+    echo "✗ expected 200, got $code"; exit 1
+  fi
+
+  echo
+  echo "GET /docs/scala-zio-example.json (OpenAPI spec, expect 200):"
+  code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/docs/scala-zio-example.json)
+  echo "HTTP $code"
+  if [ "$code" != "200" ]; then
+    echo "✗ expected 200, got $code"; exit 1
+  fi
+
+  echo
   echo "GET /customers:"
   curl -sSf http://localhost:8080/customers | jq .
 

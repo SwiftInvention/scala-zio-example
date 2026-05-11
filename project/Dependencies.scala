@@ -24,6 +24,15 @@ object Dependencies {
     "dev.zio" %% "zio-json" % Versions.zioJson
   )
 
+  // zio-schema gives us `Schema[A]` for typed boundary serialization (zio-http Endpoint API, OpenAPI generation,
+  // and JsonCodec derivation in tests). Pulled explicitly so modules that need Schema (lib/common, ctx/customer-api)
+  // don't have to drag the full server framework via `zioHttpDep`.
+  lazy val zioSchemaDep: Seq[ModuleID] = Seq(
+    "dev.zio" %% "zio-schema"            % Versions.zioSchema,
+    "dev.zio" %% "zio-schema-derivation" % Versions.zioSchema,
+    "dev.zio" %% "zio-schema-json"       % Versions.zioSchema
+  )
+
   lazy val tapirDep: Seq[ModuleID] = Seq(
     "com.softwaremill.sttp.tapir" %% "tapir-core"              % Versions.tapir,
     "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % Versions.tapir,

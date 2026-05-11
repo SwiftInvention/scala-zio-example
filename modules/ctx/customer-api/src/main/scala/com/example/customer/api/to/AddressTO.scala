@@ -1,7 +1,7 @@
 package com.example.customer.api.to
 
 import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
-import zio.json.{DeriveJsonCodec, JsonCodec}
+import zio.schema.{DeriveSchema, Schema}
 
 final case class AddressTO(
     id: AddressId,
@@ -12,5 +12,5 @@ final case class AddressTO(
 )
 
 object AddressTO {
-  implicit val codec: JsonCodec[AddressTO] = DeriveJsonCodec.gen[AddressTO]
+  implicit val schema: Schema[AddressTO] = DeriveSchema.gen[AddressTO]
 }

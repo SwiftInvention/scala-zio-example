@@ -1,6 +1,6 @@
 package com.example.common.domain.error.backend
 
-import com.example.common.domain.error.api.{HttpError, HttpInternalServerError}
+import com.example.common.domain.error.api.{HttpError, HttpInternalServerError, HttpServiceUnavailable}
 import com.example.common.domain.error.backend.BackendErrorReason._
 import com.example.common.domain.error.{AppFailure, ErrorCategory}
 
@@ -25,3 +25,7 @@ final case class DbError(message: String, cause: Option[Throwable])
 final case class ConfigError(message: String, cause: Option[Throwable])
     extends BackendError(errorReason = Config, message = message, cause = cause)
     with HttpInternalServerError
+
+final case class ProbeTimeoutError(message: String, cause: Option[Throwable])
+    extends BackendError(errorReason = Timeout, message = message, cause = cause)
+    with HttpServiceUnavailable

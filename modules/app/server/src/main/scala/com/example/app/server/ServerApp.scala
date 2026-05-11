@@ -1,9 +1,7 @@
 package com.example.app.server
 
 import com.example.app.server.config.ServerConfig
-import com.example.app.server.http.{RequestLogging, RequestTracing}
 import com.example.common.impl.logging.AppLogger
-import com.example.customer.impl.http.CustomerRoutes
 import zio._
 import zio.http.Server
 
@@ -15,18 +13,14 @@ object ServerApp extends ZIOAppDefault {
   override val bootstrap: ZLayer[Any, Any, Any] = AppLogger.bootstrap
 
   def run: ZIO[Any, Throwable, Unit] = {
-    val serve =
-      ZIO.service[ServerConfig].flatMap { cfg =>
-        ZIO.logInfo(s"Starting server on http://${cfg.host}:${cfg.port}") *>
-          ZIO.serviceWithZIO[CustomerRoutes] { r =>
-            Server.serve(
-              r.routes
-                @@ RequestTracing.span
-                @@ RequestLogging.accessLog
-                @@ RequestLogging.requestId
-            )
-          }
-      }
+    val acquire =
+      for {
+        cfg <- ZIO.service[ServerConfig]
+        sr  <- ZIO.service[ServerRoutes]
+        _   <- ZIO.logInfo(s"Starting server on http://${cfg.host}:${cfg.port}")
+      } yield sr
+
+    val serve = acquire.flatMap(sr => Server.serve(sr.all))
 
     // Top-level cause log — last-resort visibility before the runtime swallows. Per the `logging` principle:
     // every boundary where an error could be lost gets a log; this is the outermost one.
