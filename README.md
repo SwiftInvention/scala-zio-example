@@ -33,3 +33,7 @@ just smoke-test              # in another shell: hit the running server
 ```
 
 Editor setup notes (Scalafmt, IntelliJ debugger): [`docs/intellij-idea-setup.md`](docs/intellij-idea-setup.md).
+
+## Devcontainer
+
+`.devcontainer/` runs the agent (Claude Code) in a network-isolated sandbox with inline `mysql` + `jaeger` services. Open the repo in VS Code and choose **Dev Containers: Open Folder in Container...**; sbt-driven recipes (`compile`, `test`, `run`, `db-migrate`, `style-*`) work inside. Pattern: [`patterns/devcontainer.md`](docs/knowledge-base/patterns/devcontainer.md). Base setup + per-host requirements: [SwiftInvention/devcontainers-example](https://github.com/SwiftInvention/devcontainers-example).

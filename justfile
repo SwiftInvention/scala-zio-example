@@ -31,7 +31,7 @@ initial-setup:
     exit 1
   fi
   npm install -g markdownlint-cli2@0.22.1
-  for example in modules/*/src/main/resources/application-*.conf.example; do
+  for example in modules/*/src/main/resources/application-*.conf.example .env.example; do
     target="${example%.example}"
     if [ ! -f "$target" ]; then
       cp "$example" "$target"
@@ -57,12 +57,16 @@ test:
   {{ init_env }}
   sbt "dev; unitTest"
 
-# integration tests against test MySQL (:3307); silent by default, pass a level (trace|debug|info|warn|error) to see logs
+# integration tests; silent by default, pass a level (trace|debug|info|warn|error) to see logs. On host, brings up the dedicated `:3307` test mysql via docker compose first. In the devcontainer the inline `mysql-test` is already up and migrated via initdb, so the docker-dance is skipped.
 [group('dev loop')]
-test-it level='': test-infra-reset test-db-migrate
+test-it level='':
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
+  if [ -z "${DEVCONTAINER:-}" ]; then
+    just test-infra-reset
+    just test-db-migrate
+  fi
   export TEST_LOG_LEVEL='{{ level }}'
   sbt "dev; it/test"
 
@@ -102,7 +106,6 @@ run:
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
-  export APP_ENV=local
   sbt "dev; appServer/run"
 
 # run a development scratchpad (modules/app/dev/.../Experiment.scala) against local MySQL
@@ -111,7 +114,6 @@ experiment:
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
-  export APP_ENV=local
   sbt "dev; appDev/run"
 
 # seed example fixtures (customers + notifications) into local MySQL
@@ -120,7 +122,6 @@ seed-example:
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
-  export APP_ENV=local
   sbt "dev; appDev/runMain com.example.app.dev.actions.SeedExample"
 
 # curl the running server's endpoints (success + typed-error 404). assumes server up on :8080
@@ -227,11 +228,11 @@ local-infra-reset:
   docker compose down -v mysql jaeger
   just local-infra-up
 
-# apply Flyway migrations to local MySQL (uses lib/common/.../db/migration)
+# apply Flyway migrations to local MySQL (uses lib/common/.../db/migration). `MYSQL_HOST` comes from .env (localhost on host, mysql in the devcontainer).
 [group('dev infra')]
 db-migrate:
   flyway \
-    -url="jdbc:mysql://localhost:3306/localDatabase" \
+    -url="jdbc:mysql://${MYSQL_HOST}:3306/localDatabase" \
     -user=localUser \
     -password=localPassword \
     -locations="filesystem:modules/lib/common/src/main/resources/db/migration" \

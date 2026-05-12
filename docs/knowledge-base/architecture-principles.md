@@ -68,9 +68,9 @@ Values with invariants (`Email`, `Phone`) construct through a smart-constructor 
 
 ## `config-shape` — typed config, per-(app, env) files, no defaults in code
 
-PureConfig case classes loaded from per-(app, env) files at boot, fail-fast. Files are self-contained (no overlay). `APP_ENV` selects the file. Each module owns its `XConfig`; no central root.
+PureConfig case classes loaded from per-(app, env) files at boot, fail-fast. Each file is its own truth — no `reference.conf`, no merge with another env's file. `APP_ENV` selects the file. Each module owns its `XConfig`; no central root.
 
-No default values in code, anywhere — not on case-class fields, not in `getOrElse` fallbacks, not in `if/else` branches that substitute a fallback value. Conceptually-optional values are `Option[X]` with the consumer branching semantically (not on a baked-in value). Runtime config is fully determined by the active `.conf`. Pattern: [`config.md`](patterns/config.md).
+No default values in code or recipes — every value has exactly one default, in the active `.conf`. External env vars override but carry no defaults of their own. Conceptually-optional values are `Option[X]` with the consumer branching semantically. Pattern: [`config.md`](patterns/config.md).
 
 ---
 

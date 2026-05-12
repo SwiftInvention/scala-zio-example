@@ -16,13 +16,7 @@ lazy val commonSettings = Seq(
   Test / fork := true, // pins test cwd to the module's baseDirectory — required for SnapshotSpec's relative paths
   tpolecatScalacOptions += ScalacOptions.other("-Ymacro-annotations"),
   testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
-  libraryDependencies ++= zioTestDep,
-  // Scaladoc isn't a deliverable in this codebase — patterns/ docs cover what readers need, and no
-  // module publishes a doc jar for external consumption. Disabled globally so packaging tasks (notably
-  // JavaAppPackaging's Universal mapping for the docker image) don't drag in doc.jars or trip on
-  // doc-link errors under warnings-as-errors.
-  Compile / doc / sources                := Seq.empty,
-  Compile / packageDoc / publishArtifact := false
+  libraryDependencies ++= zioTestDep
 )
 
 // ── lib ─────────────────────────────────────────────────────
@@ -85,15 +79,7 @@ lazy val appServer = (project in file("modules/app/server"))
     libraryDependencies ++=
       zioCoreDep ++ zioHttpDep ++ pureconfigDep ++ loggingDep ++ dbDep,
     excludeDependencies ++= logExcludeDep,
-    name := "server",
-    // Keep application-local.conf{,.example} out of the packaged jar — `local` is the only
-    // env meant to run on a developer host, not in a container, and the file may carry
-    // throwaway dev creds. The resources stay on `sbt run`'s classpath (Compile/classes),
-    // so local-dev keeps working; only the published jar is filtered.
-    Compile / packageBin / mappings ~= {
-      val excluded = Set("application-local.conf", "application-local.conf.example")
-      _.filterNot { case (_, path) => excluded(path) }
-    }
+    name := "server"
   )
 
 // ── app: dev (local-only dev tools) ─────────────────────────

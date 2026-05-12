@@ -13,12 +13,12 @@ import zio._
 import zio.telemetry.opentelemetry.OpenTelemetry
 import zio.telemetry.opentelemetry.tracing.Tracing
 
-/** Builds a [[Tracing]] service from [[OtelConfig]].
+/** Builds a `Tracing` service from `OtelConfig`.
   *
-  *   - For [[OtelTracing.Enabled]], constructs a real `OpenTelemetrySdk` with an OTLP HTTP exporter, a
+  *   - For `OtelTracing.Enabled`, constructs a real `OpenTelemetrySdk` with an OTLP HTTP exporter, a
   *     `BatchSpanProcessor`, and `service.name` set from `serviceName`. All builders are wrapped in
   *     `ZIO.fromAutoCloseable` so `BatchSpanProcessor.close()` flushes the in-flight batch when the app's scope ends.
-  *   - For [[OtelTracing.Disabled]], uses `OpenTelemetry.noop`. Span calls become cheap no-ops; consumers stay
+  *   - For `OtelTracing.Disabled`, uses `OpenTelemetry.noop`. Span calls become cheap no-ops; consumers stay
   *     unconditional (no `if (tracingEnabled) tracing.span(...) else effect`).
   *
   * Span context lives in a ZIO fiber-local via `OpenTelemetry.contextZIO`. Pair only with the matching `Tracing` layer

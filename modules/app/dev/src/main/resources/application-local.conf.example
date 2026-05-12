@@ -8,9 +8,9 @@
 # `appDev` is local-only by build (`publish / skip := true`) — it never runs in a deployed environment, so this is the
 # only env-suffixed file it ships with. There is no `application-dev.conf` or `application-prod.conf` here, by design.
 #
-# Per the `config-shape` principle: each per-(app, env) file is self-contained — no `reference.conf`, no overlay. The
-# datasource block here is intentionally a duplicate of the one in `appServer/.../application-local.conf` — they're
-# meant to point at the same local MySQL, but each app owns its own config slice.
+# Per the `config-shape` principle: each per-(app, env) file is its own truth — no `reference.conf`, no merge between
+# envs. The datasource block here is intentionally a duplicate of the one in `appServer/.../application-local.conf` —
+# they're meant to point at the same local MySQL, but each app owns its own config slice.
 
 logging {
   format = "pretty"
@@ -19,6 +19,7 @@ logging {
 
 database.data-source {
   jdbc-url          = "jdbc:mysql://localhost:3306/localDatabase?useUnicode=true&serverTimezone=UTC"
+  jdbc-url          = ${?MYSQL_URL}
   user              = "localUser"
   password          = "localPassword"
   maximum-pool-size = 5

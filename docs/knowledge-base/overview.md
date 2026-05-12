@@ -55,9 +55,13 @@ Config loaded from `application-${APP_ENV}.conf` at boot ([`patterns/config.md`]
 
 `appDev` is a separate deployment unit for local-only one-off scripts: data seeding, scratchpad experiments, debugging actions. Each entrypoint (`Experiment.scala`, every action under `actions/`) is its own `ZIOAppDefault` with its own `provide(...)` block — no shared composition root. `SeedExample` is the starter action; it seeds the example customers and notifications used by the smoke test. Local-only by build: `publish / skip := true` keeps the artifact off any deployment. Pattern: [`patterns/dev-tools.md`](patterns/dev-tools.md).
 
+## Devcontainer
+
+`.devcontainer/` + `.sandcat/` configure a VS Code Dev Container that runs the agent (Claude Code) in a network-isolated sandbox (WireGuard tunnel + mitmproxy secret injection). The agent reaches its inline `mysql` and `jaeger` services by name; sbt-driven recipes (`compile`, `test`, `run`, `db-migrate`, `style-*`, `precommit-fix`) work from inside, while host-side infra orchestration (`docker-build`, `local-infra-*`, `test-it`) stays on the host. Pattern: [`patterns/devcontainer.md`](patterns/devcontainer.md).
+
 ## Docker
 
-`appServer` packages as a docker image via sbt-native-packager's `DockerPlugin` (`build.sbt`'s `dockerSettings`). One image, env-driven config: `application-dev.conf` and `application-prod.conf` use `${VAR}` substitution, filled by env vars at runtime. Compose-local runs the same image with `APP_ENV=dev` and the substitution vars supplied in `docker-compose.yml`. `application-local.conf` stays out of the image (the `local` env is for host runs). Pattern: [`patterns/docker-build.md`](patterns/docker-build.md).
+`appServer` packages as a docker image via sbt-native-packager's `DockerPlugin` (`build.sbt`'s `dockerSettings`). One image, env-driven config: `application-dev.conf` and `application-prod.conf` use `${VAR}` substitution, filled by env vars at runtime. Compose-local runs the same image with `APP_ENV=dev` and the substitution vars supplied in `docker-compose.yml`. Pattern: [`patterns/docker-build.md`](patterns/docker-build.md).
 
 ## Tech stack
 

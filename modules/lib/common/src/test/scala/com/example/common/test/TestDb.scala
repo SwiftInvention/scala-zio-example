@@ -58,6 +58,11 @@ object TestDb {
     // Default user `root` because per-test schemas require CREATE/DROP DATABASE privileges. The
     // local docker-compose's MYSQL_ROOT_PASSWORD matches `localPassword`, so root + localPassword
     // works out of the box. In CI / shared environments, override via env vars.
+    //
+    // config-shape WONTFIX: the principle bans `getOrElse` defaults in code, but test bootstrap
+    // is a deliberately different concern from runtime config — there's no `application-test.conf`
+    // layer plumbed through `ConfigBootstrap`, and adding one for test wiring would be more
+    // ceremony than the values warrant. Defaults live here and are visible at the call site.
     def fromEnv: TestDbConfig = TestDbConfig(
       host = sys.env.getOrElse("TEST_DB_HOST", "localhost"),
       port = sys.env.get("TEST_DB_PORT").map(_.toInt).getOrElse(3307),

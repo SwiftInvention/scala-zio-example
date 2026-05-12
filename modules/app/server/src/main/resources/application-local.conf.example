@@ -5,10 +5,9 @@
 #
 # `just initial-setup` does this automatically.
 #
-# Per the `config-shape` principle: each per-(app, env) file is fully
-# self-contained — no `reference.conf`, no overlay. Every key the app reads
-# must appear here. Adding a new field to a typed config means adding it to
-# every env's file.
+# Per the `config-shape` principle: each per-(app, env) file is its own truth
+# — no `reference.conf`, no merge with another env's file. Adding a new field
+# to a typed config means adding it to every env's file.
 
 server {
   host = "0.0.0.0"
@@ -23,10 +22,12 @@ logging {
 otel {
   service-name  = "scala-zio-example"
   otlp-endpoint = "http://localhost:4318/v1/traces"
+  otlp-endpoint = ${?OTEL_ENDPOINT}
 }
 
 database.data-source {
   jdbc-url          = "jdbc:mysql://localhost:3306/localDatabase?useUnicode=true&serverTimezone=UTC"
+  jdbc-url          = ${?MYSQL_URL}
   user              = "localUser"
   password          = "localPassword"
   maximum-pool-size = 10

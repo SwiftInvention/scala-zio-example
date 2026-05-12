@@ -49,10 +49,10 @@ just local-infra-up        # bring up MySQL + Jaeger (blocks until healthy)
 just local-infra-down      # stop MySQL + Jaeger
 just local-infra-reset     # wipe state and bring up fresh
 just db-migrate      # apply Flyway migrations
-just run             # foreground server (Ctrl+C to stop); sets APP_ENV=local
+just run             # foreground server (Ctrl+C to stop)
 ```
 
-`run` and `start-fresh-local-server` export `APP_ENV=local` so the server loads `application-local.conf`. Other envs need `APP_ENV` set explicitly.
+`APP_ENV` comes from `.env` (seeded by `initial-setup` from `.env.example` — `APP_ENV=local`), so the server loads `application-local.conf`. Override by editing `.env` if you want a different env shape on the host.
 
 `application-local.conf` points the OTLP exporter at the local Jaeger (`http://localhost:4318/v1/traces`). If you run the server without Jaeger up, the exporter spams reconnect failures into the log; either run `just local-infra-up` first, or set `otel.otlp-endpoint = null` in your local conf to disable tracing.
 
@@ -63,7 +63,7 @@ just experiment      # run modules/app/dev/.../Experiment.scala against local My
 just seed-example    # run SeedExample — inserts Ada/Alan/Grace into customer + a few rows into notification
 ```
 
-Both export `APP_ENV=local`. `appDev` is local-only by build (see [`patterns/dev-tools.md`](patterns/dev-tools.md)) — no `APP_ENV=dev|prod` variants exist for it.
+Both pick up `APP_ENV` from `.env` (`local` on host by default). `appDev` is local-only by build (see [`patterns/dev-tools.md`](patterns/dev-tools.md)) — no `APP_ENV=dev|prod` variants exist for it.
 
 ## Docker
 
@@ -74,7 +74,7 @@ just docker-stop                   # stop just the dockerized server
 just start-fresh-docker-server     # from any state → local-infra-reset → db-migrate → seed → docker-build → docker-run
 ```
 
-The image carries `application-dev.conf` and `application-prod.conf` only — `application-local.conf` is filtered out (the `local` env is for host runs, not containers). Compose-local uses `APP_ENV=dev` and fills the `${VAR}` substitutions from `docker-compose.yml`'s `environment:` block. See [`patterns/docker-build.md`](patterns/docker-build.md).
+Compose-local uses `APP_ENV=dev` and fills the `${VAR}` substitutions from `docker-compose.yml`'s `environment:` block. See [`patterns/docker-build.md`](patterns/docker-build.md).
 
 ## Setup
 

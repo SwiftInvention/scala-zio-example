@@ -16,7 +16,8 @@ log
 # local data
 local-data
 
-# secrets
+# Just-recipe env vars (overrides recipe defaults). Copy from .env.example.
+# Gitignored so machine-local values and any throwaway dev creds stay local.
 .env
 
 # Local config — copy from the .example template, may contain throwaway local creds.

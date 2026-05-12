@@ -25,7 +25,7 @@ OCI labels (`org.opencontainers.image.title`, `.description`, `.source`) are set
 
 ## Config inside the image
 
-The image carries `application-dev.conf` and `application-prod.conf` only. `application-local.conf{,.example}` is excluded via `Compile / packageBin / mappings` filter — `local` is the on-host dev env, never run from a container, and the file may carry throwaway dev creds.
+The image carries all checked-in env files (`application-dev.conf`, `application-prod.conf`) plus, if the build host has it, the gitignored `application-local.conf`. Only the one selected by `APP_ENV` is loaded at boot; `local` is the on-host shape.
 
 The dev/prod files use `${VAR}` env-var substitution for endpoints and credentials. Compose-local supplies those vars in `docker-compose.yml`'s `environment:` block — same shape as a real dev deployment, different values.
 

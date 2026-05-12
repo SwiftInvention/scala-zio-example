@@ -14,7 +14,7 @@ modules/<app>/src/main/resources/
 
 Only `application-local.conf` is gitignored. `dev`/`prod` files are committed because they contain no real secrets — only defaults and `${VAR}` references. The `.example` template exists for `local` because local config typically has actual values baked in (passwords, API keys for dev convenience) that shouldn't be in git.
 
-Each file is self-contained — no `reference.conf`, no layered overlay between envs. The bug this guards against: a value changes in `reference.conf`, an env file doesn't mention it, the new default silently activates. With self-contained per-env files, "what's the runtime value?" is one lookup.
+Each file is its own truth — no `reference.conf`, no merge with another env's file. The bug this guards against: a value changes in `reference.conf`, an env file doesn't mention it, the new default silently activates. With self-contained per-env files, "what's the runtime value?" is one lookup.
 
 The trade-off is duplication: adding a new field means editing every env file. That's a feature — schema changes become visible in every environment, not silently inherited.
 
@@ -126,7 +126,23 @@ If `None` would mean "use this baked-in value", the field is required. Put the v
 
 ### Env-var substitution
 
-Use `${VAR}` (not `${?VAR}`) for substitutions of required values. The `?` form silently resolves to nothing when the env var is unset, which puts us back in the silent-default mode the rule exists to prevent.
+Two forms, two uses:
+
+```hocon
+# ${VAR} — required, no fallback. Used in dev/prod files where the value
+# *must* come from the deployment env. Boot fails if VAR is unset.
+jdbc-url = ${MYSQL_URL}
+
+# ${?VAR} — opt-in override, paired with an explicit default in the same file.
+# Used in local.conf where a hardcoded value is the right default, but a
+# deployment-shaped context (e.g. the devcontainer) wants to override it.
+jdbc-url = "jdbc:mysql://localhost:3306/localDatabase?useUnicode=true&serverTimezone=UTC"
+jdbc-url = ${?MYSQL_URL}
+```
+
+Bare `${?VAR}` without a same-file default is banned — that's the silent-default mode the rule prevents.
+
+Every value has exactly one default in exactly one place (the active `.conf`). External env vars override but carry no defaults of their own.
 
 ## HOCON ↔ case-class field naming
 
