@@ -125,7 +125,7 @@ Annotations propagate through fiber-locals to all log calls inside the scope, in
 
 ## Request-scoped annotations and the access log
 
-`RequestLogging` (in `app/server/.../http/`) holds the two HTTP-level middlewares. Applied at the composition root in `ServerApp`:
+`RequestLogging` (in `lib/common/http/server/middleware/`) holds the two HTTP-level middlewares. Applied at the composition root in `ServerApp`:
 
 ```scala
 Server.serve(routes @@ accessLog @@ requestId)

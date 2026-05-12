@@ -1,7 +1,9 @@
 package com.example.app.server
 
 import com.example.app.server.config.ServerConfig
-import com.example.common.impl.config.{ConfigBootstrap, OtelConfig}
+import com.example.common.http.client.AppHttpClient
+import com.example.common.http.server.HealthRoutes
+import com.example.common.impl.config.{ConfigBootstrap, HttpClientConfig, OtelConfig}
 import com.example.common.impl.repo.sql.{DataSourceConfig, DataSourceLayer, SqlContext}
 import com.example.common.impl.service.TransactorQuillImpl
 import com.example.common.impl.telemetry.AppTracing
@@ -10,7 +12,6 @@ import com.example.customer.impl.CustomerApiDirectImpl
 import com.example.customer.impl.http.CustomerRoutes
 import com.example.customer.impl.service.repo.{AddressRepoMySQLImpl, CustomerRepoMySQLImpl}
 import com.example.customer.impl.service.{AddressServiceImpl, CustomerServiceImpl}
-import com.example.http.HealthRoutes
 import com.example.notification.app.NotificationAppServiceImpl
 import com.example.notification.impl.http.NotificationRoutes
 import com.example.notification.impl.service.NotificationServiceImpl
@@ -21,8 +22,9 @@ import zio.telemetry.opentelemetry.tracing.Tracing
 
 /** Layer composition for the server app. The single place that sees concrete implementations and wires them together.
   *
-  * Wiring order: ConfigBootstrap (`EnvLabel`) → typed config slices (DataSourceConfig, OtelConfig, ServerConfig) →
-  * DataSourceLayer → SqlContext → Transactor → AppTracing → ctx services → zio-http Server.
+  * Wiring order: ConfigBootstrap (`EnvLabel`) → typed config slices (DataSourceConfig, OtelConfig, ServerConfig,
+  * HttpClientConfig) → DataSourceLayer → SqlContext → Transactor → AppHttpClient → AppTracing → ctx services → zio-http
+  * Server.
   *
   * Logging is installed earlier — `ServerApp` overrides `bootstrap` with `AppLogger.bootstrap`, which runs before any
   * layer here builds.
@@ -44,8 +46,11 @@ object ServerEnv {
       // ── config ──
       ConfigBootstrap.layer,
       DataSourceConfig.layer,
+      HttpClientConfig.layer,
       OtelConfig.layer,
       ServerConfig.layer,
+      // ── http client (used by AppTracing's startup probe; available to anyone needing outbound HTTP) ──
+      AppHttpClient.layer,
       // ── tracing (OTLP HTTP exporter when endpoint set; no-op otherwise) ──
       AppTracing.live,
       // ── persistence ──

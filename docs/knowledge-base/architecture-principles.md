@@ -70,7 +70,7 @@ Values with invariants (`Email`, `Phone`) construct through a smart-constructor 
 
 PureConfig case classes loaded from per-(app, env) files at boot, fail-fast. Each file is its own truth — no `reference.conf`, no merge with another env's file. `APP_ENV` selects the file. Each module owns its `XConfig`; no central root.
 
-No default values in code or recipes — every value has exactly one default, in the active `.conf`. External env vars override but carry no defaults of their own. Conceptually-optional values are `Option[X]` with the consumer branching semantically. Pattern: [`config.md`](patterns/config.md).
+Configurable values — anything an operator is meant to tune per env — live in the active `.conf` with no in-code fallback. External env vars override but carry no defaults of their own. Conceptually-optional values are `Option[X]` with the consumer branching semantically. Internal-mechanism constants (retry cadence, layer-init probe budgets) stay in code — they aren't "config", and promoting them to `.conf` inflates the surface without adding control. Pattern: [`config.md`](patterns/config.md).
 
 ---
 

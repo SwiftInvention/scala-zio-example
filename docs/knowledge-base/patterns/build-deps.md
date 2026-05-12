@@ -52,4 +52,4 @@ External library deps live in `project/Dependencies.scala` as named groups:
 - `loggingDep` + `logExcludeDep` (zio-logging + slf4j bridges)
 - `enumeratumDep`, `circeDep`, `newtypeDep`
 
-Each module pulls in only what it needs. `libCommon` doesn't get HTTP or DB deps; `ctxCustomerApi` doesn't get DB or HTTP server deps; etc. Tighter deps per module make boundaries clearer at the import site.
+Each module pulls in only what it needs. `libCommon` carries the cross-cutting deps (config, persistence, logging, telemetry, zio-http for the shared client + server pieces); `ctxCustomerApi` doesn't get DB deps; etc. Tighter deps per module make boundaries clearer at the import site.

@@ -1,11 +1,11 @@
 package com.example.customer.impl.http
 
 import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
+import com.example.common.http.server.api.ApiFailure
 import com.example.common.impl.logging.LogError
 import com.example.customer.app.CustomerAppService
 import com.example.customer.impl.to.converter.AddressConverter.toAddressTO
 import com.example.customer.impl.to.converter.CustomerConverter.toCustomerTO
-import com.example.http.api.ApiFailure
 import zio._
 import zio.http._
 

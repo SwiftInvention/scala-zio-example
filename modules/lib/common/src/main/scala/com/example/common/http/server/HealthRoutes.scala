@@ -1,12 +1,12 @@
-package com.example.http
+package com.example.common.http.server
 
 import com.example.common.domain.error.AppFailure
 import com.example.common.domain.error.api.ErrorTO
 import com.example.common.domain.error.backend.ProbeTimeoutError
 import com.example.common.domain.model.Types.AppIO
+import com.example.common.http.server.api.ApiFailure
 import com.example.common.impl.logging.LogError
 import com.example.common.impl.repo.sql.SqlContext
-import com.example.http.api.ApiFailure
 import zio._
 import zio.http._
 

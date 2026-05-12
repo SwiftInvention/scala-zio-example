@@ -1,4 +1,4 @@
-package com.example.http.api
+package com.example.common.http.server.api
 
 import com.example.common.domain.error.AppFailure
 import com.example.common.domain.error.api._

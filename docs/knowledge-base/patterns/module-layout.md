@@ -37,6 +37,11 @@ No `app/` — libs don't have an application surface. Same `domain` / `impl` spl
 - `domain/service/Transactor.scala` — transaction-boundary trait
 - `impl/repo/sql/` — Quill context, datasource, encodings
 - `impl/config/` — config bootstrap
+- `impl/telemetry/AppTracing.scala` — OTLP exporter wiring
+- `http/server/` — operational routes, wire-format `ApiFailure`, request middleware
+- `http/client/` — outbound `Client` layer (`AppHttpClient`)
+
+The `http/` subpackage sits next to `domain/` and `impl/` and holds HTTP transport adapters in both directions.
 
 ## App internal structure
 

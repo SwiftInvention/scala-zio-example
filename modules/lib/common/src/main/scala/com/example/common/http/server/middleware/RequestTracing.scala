@@ -1,4 +1,4 @@
-package com.example.http.middleware
+package com.example.common.http.server.middleware
 
 import io.opentelemetry.api.trace.{SpanKind, StatusCode}
 import zio._

@@ -20,20 +20,25 @@ Per `config-shape`, `Disabled` is "tracing genuinely off", not a placeholder for
 
 ## Wiring
 
-`AppTracing.live` (in `lib/common/.../impl/telemetry/`) consumes `OtelConfig` and produces `zio.telemetry.opentelemetry.tracing.Tracing`:
+`AppTracing.live` (in `lib/common/.../impl/telemetry/`) consumes `OtelConfig` plus `zio.http.Client` and produces `zio.telemetry.opentelemetry.tracing.Tracing`:
 
 ```text
 OtelConfig.layer  → OtelConfig
+AppHttpClient.layer → Client
 AppTracing.live   → Tracing      (OTLP exporter when Enabled; OpenTelemetry.noop when Disabled)
 ```
 
 The SDK builders are wrapped in `ZIO.fromAutoCloseable`, so `BatchSpanProcessor.close()` flushes the in-flight batch when the app's scope ends.
 
+Before the SDK is built, `AppTracing.live` HEAD-probes the configured OTLP endpoint via `Client` with bounded exponential-backoff retry inside a fixed budget. An unreachable collector otherwise emits a stream of `BatchSpanProcessor` reconnect failures into the log; the probe makes the layer fail at boot instead. Any HTTP response counts — including `405 Method Not Allowed` or `404 Not Found` — the probe asserts "the host is reachable and speaking HTTP at this URL", not "the OTLP path and method are correct".
+
+Boot-time and runtime are asymmetric on purpose: an unreachable collector at boot fails the layer; an unreachable collector during runtime doesn't — `BatchSpanProcessor` logs export failures via the OpenTelemetry SDK and keeps the server serving traffic.
+
 Span context propagation uses `OpenTelemetry.contextZIO`, which stores the active span in a ZIO fiber-local. The alternative `contextJVM` exists for code running under the OpenTelemetry java-agent — pick the variant that matches your deployment, and use the same one consistently.
 
 ## HTTP server spans
 
-`RequestTracing.span` (in `app/server/.../http/`) is `Middleware[Tracing]` that opens one span per HTTP request. Applied at `ServerApp` alongside the logging middlewares:
+`RequestTracing.span` (in `lib/common/http/server/middleware/`) is `Middleware[Tracing]` that opens one span per HTTP request. Applied at `ServerApp` alongside the logging middlewares:
 
 ```scala
 Server.serve(routes @@ RequestTracing.span @@ accessLog @@ requestId)

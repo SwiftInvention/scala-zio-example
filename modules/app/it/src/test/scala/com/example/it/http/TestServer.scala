@@ -2,6 +2,7 @@ package com.example.it.http
 
 import com.example.app.server.ServerRoutes
 import com.example.common.domain.service.Transactor
+import com.example.common.http.server.HealthRoutes
 import com.example.common.impl.config.{OtelConfig, OtelTracing}
 import com.example.common.impl.repo.sql.SqlContext
 import com.example.common.impl.telemetry.AppTracing
@@ -11,7 +12,6 @@ import com.example.customer.impl.CustomerApiDirectImpl
 import com.example.customer.impl.http.CustomerRoutes
 import com.example.customer.impl.service.repo.{AddressRepoMySQLImpl, CustomerRepoMySQLImpl}
 import com.example.customer.impl.service.{AddressServiceImpl, CustomerServiceImpl}
-import com.example.http.HealthRoutes
 import com.example.notification.app.NotificationAppServiceImpl
 import com.example.notification.impl.http.NotificationRoutes
 import com.example.notification.impl.service.NotificationServiceImpl
@@ -99,9 +99,9 @@ object TestServer {
     ZLayer.make[SqlContext & Transactor & ServerRoutes & Tracing](
       // ── persistence (test substitution: fresh schema per spec) ──
       TestDb.freshSchemaLayer,
-      // ── tracing (no-op, configured Disabled) ──
+      // ── tracing (no-op, configured Disabled; no probe so no Client needed at this tier) ──
       testOtelConfig,
-      AppTracing.live,
+      AppTracing.liveWithoutProbe,
       // ── customer ctx ──
       CustomerRepoMySQLImpl.layer,
       AddressRepoMySQLImpl.layer,

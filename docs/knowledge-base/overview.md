@@ -8,15 +8,15 @@ The example domain is intentionally thin — two bounded contexts where one call
 
 ## Modules
 
-| Folder                         | sbt ID               | Role                                                                |
-| ------------------------------ | -------------------- | ------------------------------------------------------------------- |
-| `modules/lib/common`           | `libCommon`          | shared infrastructure (effects, errors, IDs, config, persistence)   |
-| `modules/ctx/customer-api`     | `ctxCustomerApi`     | customer cross-context contract (trait + TOs)                       |
-| `modules/ctx/customer`         | `ctxCustomer`        | customer impl (domain, app, infra)                                  |
-| `modules/ctx/notification-api` | `ctxNotificationApi` | notification cross-context contract (TOs only — no consumer yet)    |
-| `modules/ctx/notification`     | `ctxNotification`    | notification impl; depends on `ctxCustomerApi` for recipient lookup |
-| `modules/app/server`           | `appServer`          | deployment unit — composition root + entrypoint                     |
-| `modules/app/dev`              | `appDev`             | local-only dev tools — `Experiment` scratchpad + one-off `actions/` |
+| Folder                         | sbt ID               | Role                                                                                       |
+| ------------------------------ | -------------------- | ------------------------------------------------------------------------------------------ |
+| `modules/lib/common`           | `libCommon`          | shared infrastructure (effects, errors, IDs, config, persistence, http server + client)    |
+| `modules/ctx/customer-api`     | `ctxCustomerApi`     | customer cross-context contract (trait + TOs)                                              |
+| `modules/ctx/customer`         | `ctxCustomer`        | customer impl (domain, app, infra)                                                         |
+| `modules/ctx/notification-api` | `ctxNotificationApi` | notification cross-context contract (TOs only — no consumer yet)                           |
+| `modules/ctx/notification`     | `ctxNotification`    | notification impl; depends on `ctxCustomerApi` for recipient lookup                        |
+| `modules/app/server`           | `appServer`          | deployment unit — composition root + entrypoint                                            |
+| `modules/app/dev`              | `appDev`             | local-only dev tools — `Experiment` scratchpad + one-off `actions/`                        |
 
 Module layout: [`patterns/module-layout.md`](patterns/module-layout.md). Cross-module deps: [`patterns/build-deps.md`](patterns/build-deps.md).
 
@@ -24,7 +24,7 @@ Module layout: [`patterns/module-layout.md`](patterns/module-layout.md). Cross-m
 
 One zio-http server, started by `ServerApp` (`modules/app/server/.../ServerApp.scala`). Routes are defined via zio-http's typed `Endpoint` API: each context has an `<Name>Endpoints.scala` (pure definitions) plus a `<Name>Routes.scala` (implementations against those endpoints), both colocated in `impl/http/`. The split lets the same `Endpoint` values feed both the running routes and the OpenAPI document. Pattern: [`patterns/http-endpoints.md`](patterns/http-endpoints.md).
 
-Application routes are owned by contexts (`customer/impl/http/`); operational routes (health probes), the typed-Endpoint wire-format errors (`ApiFailure`), and the shared HTTP middleware (`RequestLogging`, `RequestTracing`) live in `lib/http` so multiple server deployments wire the same probes. `ServerApp` instantiates `ServerRoutes` (in `app/server/`), which composes the route graph and aggregates `<Name>Endpoints.all` from each contributor for OpenAPI generation. Host/port from `ServerConfig`.
+Application routes are owned by contexts (`customer/impl/http/`); operational routes (health probes), the typed-Endpoint wire-format errors (`ApiFailure`), and the shared HTTP middleware (`RequestLogging`, `RequestTracing`) live in `lib/common/http/server/` so multiple server deployments wire the same probes. `ServerApp` instantiates `ServerRoutes` (in `app/server/`), which composes the route graph and aggregates `<Name>Endpoints.all` from each contributor for OpenAPI generation. Host/port from `ServerConfig`.
 
 Application routes get the full middleware chain (tracing, access log, request id). Operational routes (health, ready, docs) are served bare so that probes and doc fetches don't flood traces and access logs.
 
@@ -45,9 +45,13 @@ Operational endpoints:
 - `GET /ready` — readiness probe; 200 if the DB is reachable (`SELECT 1`), 503 otherwise. Wire as a k8s `readinessProbe`.
 - `GET /docs` — Swagger UI for the API. The OpenAPI spec is at `/docs/scala-zio-example.json` (filename derived from the title in `ServerRoutes`).
 
+## HTTP client
+
+One outbound `zio.http.Client` is wired by `AppHttpClient.layer` (`lib/common/http/client/`) from typed `HttpClientConfig` (`connection-timeout`, `idle-timeout`). The composition root provides it once; any consumer that needs to call an external HTTP endpoint depends on `Client` and gets the shared instance. The first consumer is `AppTracing.live`, which HEAD-probes the OTLP endpoint at boot. Pattern: [`patterns/http-client.md`](patterns/http-client.md).
+
 ## Service wiring
 
-`ServerEnv.scala` is the composition root — the only place that sees concrete impls. Four tiers: config (`ConfigBootstrap` → typed `XConfig`s) → infra (datasource, transactor) → ctx (repo → service → app-service → api → routes) → http server. Adding a new ctx adds a leg to the third tier. Cross-context coupling shows up in the wiring too: notification's app-service requires `CustomerApi`, so `CustomerApiDirectImpl.layer` is provided ahead of `NotificationAppServiceImpl.layer`. See [`patterns/cross-context-call.md`](patterns/cross-context-call.md).
+`ServerEnv.scala` is the composition root — the only place that sees concrete impls. Four tiers: config (`ConfigBootstrap` → typed `XConfig`s) → infra (datasource, transactor, HTTP client, tracing) → ctx (repo → service → app-service → api → routes) → http server. Adding a new ctx adds a leg to the third tier. Cross-context coupling shows up in the wiring too: notification's app-service requires `CustomerApi`, so `CustomerApiDirectImpl.layer` is provided ahead of `NotificationAppServiceImpl.layer`. See [`patterns/cross-context-call.md`](patterns/cross-context-call.md).
 
 Config loaded from `application-${APP_ENV}.conf` at boot ([`patterns/config.md`](patterns/config.md)). Migrations apply out-of-process via `just db-migrate`. A service that exists but is never wired is dead code.
 

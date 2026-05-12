@@ -82,9 +82,9 @@ DataSourceLayer.layer        : ZLayer[DataSourceConfig, _, DataSource]
 
 The parsing tier (XConfig.layers) is the only place that touches typesafe-config or pureconfig. Service layers below it consume typed values exclusively.
 
-## No defaults in code — anywhere
+## No defaults in code — for configurable values
 
-The rule is broader than "no constructor defaults." It applies to all code that consumes config:
+If a value is something an operator is meant to tune per env, it lives in `.conf` with no in-code fallback. The rule applies to all code that consumes a config field:
 
 ```scala
 // banned — case-class default
@@ -101,6 +101,12 @@ val port = cfg.port match { case Some(p) => p; case None => 8080 }
 ```
 
 The question "what's `port` at runtime?" must always be answered by reading the active conf file — never by reading code. Code defaults split that question across two sources, and the bug pattern is the same one we close everywhere else: silent fallback masking missing config.
+
+### Internal-mechanism constants are not config
+
+A `private val probeBudget: Duration = 5.seconds` in a layer's source is fine. It isn't a configurable value — operators don't tune the retry cadence on a startup probe; they turn the probe on or off (which is a config decision, modeled in `OtelConfig`). Promoting every internal constant to `.conf` would inflate the surface without adding control.
+
+The test: is there a plausible env where an operator would want this value different? If yes, it's config. If it's mechanism the implementation chose for itself, it's a constant in code.
 
 ### Required vs optional fields
 

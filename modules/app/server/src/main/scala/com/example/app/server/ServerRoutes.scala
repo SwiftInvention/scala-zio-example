@@ -1,9 +1,9 @@
 package com.example.app.server
 
 import com.example.BuildInfo
+import com.example.common.http.server.middleware.{RequestLogging, RequestTracing}
+import com.example.common.http.server.{HealthEndpoints, HealthRoutes}
 import com.example.customer.impl.http.{CustomerEndpoints, CustomerRoutes}
-import com.example.http.middleware.{RequestLogging, RequestTracing}
-import com.example.http.{HealthEndpoints, HealthRoutes}
 import com.example.notification.impl.http.{NotificationEndpoints, NotificationRoutes}
 import zio._
 import zio.http._

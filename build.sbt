@@ -21,21 +21,19 @@ lazy val commonSettings = Seq(
 
 // ── lib ─────────────────────────────────────────────────────
 
+// libCommon holds every cross-cutting concern: effects/errors/ids/config/persistence/telemetry, plus the HTTP
+// infrastructure (typed-Endpoint wire format `ApiFailure`, operational probes `HealthEndpoints`/`HealthRoutes`,
+// shared middleware `RequestLogging`/`RequestTracing`, and the outbound `AppHttpClient`). `ctxCustomerApi` and
+// `ctxNotificationApi` only import wire-contract pieces; nothing forces them to reach into server-side code, and
+// transitively pulling `zio-http`'s classpath is an acceptable cost given the alternative (a second shared lib).
 lazy val libCommon = (project in file("modules/lib/common"))
   .settings(commonSettings)
   .settings(
     libraryDependencies ++=
-      zioCoreDep ++ zioPreludeDep ++ zioSchemaDep ++ enumeratumDep ++ dbDep ++ pureconfigDep ++ loggingDep ++ telemetryDep,
+      zioCoreDep ++ zioPreludeDep ++ zioSchemaDep ++ enumeratumDep ++ dbDep ++ pureconfigDep ++ loggingDep ++
+        telemetryDep ++ zioHttpDep,
     excludeDependencies ++= logExcludeDep
   )
-
-// HTTP-flavored cross-cutting infrastructure: ApiFailure (typed-Endpoint wire format), shared probes (HealthRoutes),
-// shared middleware (RequestLogging, RequestTracing), and the ServerRoutes composer used by every deployment unit.
-// Sits above libCommon so the cross-context contract (`ctxCustomerApi`) doesn't transitively pull a server framework.
-lazy val libHttp = (project in file("modules/lib/http"))
-  .dependsOn(libCommon)
-  .settings(commonSettings)
-  .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ telemetryDep)
 
 // ── ctx: customer ───────────────────────────────────────────
 
@@ -45,7 +43,7 @@ lazy val ctxCustomerApi = (project in file("modules/ctx/customer-api"))
   .settings(libraryDependencies ++= zioCoreDep)
 
 lazy val ctxCustomer = (project in file("modules/ctx/customer"))
-  .dependsOn(libCommon % "compile->compile;test->test", libHttp, ctxCustomerApi)
+  .dependsOn(libCommon % "compile->compile;test->test", ctxCustomerApi)
   .settings(commonSettings)
   .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ dbDep)
 
@@ -63,7 +61,7 @@ lazy val ctxNotificationApi = (project in file("modules/ctx/notification-api"))
 // ctxNotification depends on ctxCustomerApi: notification's app service composes a customer existence check + recipient
 // enrichment via `CustomerApi`. This is the only cross-context coupling — at the impl layer, against the api contract.
 lazy val ctxNotification = (project in file("modules/ctx/notification"))
-  .dependsOn(libCommon % "compile->compile;test->test", libHttp, ctxNotificationApi, ctxCustomerApi)
+  .dependsOn(libCommon % "compile->compile;test->test", ctxNotificationApi, ctxCustomerApi)
   .settings(commonSettings)
   .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ dbDep)
 
@@ -71,7 +69,7 @@ lazy val ctxNotification = (project in file("modules/ctx/notification"))
 
 lazy val appServer = (project in file("modules/app/server"))
   .enablePlugins(BuildInfoPlugin, JavaAppPackaging, DockerPlugin)
-  .dependsOn(libCommon, libHttp, ctxCustomerApi, ctxCustomer, ctxNotificationApi, ctxNotification)
+  .dependsOn(libCommon, ctxCustomerApi, ctxCustomer, ctxNotificationApi, ctxNotification)
   .settings(commonSettings)
   .settings(buildInfoSettings)
   .settings(dockerSettings)
@@ -105,8 +103,7 @@ lazy val appDev = (project in file("modules/app/dev"))
 lazy val it = (project in file("modules/app/it"))
   .dependsOn(
     appServer,
-    libCommon % "test->test",
-    libHttp,
+    libCommon       % "test->test",
     ctxCustomer     % "test->test",
     ctxNotification % "test->test"
   )
@@ -121,7 +118,6 @@ lazy val it = (project in file("modules/app/it"))
 lazy val root = (project in file("."))
   .aggregate(
     libCommon,
-    libHttp,
     ctxCustomerApi,
     ctxCustomer,
     ctxNotificationApi,
