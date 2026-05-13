@@ -46,13 +46,7 @@ You pay upfront with richer types and smarter boundaries. In return, invalid-sta
 
 ## Where this shows up
 
-The `newtypes`, `smart-constructors`, `errors`, `config-shape`, `to-converters`, and `pe-converters` principles are all instances of this philosophy. Specifically:
-
-- **`newtypes`** — typed ids; the compiler distinguishes `CustomerId` from `OrderId`
-- **`smart-constructors`** — validated value objects (`Email`, `Phone`) where construction is the only entry point
-- **`errors`** — `AppFailure` ADT with typed `category` + `reason`; routes pattern-match on the closed shape
-- **`config-shape`** — `XConfig` case classes, `EnvLabel` as a sealed enum, no defaults that bypass parsing
-- **`to-converters`** / **`pe-converters`** — parse-don't-validate at the wire and persistence boundaries
+The `newtypes`, `smart-constructors`, `errors`, `config-shape`, `to-converters`, and `pe-converters` principles are all instances. Owner of the per-principle enumeration: [`architecture-principles.md`](../architecture-principles.md).
 
 ## Antipatterns we reject
 

@@ -12,9 +12,11 @@ Inline markers go next to the offending code, referencing the principle by its s
 
 ---
 
+The first two entries — `local-reasoning` and `correct-by-construction` — are meta-principles; the rest of this list are mechanisms for preserving them at one scale or another.
+
 ## `local-reasoning` — code is understandable from its signature plus its named dependencies
 
-What a piece of code does should be derivable from reading that code plus its named dependencies — without descending into the bodies of those dependencies. Types, signatures, and explicit dependency parameters form the local frame; the discipline is that the frame is honest. Applies at every scale: expression, function, class, module, context, system. Most other principles are mechanisms for preserving this property at one level or another.
+What a piece of code does should be derivable from reading that code plus its named dependencies — without descending into the bodies of those dependencies. Types, signatures, and explicit dependency parameters form the local frame; the discipline is that the frame is honest. Applies at every scale: expression, function, class, module, context, system.
 
 Pattern: [`local-reasoning.md`](patterns/local-reasoning.md)
 
@@ -22,7 +24,7 @@ Pattern: [`local-reasoning.md`](patterns/local-reasoning.md)
 
 Domain types are shaped so the compiler proves invariants the runtime never has to. Achieved through ADTs (legal state space modeled exactly), smart constructors (invariants enforced at the construction boundary), and parse-don't-validate (untyped input converted to typed values at every boundary). Functions operating on typed values trust the invariants without re-checking.
 
-The `newtypes`, `smart-constructors`, `errors`, `config-shape`, and converter principles are instances. Pattern: [`correct-by-construction.md`](patterns/correct-by-construction.md).
+Pattern: [`correct-by-construction.md`](patterns/correct-by-construction.md).
 
 ---
 
@@ -70,7 +72,7 @@ Values with invariants (`Email`, `Phone`) construct through a smart-constructor 
 
 PureConfig case classes loaded from per-(app, env) files at boot, fail-fast. Each file is its own truth — no `reference.conf`, no merge with another env's file. `APP_ENV` selects the file. Each module owns its `XConfig`; no central root.
 
-Configurable values — anything an operator is meant to tune per env — live in the active `.conf` with no in-code fallback. External env vars override but carry no defaults of their own. Conceptually-optional values are `Option[X]` with the consumer branching semantically. Internal-mechanism constants (retry cadence, layer-init probe budgets) stay in code — they aren't "config", and promoting them to `.conf` inflates the surface without adding control. Pattern: [`config.md`](patterns/config.md).
+Configurable values — anything an operator is meant to tune per env — live in the active `.conf` with no in-code fallback. External env vars override but carry no defaults of their own. Conceptually-optional values are `Option[X]` with the consumer branching semantically. Internal-mechanism constants (retry cadence, layer-init probe budgets) stay in code — they aren't "config". Pattern: [`config.md`](patterns/config.md).
 
 ---
 

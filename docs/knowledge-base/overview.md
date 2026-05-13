@@ -28,26 +28,17 @@ Application routes are owned by contexts (`customer/impl/http/`); operational ro
 
 Application routes get the full middleware chain (tracing, access log, request id). Operational routes (health, ready, docs) are served bare so that probes and doc fetches don't flood traces and access logs.
 
-Application endpoints:
-
-- `GET /customers` — list (200, JSON array of `CustomerTO`)
-- `GET /customers/:id` — fetch one (200, or 404 + `ErrorTO` body)
-- `GET /customers/:id/addresses` — addresses owned by a customer (200, JSON array of `AddressTO`; empty array if the customer has none or doesn't exist)
-- `GET /addresses/:id` — fetch one (200, or 404 + `ErrorTO` body)
-- `POST /notifications` — create a notification (201, `NotificationWithRecipientTO`; 404 + `ErrorTO` if the recipient customer doesn't exist — propagated unchanged from the customer ctx)
-- `GET /notifications` — list with embedded recipient (200, JSON array of `NotificationWithRecipientTO`)
-- `GET /notifications/:id` — fetch one with embedded recipient (200, or 404)
-- `GET /customers/:id/notifications` — notifications for a customer (200, JSON array of `NotificationTO`; recipient implied by path so not embedded)
-
 Operational endpoints:
 
 - `GET /health` — liveness probe; always 200 if the process is up. No DB call. Wire as a k8s `livenessProbe`.
 - `GET /ready` — readiness probe; 200 if the DB is reachable (`SELECT 1`), 503 otherwise. Wire as a k8s `readinessProbe`.
-- `GET /docs` — Swagger UI for the API. The OpenAPI spec is at `/docs/scala-zio-example.json` (filename derived from the title in `ServerRoutes`).
+- `GET /docs` — Swagger UI. The OpenAPI spec is at `/docs/scala-zio-example.json` (filename derived from the title in `ServerRoutes`).
+
+Application endpoint ↔ operation mapping is documented alongside each operation in [`domain.md`](domain.md).
 
 ## HTTP client
 
-One outbound `zio.http.Client` is wired by `AppHttpClient.layer` (`lib/common/http/client/`) from typed `HttpClientConfig` (`connection-timeout`, `idle-timeout`). The composition root provides it once; any consumer that needs to call an external HTTP endpoint depends on `Client` and gets the shared instance. The first consumer is `AppTracing.live`, which HEAD-probes the OTLP endpoint at boot. Pattern: [`patterns/http-client.md`](patterns/http-client.md).
+One outbound `zio.http.Client` is wired by `AppHttpClient.layer` (`lib/common/http/client/`) from typed `HttpClientConfig` (`connection-timeout`, `idle-timeout`). The composition root provides it once; any consumer that needs to call an external HTTP endpoint depends on `Client` and gets the shared instance. Pattern: [`patterns/http-client.md`](patterns/http-client.md).
 
 ## Service wiring
 

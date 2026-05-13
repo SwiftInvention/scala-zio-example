@@ -55,11 +55,6 @@ Notification's list path calls `getMany` with the recipient ids of the loaded no
 
 When a delete operation is added later, this is where the design choice surfaces. The migration's current FK is `ON DELETE CASCADE` — a hard customer-delete would take notification rows with it, so the read path never sees the dangling reference. That's convenient *and* a schema-level cross-ctx coupling: customer's `DELETE` reaches into notification's table without going through `NotificationApi`, exactly the kind of inter-ctx write this doc argues against at the application layer. Soft-delete with a visibility filter would want different behavior: either `recipient` becomes `Option` (the absent state enters the legal-state space) or notification chooses a deliberate fallback. The right call depends on the soft-delete semantics, so the choice can wait.
 
-## Microservice extraction is unchanged
+## Microservice extraction
 
-`<ctx>-api` is the seam where same-JVM and cross-network deployments diverge. With the discipline above:
-
-- App-service-level call sites remain unchanged when the foreign ctx is extracted; only the wired impl swaps (DirectImpl → HttpImpl).
-- The decoupling of `<ctx>-api` modules means the caller's deployment only pulls the api jar it depends on, not a transitive web of foreign apis.
-
-See [`ctx-api.md`](ctx-api.md#microservice-extraction-path) for the migration mechanics.
+The disciplines above keep call sites unchanged when a foreign ctx moves to a separate deployment — only the wired impl swaps. Owner: [`ctx-api.md`](ctx-api.md#microservice-extraction-path).

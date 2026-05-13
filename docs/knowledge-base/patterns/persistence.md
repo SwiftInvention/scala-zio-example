@@ -122,7 +122,7 @@ The inner `withTransaction` calls in the repo methods become no-ops (Quill's `tr
 
 **Why both layers, not just one:**
 
-- Repos always wrap → consistent isolation guarantee for any repo call, not just orchestrated ones. RLS-style `SET LOCAL` extensions plug in here without changing every call site.
+- Repos always wrap → consistent isolation guarantee for any repo call, not just orchestrated ones.
 - App services may wrap → atomicity across multiple repos is expressible at the layer that owns the orchestration. No need to push multi-step business logic down into the repo.
 
 ## Error translation
@@ -158,7 +158,3 @@ just local-infra-reset               # wipe + restart (drops the MySQL volume; r
 ```
 
 Connection config lives in `app/server/src/main/resources/application-local.conf` (gitignored, copied from `application-local.conf.example` on `just initial-setup`). Default targets `localhost:3306/localDatabase` with `localUser`/`localPassword`, matching `docker-compose.yml`. See [`config.md`](config.md) for the broader config pattern.
-
-## RLS — out of scope, on purpose
-
-The `Transactor` signature is plain `AppIO[A] => AppIO[A]`. If RLS becomes a requirement later, the trait grows an auth-context parameter (or reads one from `ZIO.service`), and the impl issues `SET LOCAL app.client_id=...` at the start of each tx. The migration touches every repo call, but only once.

@@ -99,8 +99,4 @@ The handler receives `AppFailure` — no pattern match against `Throwable`, no f
 
 ## Why not per-method failure types
 
-The next step up in precision is `IO[CustomerNotFoundError | InvalidEmailError, Customer]`, with the failure set declared in the type and exhaustiveness compiler-checked. Scala 3 union types make that ergonomic; Scala 2 doesn't.
-
-Without union types, a per-method failure set has to be hand-maintained. The options are: propagate a hand-spelled union (tedious), widen to the family supertype (which is what `IO[AppFailure, A]` already does), or wrap in a per-layer ADT (boilerplate per error). The middle option ships with the lowest cost, and it's where we sit.
-
-The remaining cost: signatures don't tell you "this method can fail with `CustomerNotFoundError` specifically," so exhaustive case-handling at a specific raise site requires reading the body. Local reasoning is bounded by the `AppFailure` family, not scoped to each method.
+The channel widens at `AppFailure`, not at the specific subclass, so signatures don't tell you "this method can fail with `CustomerNotFoundError`." Owner of this trade-off discussion: [`local-reasoning.md`](local-reasoning.md) §"Per-method failure precision".

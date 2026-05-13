@@ -58,10 +58,4 @@ Service and Repo impls live in `impl/` because they may have multiple variants �
 
 ## Import shape
 
-Within a context:
-
-- `domain/` imports nothing context-specific (only libs).
-- `app/` may import from `domain/`. Not from `impl/`.
-- `impl/` may import from `domain/`, `app/`, and `<name>-api`.
-
-The same convention holds across modules — `lib/foo/domain/` shouldn't import from `lib/bar/impl/`, etc. Build-enforced cross-module boundaries (api vs impl modules) are separate; see [`build-deps.md`](build-deps.md), including the note on convention-only boundaries.
+The `impl → app → domain` convention applies inside a context, the same way it applies across modules. Owner: [`build-deps.md`](build-deps.md) §"Convention-only: `impl → app → domain` import direction".

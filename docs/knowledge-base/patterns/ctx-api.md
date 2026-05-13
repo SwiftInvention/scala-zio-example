@@ -34,9 +34,9 @@ object CustomerApiDirectImpl {
 
 It takes `<Name>AppService` (domain-typed) as a constructor dep and maps domain entities to TOs at the boundary.
 
-## Where TO ↔ domain conversion lives, and why
+## Where TO ↔ domain conversion lives
 
-The conversion happens in `<Name>ApiDirectImpl`, inside the ctx module. The reason is forced by the dependency graph: the mapping needs to see both sides — the domain entity (in the ctx module) and the TO (in `<name>-api`) — and the ctx module is the only place that compiles with both visible. Reversing the dependency, so `<name>-api` knew about the ctx's internals, would let every module depending on `<name>-api` transitively see those internals. That defeats the split.
+`<Name>ApiDirectImpl` owns the mapping — the ctx module is the only place that compiles with both the domain entity and the TO visible. Owner of the full converter story: [`converters.md`](converters.md).
 
 ## Relationship to HTTP routes
 
