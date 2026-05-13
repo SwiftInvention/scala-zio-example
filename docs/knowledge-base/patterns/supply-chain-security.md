@@ -21,7 +21,7 @@ Practices:
 - **Review build changes like production code.** A PR that bumps `project/plugins.sbt` or adds a `sourceGenerator` is in the same risk class as a PR that touches application logic. No drive-by "just bump the build plugin" merges.
 - **No source dependencies.** `ProjectRef(uri("git://..."))`, `dependsOn(RootProject(uri(...)))`, or `ProjectRef(uri("https://..."))` pull and execute remote Scala. Banned outright.
 - **Choose macro-heavy deps deliberately.** Quill, enumeratum, zio-schema-derivation all run macros at compile time. The library set is small and well-known; new additions go through review.
-- **Global plugins file is empty.** `~/.sbt/1.0/plugins/` runs on every build on the machine — a global plugin compromises every project. The devcontainer keeps the agent's global plugins empty. On host, audit `~/.sbt/1.0/plugins/`; anything there should be a deliberate, reviewed choice.
+- **Global plugins file is empty.** `~/.sbt/1.0/plugins/` runs on every build on the machine — a global plugin compromises every project. The devcontainer ships with an empty global plugins directory. On host, audit `~/.sbt/1.0/plugins/`; anything there should be a deliberate, reviewed choice.
 
 ## Artifact sources
 
@@ -62,7 +62,7 @@ just deps-cooldown 7        # check against a 7-day window
 just deps-cooldown 14       # tighter window for one-off audit
 ```
 
-The check is wired into `just style-check` (CI gate) and `just precommit-fix` (done-state gate) with the project's chosen window (currently 7 days) declared at each call site. A PR that adds or bumps to a too-young version fails the gate; you wait, or pin to an older version.
+The check is wired into `just style-check` (CI gate) and `just precommit-fix` (done-state gate) with the project's chosen window (7 days) declared at each call site. A PR that adds or bumps to a too-young version fails the gate; you wait, or pin to an older version.
 
 Coverage:
 
@@ -71,7 +71,7 @@ Coverage:
 
 Out of scope:
 
-- **GitHub Actions versions** — different lookup mechanism, different trust model. Pinned to exact tags via review discipline (`actions/checkout@v4.3.1` rather than `@v4`).
+- **GitHub Actions** — different lookup mechanism. Pinned to commit SHAs separately; see "CI workflow actions" below.
 - **JDK and sbt itself** — pinned via `.sdkmanrc` and `project/build.properties`; not Maven-Central-resolved.
 
 No Scala Steward or Renovate in the loop — deps change by human PR, and the gate covers both initial adds and bumps.
@@ -84,6 +84,22 @@ Two complementary mechanisms, both CI-only (network-heavy, not part of `precommi
 - **CVE scanning plugin** ([`nMoncho/sbt-dependency-check`](https://github.com/nMoncho/sbt-dependency-check)) cross-references the resolved graph against NVD + OSS Index. Runs as a CI job, fails the build on findings above a configured severity. Slower than the GitHub submission path; gives us a build-failing gate rather than just an alert.
 
 Both have false-positive tax. Neither catches a malicious package that hasn't been disclosed yet — that's what cooldown + the lockfile are for.
+
+## CI workflow actions
+
+Actions referenced in `.github/workflows/*.yml` run on the CI runner with access to `GITHUB_TOKEN` and any workflow-scoped secrets — a compromised release can exfiltrate or alter the build. Unlike Maven Central coordinates, GitHub tags aren't immutable: a maintainer (or an attacker with maintainer credentials) can move `@v4.3.1` to point at different code without bumping the version.
+
+Pin every action to its full 40-character commit SHA. Keep the tag as a trailing comment so the version stays legible in review:
+
+```yaml
+- uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+```
+
+SHAs are immutable; the workflow runs exactly the code reviewed when the pin was set. Bumping an action means resolving the new tag's SHA, reviewing the diff between old and new SHA (not just the tag's release notes), and updating both the pin and the comment in one commit.
+
+Coverage: every `uses:` clause across `.github/workflows/` resolves to a SHA. The trailing tag comment is documentation only — GitHub ignores it at run time.
+
+The pin fixes the action's source, not what that source does at run time. An action's body can fetch external resources mid-run — `setup-node` downloads Node binaries from a CDN, `actions/cache` reads and writes a GitHub-managed blob store, container actions pull images that may themselves reference mutable tags. Vetting that runtime behavior is a separate review.
 
 ## SBOM
 
@@ -102,7 +118,7 @@ The smaller the trusted compute base, the smaller the attack surface. Two practi
 - **`undeclaredCompileDependenciesTest`** — fails if a module's source imports a library not in its `libraryDependencies`. The transitive's version would otherwise be implicit (whatever some other dep happens to pull); failing the build forces a deliberate declaration with a deliberate version.
 - **`unusedCompileDependenciesTest`** — fails if `libraryDependencies` lists something nothing imports. Dead surface — drop it.
 
-The build is structured so each module's `libraryDependencies` is the truth about what that module touches at compile time. Ctx modules redeclare cross-cutting types (`zio-prelude`, `zio-schema`) directly, rather than picking them up transitively through the shared `libCommon` module (see [`module-layout.md`](module-layout.md)).
+The build is structured so each module's `libraryDependencies` is the truth about what that module touches at compile time. Ctx modules redeclare cross-cutting types (`zio-prelude`, `zio-schema`) directly, rather than picking them up transitively through the shared `libCommon` module.
 
 Two narrow filter sets cover what the plugin can't see through (configured in `build.sbt` under `explicitDepsFilters`):
 
@@ -113,10 +129,10 @@ Each filter entry is documented inline at its declaration site. Adding a new run
 
 ## Local development
 
-Two practices that limit blast radius when the agent runs on a developer machine:
+Two practices that limit blast radius when an AI coding agent runs on a developer machine:
 
-- **Devcontainer.** The agent runs in a sandboxed VS Code Dev Container with WireGuard-tunneled outbound and mitmproxy-injected secrets. Malicious code reaching the build classpath can only exfiltrate to allow-listed hosts. See [`devcontainer.md`](devcontainer.md).
-- **Secrets out of `.env` files and build env.** This template ships local credentials in `application-local.conf` (matching `docker-compose.yml`); production deployments should use a secrets manager (1Password CLI, Infisical, Vault — operators choose) and inject just-in-time at the running process (`op run -- <server>` or equivalent). The build itself never runs under the secrets-manager wrapper, so production secrets are never present in sbt's process env even when compile-time macros read `System.getenv`.
+- **Devcontainer.** Dev work happens in a sandboxed VS Code Dev Container with WireGuard-tunneled outbound and mitmproxy-injected secrets. Malicious code reaching the build classpath can only exfiltrate to allow-listed hosts. See [`devcontainer.md`](devcontainer.md).
+- **Keep secrets out of `.env` files and build env.** This template ships local credentials in `application-local.conf` (matching `docker-compose.yml`); production deployments should use a secrets manager (1Password CLI, Infisical, Vault — operators choose) and inject just-in-time at the running process (`op run -- <server>` or equivalent). The build itself never runs under the secrets-manager wrapper, so production secrets are never present in sbt's process env even when compile-time macros read `System.getenv`.
 
 ## Where this lives in the repo
 
@@ -129,6 +145,7 @@ Two practices that limit blast radius when the agent runs on a developer machine
 | Cooldown             | `scripts/deps-cooldown-check.sh`               | `just deps-cooldown` in CI gate |
 | CVE alerts           | `sbt-dependency-submission` action             | Dependabot security tab        |
 | CVE gate             | `sbt-dependency-check` (CI job)                | CI fails on disclosed CVEs     |
+| Action pinning       | full SHA + tag-as-comment in `.github/workflows/` | reviewable in PR diff       |
 | SBOM                 | `sbt-sbom` → `makeBom`                         | CI artifact on `main`          |
 | Dependency surface   | `sbt-explicit-dependencies`                    | `(un)declaredCompileDependenciesTest` in CI |
 | Sandbox              | `.devcontainer/` + `.sandcat/`                 | see [`devcontainer.md`](devcontainer.md) |

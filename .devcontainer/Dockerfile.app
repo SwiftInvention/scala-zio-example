@@ -34,14 +34,10 @@ ENV PATH="/home/vscode/.local/bin:/home/vscode/.local/share/mise/shims:$PATH"
 RUN mise use -g java@temurin-21.0.11
 RUN mise use -g scala@2.13.18
 RUN mise use -g sbt@1.12.10
-RUN mise use -g node@20
 RUN mise use -g just@1.36.0
 RUN mise use -g flyway@12.5.0
 # END STACKS
 
-# Project-specific tooling on top of the language stacks:
-# - markdownlint-cli2 is invoked by `just style-check` / `just style-fix`.
-RUN npm install -g markdownlint-cli2@0.22.1
 
 # If Java was installed above, bake JAVA_HOME and JAVA_TOOL_OPTIONS into
 # .bashrc so VS Code's env probe picks them up before the entrypoint runs.

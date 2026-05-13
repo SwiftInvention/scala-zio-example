@@ -87,7 +87,7 @@ Compose-local uses `APP_ENV=dev` and fills the `${VAR}` substitutions from `dock
 ## Setup
 
 ```sh
-just initial-setup   # install JDK + sbt (SDKMAN), markdownlint-cli2 (npm, pinned); seed application-local.conf from .example
+just initial-setup   # install JDK + sbt (SDKMAN); seed application-local.conf from .example
 ```
 
 Every public recipe activates the pinned SDK env at the top, so it works from any shell without manual `sdk env` first.

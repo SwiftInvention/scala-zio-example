@@ -20,7 +20,7 @@ The base configuration comes from [SwiftInvention/devcontainers-example](https:/
 
 ## What's repo-specific
 
-1. **`Dockerfile.app` — toolchain pins.** mise installs `java@temurin-21.0.11`, `scala@2.13.18`, `sbt@1.12.10`, `node@20`, `just@1.36.0`, `flyway@12.5.0`. `markdownlint-cli2@0.22.1` installs separately via npm. The same toolchain versions are pinned in four other places on bump — see "Version pin sites" below.
+1. **`Dockerfile.app` — toolchain pins.** mise installs `java@temurin-21.0.11`, `scala@2.13.18`, `sbt@1.12.10`, `just@1.36.0`, `flyway@12.5.0`. The same toolchain versions are pinned in four other places on bump — see "Version pin sites" below.
 2. **`compose-all.yml` — inline infra.** `mysql`, `mysql-test`, and `jaeger` services run alongside the agent in the same compose project. The agent shares wg-client's network namespace and reaches them by service name (`mysql:3306`, `mysql-test:3306`, `jaeger:4318`). The agent's `env_file: ../.env.devcontainer` pulls `APP_ENV=local` plus the two `${?VAR}` overrides (`MYSQL_URL`, `OTEL_ENDPOINT`) that `application-local.conf` picks up in place of its host-localhost defaults.
 3. **Sandbox name.** `scala-zio-example-sandbox` appears in `devcontainer.json` (`name`, `workspaceFolder`, `postStartCommand`), `compose-all.yml` (`name`, volume paths, `working_dir`), and `sandcat/scripts/app-user-init.sh` (`safe.directory`). Keeping it unique per repo prevents Docker Compose project-name collisions when multiple devcontainers coexist.
 

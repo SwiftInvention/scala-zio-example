@@ -18,7 +18,7 @@ _default:
 
 # ── Setup ─────────────────────────────────────────────────────────────────────
 
-# install JDK, sbt (SDKMAN), markdownlint-cli2 (npm), and seed local config from the .example
+# install JDK + sbt (SDKMAN) and seed local config from the .example
 [group('setup')]
 initial-setup:
   #!/usr/bin/env bash
@@ -26,11 +26,6 @@ initial-setup:
   export SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
   source "$SDKMAN_DIR/bin/sdkman-init.sh"
   sdk env install
-  if ! command -v npm >/dev/null 2>&1; then
-    echo "✗ npm not found on PATH — install Node (e.g. via nvm) before running initial-setup" >&2
-    exit 1
-  fi
-  npm install -g markdownlint-cli2@0.22.1
   for example in modules/*/src/main/resources/application-*.conf.example .env.example; do
     target="${example%.example}"
     if [ ! -f "$target" ]; then
@@ -70,7 +65,7 @@ test-it level='':
   export TEST_LOG_LEVEL='{{ level }}'
   sbt "dev; appIntegrationTests/test"
 
-# lint, check format (warnings as errors). Covers Scala (sbt) + Markdown (markdownlint-cli2).
+# lint, check format (warnings as errors). Scala only.
 [group('dev loop')]
 style-check:
   #!/usr/bin/env bash
@@ -78,16 +73,14 @@ style-check:
   {{ init_env }}
   sbt "ci; dependencyLockCheck; undeclaredCompileDependenciesTest; unusedCompileDependenciesTest; compile; Test / compile; styleCheck"
   just deps-cooldown 7
-  markdownlint-cli2
 
-# lint with autofixes, format. Covers Scala (sbt) + Markdown (markdownlint-cli2 --fix).
+# lint with autofixes, format. Scala only.
 [group('dev loop')]
 style-fix:
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
   sbt "dev; styleFix"
-  markdownlint-cli2 --fix
 
 # style-fix + style-check + unit tests in one sbt session — run before committing (skips integration tests)
 [group('dev loop')]
@@ -97,7 +90,6 @@ precommit-fix:
   {{ init_env }}
   sbt "dev; styleFix; ci; dependencyLockCheck; undeclaredCompileDependenciesTest; unusedCompileDependenciesTest; styleCheck; unitTest"
   just deps-cooldown 7
-  markdownlint-cli2 --fix
   just test-it
 
 # regenerate build.sbt.lock files after an intentional dependency change
