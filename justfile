@@ -76,7 +76,8 @@ style-check:
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
-  sbt "ci; compile; Test / compile; styleCheck"
+  sbt "ci; dependencyLockCheck; undeclaredCompileDependenciesTest; unusedCompileDependenciesTest; compile; Test / compile; styleCheck"
+  just deps-cooldown 7
   markdownlint-cli2
 
 # lint with autofixes, format. Covers Scala (sbt) + Markdown (markdownlint-cli2 --fix).
@@ -94,9 +95,33 @@ precommit-fix:
   #!/usr/bin/env bash
   set -eu
   {{ init_env }}
-  sbt "dev; styleFix; ci; styleCheck; unitTest"
+  sbt "dev; styleFix; ci; dependencyLockCheck; undeclaredCompileDependenciesTest; unusedCompileDependenciesTest; styleCheck; unitTest"
+  just deps-cooldown 7
   markdownlint-cli2 --fix
   just test-it
+
+# regenerate build.sbt.lock files after an intentional dependency change
+[group('dev loop')]
+deps-relock:
+  #!/usr/bin/env bash
+  set -eu
+  {{ init_env }}
+  sbt dependencyLockWrite
+
+# fail if any declared dep (main + sbt/compiler plugins) is younger than `days` old
+[group('dev loop')]
+deps-cooldown days:
+  #!/usr/bin/env bash
+  set -eu
+  ./scripts/deps-cooldown-check.sh {{days}}
+
+# generate CycloneDX SBOM for the deployable server module
+[group('dev loop')]
+sbom:
+  #!/usr/bin/env bash
+  set -eu
+  {{ init_env }}
+  sbt appServer/makeBom
 
 # ── Run ───────────────────────────────────────────────────────────────────────
 

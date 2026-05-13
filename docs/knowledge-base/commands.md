@@ -20,6 +20,14 @@ just precommit-fix   # done-gate: style-fix + style-check + unit tests + integra
 just style-check     # verify formatting + lint, fail on issues; no rewrites
 ```
 
+`style-check` and `precommit-fix` run `dependencyLockCheck` — they fail if `build.sbt.lock` doesn't match the resolved dependency graph. After an intentional dep change (`Versions.scala`, `Dependencies.scala`, or a plugin bump), regenerate:
+
+```sh
+just deps-relock     # regenerate all module-level build.sbt.lock files
+```
+
+See [`patterns/supply-chain-security.md`](patterns/supply-chain-security.md) for the lockfile rationale.
+
 ## Targeted tests
 
 Per-spec sbt invocations when iterating on a specific spec:

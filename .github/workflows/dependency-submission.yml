@@ -1,0 +1,53 @@
+name: Dependency Submission
+
+# Submits the resolved sbt dependency graph to GitHub's Dependency Submission API.
+# Dependabot then raises security alerts against Maven coordinates in the resolved
+# graph (Dependabot doesn't open PRs for sbt — it doesn't parse build.sbt — but
+# alerts work). See docs/knowledge-base/patterns/supply-chain-security.md.
+#
+# Separate workflow file because submission needs `contents: write`, which is
+# broader than the main CI's `read-all` permission scope.
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  submit:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4.3.1
+
+      - name: Cache SDKMAN
+        uses: actions/cache@v4.3.0
+        id: sdkman-cache
+        with:
+          path: ~/.sdkman
+          key: sdkman-${{ runner.os }}-${{ hashFiles('.sdkmanrc') }}
+
+      - name: Install SDKMAN + JDK + sbt
+        if: steps.sdkman-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          set +u
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk env install
+          set -u
+
+      - name: Cache sbt dependencies
+        uses: actions/cache@v4.3.0
+        with:
+          path: |
+            ~/.sbt
+            ~/.cache/coursier
+            ~/.ivy2/cache
+          key: sbt-${{ runner.os }}-${{ hashFiles('**/build.sbt', '**/project/**/*.sbt', '**/project/**/*.scala', '**/project/build.properties') }}
+          restore-keys: |
+            sbt-${{ runner.os }}-
+
+      - name: Submit dependency graph
+        uses: scalacenter/sbt-dependency-submission@v3.2.1

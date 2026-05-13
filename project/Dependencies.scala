@@ -24,22 +24,22 @@ object Dependencies {
     "dev.zio" %% "zio-json" % Versions.zioJson
   )
 
-  // zio-schema gives us `Schema[A]` for typed boundary serialization (zio-http Endpoint API, OpenAPI generation,
-  // and JsonCodec derivation in tests). Pulled explicitly so modules that need Schema (lib/common, ctx/customer-api)
-  // don't have to drag the full server framework via `zioHttpDep`.
+  // zio-schema gives us `Schema[A]` for typed boundary serialization (zio-http Endpoint API, OpenAPI generation).
+  // Pulled explicitly so modules that need Schema (lib/common, ctx/*-api) don't have to drag the full server
+  // framework via `zioHttpDep`.
   lazy val zioSchemaDep: Seq[ModuleID] = Seq(
-    "dev.zio" %% "zio-schema"            % Versions.zioSchema,
-    "dev.zio" %% "zio-schema-derivation" % Versions.zioSchema,
-    "dev.zio" %% "zio-schema-json"       % Versions.zioSchema
+    "dev.zio" %% "zio-schema" % Versions.zioSchema
   )
 
-  lazy val tapirDep: Seq[ModuleID] = Seq(
-    "com.softwaremill.sttp.tapir" %% "tapir-core"              % Versions.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % Versions.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs"      % Versions.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-zio-http-server"   % Versions.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % Versions.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-newtype"           % Versions.tapir
+  // zio-schema-derivation — `DeriveSchema.gen[A]` macro. Needed by modules that derive a Schema (api TOs,
+  // libCommon's ErrorTO); pure-consumer modules only need `zioSchemaDep`.
+  lazy val zioSchemaDerivationDep: Seq[ModuleID] = Seq(
+    "dev.zio" %% "zio-schema-derivation" % Versions.zioSchema
+  )
+
+  // zio-schema-json — JsonCodec derived from a Schema. Only used in test specs (SnapshotSpec, TestServer).
+  lazy val zioSchemaJsonTestDep: Seq[ModuleID] = Seq(
+    "dev.zio" %% "zio-schema-json" % Versions.zioSchema % Test
   )
 
   // ── Config ─────────────────────────────────────────────────
@@ -50,15 +50,22 @@ object Dependencies {
   // ── DB ─────────────────────────────────────────────────────
   // Note: Flyway runs out-of-process via the `flyway` CLI (see justfile + .sdkmanrc).
   // No JVM-side Flyway dep — migrations are an explicit deployment step, not a boot-time effect.
+
+  // The Quill ZIO API used by ctx repo impls (querySchema, run, etc.). Compile-time API only.
   lazy val dbDep: Seq[ModuleID] = Seq(
+    "io.getquill" %% "quill-jdbc-zio" % Versions.quill
+  )
+
+  // Runtime plumbing: the plain Quill JDBC bindings (driver-loading shim) and the MySQL JDBC driver itself.
+  // Only the deployment unit (libDb's DataSourceLayer + appServer/appDev) needs these on the classpath.
+  lazy val dbRuntimeDep: Seq[ModuleID] = Seq(
     "io.getquill" %% "quill-jdbc"        % Versions.quill,
-    "io.getquill" %% "quill-jdbc-zio"    % Versions.quill,
     "com.mysql"    % "mysql-connector-j" % Versions.mysql
   )
 
-  // ── Mapping / utility ──────────────────────────────────────
-  lazy val newtypeDep: Seq[ModuleID] = Seq(
-    "io.estatico" %% "newtype" % Versions.newType
+  // HikariCP — connection pool. Used directly in libDb's `DataSourceLayer`.
+  lazy val hikariDep: Seq[ModuleID] = Seq(
+    "com.zaxxer" % "HikariCP" % Versions.hikari
   )
 
   lazy val zioPreludeDep: Seq[ModuleID] = Seq(
@@ -66,13 +73,7 @@ object Dependencies {
   )
 
   lazy val enumeratumDep: Seq[ModuleID] = Seq(
-    "com.beachape" %% "enumeratum"       % Versions.enumeratum,
-    "com.beachape" %% "enumeratum-quill" % Versions.enumeratum,
-    "com.beachape" %% "enumeratum-circe" % Versions.enumeratum
-  )
-
-  lazy val circeDep: Seq[ModuleID] = Seq(
-    "io.circe" %% "circe-generic-extras" % Versions.circe
+    "com.beachape" %% "enumeratum" % Versions.enumeratum
   )
 
   // ── Logging ────────────────────────────────────────────────
@@ -85,10 +86,16 @@ object Dependencies {
   )
 
   // ── Tracing ────────────────────────────────────────────────
-  // zio-telemetry's OpenTelemetry binding + the OTel Java SDK and OTLP HTTP exporter. semconv carries the standard
-  // attribute keys (service.name, etc.) and ships under its own groupId since 1.x.
-  lazy val telemetryDep: Seq[ModuleID] = Seq(
-    "dev.zio"                 %% "zio-opentelemetry"           % Versions.zioTelemetry,
+
+  // zio-telemetry's OpenTelemetry binding — gives `Tracing.span`, `Tracing.aspects.*`, etc. Pulled by any module
+  // that touches the `Tracing` service directly (appServer routes, libCommon middleware).
+  lazy val zioOtelDep: Seq[ModuleID] = Seq(
+    "dev.zio" %% "zio-opentelemetry" % Versions.zioTelemetry
+  )
+
+  // OTel Java SDK + OTLP HTTP exporter + semconv attribute keys. Used by `AppTracing` in libCommon to build the
+  // tracer provider; downstream modules consume the layer and don't need to declare these directly.
+  lazy val otelSdkDep: Seq[ModuleID] = Seq(
     "io.opentelemetry"         % "opentelemetry-sdk"           % Versions.openTelemetry,
     "io.opentelemetry"         % "opentelemetry-exporter-otlp" % Versions.openTelemetry,
     "io.opentelemetry.semconv" % "opentelemetry-semconv"       % Versions.openTelemetrySemconv

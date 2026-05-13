@@ -60,6 +60,10 @@ Config loaded from `application-${APP_ENV}.conf` at boot ([`patterns/config.md`]
 
 `appServer` packages as a docker image via sbt-native-packager's `DockerPlugin` (`build.sbt`'s `dockerSettings`). One image, env-driven config: `application-dev.conf` and `application-prod.conf` use `${VAR}` substitution, filled by env vars at runtime. Compose-local runs the same image with `APP_ENV=dev` and the substitution vars supplied in `docker-compose.yml`. Pattern: [`patterns/docker-build.md`](patterns/docker-build.md).
 
+## Supply chain
+
+Practices for narrowing the blast radius of a compromised upstream: pinned plugins, lockfile-gated dependency resolution, a custom publish-age cooldown check across main deps + sbt plugins, CVE alerts via the GitHub Dependency Submission API, CycloneDX SBOMs on `main`, and trusted-compute-base hygiene via `sbt-explicit-dependencies`. The build itself is production code: sbt plugins and macros run with full host privileges at compile time. Pattern: [`patterns/supply-chain-security.md`](patterns/supply-chain-security.md).
+
 ## Tech stack
 
 Scala 2.13 + ZIO 2.1 + zio-http + zio-schema + zio-prelude. Quill + MySQL for persistence; Flyway CLI for migrations. PureConfig for typed config. enumeratum for error enums. zio-telemetry + OpenTelemetry SDK for tracing. zio-logging + slf4j. JDK 21 + sbt 1.12, pinned via `.sdkmanrc`. Versions in `project/Versions.scala`, deps in `project/Dependencies.scala`.

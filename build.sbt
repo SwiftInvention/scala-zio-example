@@ -11,13 +11,79 @@ ThisBuild / libraryDependencySchemes += "dev.zio" %% "zio-json" % "always"
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
+// sbt-explicit-dependencies — see patterns/supply-chain-security.md.
+// These filters suppress two known classes of false positive that the plugin
+// can't see through:
+//
+//  - **Runtime-only deps** (`unusedCompileDependenciesFilter`): JDBC drivers,
+//    slf4j bridges, the plain `quill-jdbc` shim — never imported in Scala
+//    source but required on the runtime classpath. The plugin does compile-
+//    time bytecode analysis only, so they read as "unused".
+//
+//  - **Umbrella sub-artifacts** (`undeclaredCompileDependenciesFilter`):
+//    bytecode references to sub-artifacts pulled in by a declared umbrella
+//    (e.g. `pureconfig-core` via the `pureconfig` umbrella, `quill-core` /
+//    `quill-engine` via `quill-jdbc-zio`, ZIO type-tag / fiber-instrumentation
+//    internals via the `zio` umbrella).
+val explicitDepsFilters = Seq(
+  // Runtime-only.
+  unusedCompileDependenciesFilter -=
+    moduleFilter(organization = "com.mysql", name = "mysql-connector-j"),
+  unusedCompileDependenciesFilter -=
+    moduleFilter(organization = "org.slf4j", name = "jcl-over-slf4j"),
+  unusedCompileDependenciesFilter -=
+    moduleFilter(organization = "org.slf4j", name = "jul-to-slf4j"),
+  unusedCompileDependenciesFilter -=
+    moduleFilter(organization = "org.slf4j", name = "log4j-over-slf4j"),
+  unusedCompileDependenciesFilter -=
+    moduleFilter(organization = "dev.zio", name = "zio-logging-slf4j-bridge"),
+  unusedCompileDependenciesFilter -=
+    moduleFilter(organization = "io.getquill", name = "quill-jdbc"),
+  // Declared as the public umbrella; imports route through sub-artifacts.
+  unusedCompileDependenciesFilter -=
+    moduleFilter(organization = "com.github.pureconfig", name = "pureconfig"),
+  // Umbrella sub-artifacts — bytecode refs, no direct declarations.
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "com.github.pureconfig", name = "pureconfig-core"),
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "com.github.pureconfig", name = "pureconfig-generic"),
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "com.github.pureconfig", name = "pureconfig-generic-base"),
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "com.chuusai", name = "shapeless"),
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "com.typesafe", name = "config"),
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "io.getquill", name = "quill-core"),
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "io.getquill", name = "quill-engine"),
+  // quill-jdbc-zio macro-expanded queries reference quill-jdbc classes at the bytecode level even when
+  // source imports only touch the ZIO API. Treated as a sub-artifact of the declared quill-jdbc-zio.
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "io.getquill", name = "quill-jdbc"),
+  // ZIO internals — type-tag / fiber-tracer / macro helpers.
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "dev.zio", name = "izumi-reflect"),
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "dev.zio", name = "zio-stacktracer"),
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "dev.zio", name = "zio-schema-macros"),
+  // OTel SDK sub-artifacts — pulled by `opentelemetry-sdk` declared in otelSdkDep.
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "io.opentelemetry", name = "opentelemetry-api"),
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "io.opentelemetry", name = "opentelemetry-sdk-common"),
+  undeclaredCompileDependenciesFilter -=
+    moduleFilter(organization = "io.opentelemetry", name = "opentelemetry-sdk-trace")
+)
+
 lazy val commonSettings = Seq(
   run / fork  := true,
   Test / fork := true, // pins test cwd to the module's baseDirectory — required for SnapshotSpec's relative paths
   tpolecatScalacOptions += ScalacOptions.other("-Ymacro-annotations"),
   testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
   libraryDependencies ++= zioTestDep
-)
+) ++ explicitDepsFilters
 
 // ── lib ─────────────────────────────────────────────────────
 
@@ -30,8 +96,8 @@ lazy val libCommon = (project in file("modules/lib/common"))
   .settings(commonSettings)
   .settings(
     libraryDependencies ++=
-      zioCoreDep ++ zioPreludeDep ++ zioSchemaDep ++ enumeratumDep ++ pureconfigDep ++ loggingDep ++
-        telemetryDep ++ zioHttpDep,
+      zioCoreDep ++ zioPreludeDep ++ zioSchemaDep ++ zioSchemaDerivationDep ++ zioSchemaJsonTestDep ++
+        enumeratumDep ++ pureconfigDep ++ loggingDep ++ zioOtelDep ++ otelSdkDep ++ zioHttpDep,
     excludeDependencies ++= logExcludeDep
   )
 
@@ -40,22 +106,28 @@ lazy val libCommon = (project in file("modules/lib/common"))
 // `src/main/resources/db/migration/`. The DB is one schema for the whole deployment, and centralizing it here means
 // cross-ctx reads of foreign PEs are an ordinary import rather than a special case. `DbProbe` (defined in libCommon)
 // is implemented here as `SqlDbProbe`.
+//
+// dbRuntimeDep (driver + plain JDBC shim) lives here so the deployment unit has the MySQL driver on its classpath at
+// runtime. Ctx repo modules only need `dbDep` (the Quill ZIO API).
 lazy val libDb = (project in file("modules/lib/db"))
   .dependsOn(libCommon % "compile->compile;test->test")
   .settings(commonSettings)
-  .settings(libraryDependencies ++= zioCoreDep ++ dbDep)
+  .settings(libraryDependencies ++= zioCoreDep ++ zioPreludeDep ++ pureconfigDep ++ dbDep ++ dbRuntimeDep ++ hikariDep)
 
 // ── ctx: customer ───────────────────────────────────────────
 
 lazy val ctxCustomerApi = (project in file("modules/ctx/customer-api"))
   .dependsOn(libCommon)
   .settings(commonSettings)
-  .settings(libraryDependencies ++= zioCoreDep)
+  .settings(libraryDependencies ++= zioCoreDep ++ zioPreludeDep ++ zioSchemaDep ++ zioSchemaDerivationDep)
 
 lazy val ctxCustomer = (project in file("modules/ctx/customer"))
   .dependsOn(libCommon % "compile->compile;test->test", libDb % "compile->compile;test->test", ctxCustomerApi)
   .settings(commonSettings)
-  .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ dbDep)
+  .settings(
+    libraryDependencies ++=
+      zioCoreDep ++ zioHttpDep ++ zioPreludeDep ++ zioSchemaDep ++ enumeratumDep ++ dbDep
+  )
 
 // ── ctx: notification ───────────────────────────────────────
 
@@ -66,7 +138,7 @@ lazy val ctxCustomer = (project in file("modules/ctx/customer"))
 lazy val ctxNotificationApi = (project in file("modules/ctx/notification-api"))
   .dependsOn(libCommon)
   .settings(commonSettings)
-  .settings(libraryDependencies ++= zioCoreDep)
+  .settings(libraryDependencies ++= zioCoreDep ++ zioPreludeDep ++ zioSchemaDep ++ zioSchemaDerivationDep)
 
 // ctxNotification depends on ctxCustomerApi: notification's app service composes a customer existence check + recipient
 // enrichment via `CustomerApi`. This is the only cross-context coupling — at the impl layer, against the api contract.
@@ -78,7 +150,10 @@ lazy val ctxNotification = (project in file("modules/ctx/notification"))
     ctxCustomerApi
   )
   .settings(commonSettings)
-  .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ dbDep)
+  .settings(
+    libraryDependencies ++=
+      zioCoreDep ++ zioHttpDep ++ zioPreludeDep ++ zioSchemaDep ++ enumeratumDep ++ dbDep
+  )
 
 // ── app: server ─────────────────────────────────────────────
 
@@ -90,7 +165,7 @@ lazy val appServer = (project in file("modules/app/server"))
   .settings(dockerSettings)
   .settings(
     libraryDependencies ++=
-      zioCoreDep ++ zioHttpDep ++ pureconfigDep ++ loggingDep ++ dbDep,
+      zioCoreDep ++ zioHttpDep ++ pureconfigDep ++ zioOtelDep,
     excludeDependencies ++= logExcludeDep,
     name := "server"
   )
@@ -106,7 +181,8 @@ lazy val appDev = (project in file("modules/app/dev"))
   .settings(
     publish / skip      := true,
     Compile / mainClass := Some("com.example.app.dev.Experiment"),
-    libraryDependencies ++= zioCoreDep ++ pureconfigDep ++ loggingDep ++ dbDep,
+    libraryDependencies ++=
+      zioCoreDep ++ zioPreludeDep ++ pureconfigDep ++ dbDep,
     excludeDependencies ++= logExcludeDep,
     name := "dev"
   )
@@ -125,8 +201,9 @@ lazy val appIntegrationTests = (project in file("modules/app/integration-tests")
   )
   .settings(commonSettings)
   .settings(
-    publish / skip := true,
-    libraryDependencies ++= zioCoreDep ++ dbDep
+    publish / skip := true
+    // No compile-scope deps — appIntegrationTests is test-only (test src dir). Test framework + transitively-needed
+    // libraries come via commonSettings' zioTestDep and the `test->test` deps on appServer/libCommon/etc.
   )
 
 // ── root aggregator ─────────────────────────────────────────
