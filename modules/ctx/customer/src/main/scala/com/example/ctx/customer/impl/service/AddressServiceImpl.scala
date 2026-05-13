@@ -8,10 +8,8 @@ import com.example.lib.common.domain.model.NewTypes.{AddressId, CustomerId}
 import com.example.lib.common.domain.model.Types.AppIO
 import zio._
 
-/** Pass-through to `AddressRepo` plus `get` (fail-on-missing). Domain-level logic accrues here. */
+/** Pass-through to `AddressRepo` with `get` lifting absence to `AddressNotFoundError`. */
 final class AddressServiceImpl(repo: AddressRepo) extends AddressService {
-  override def find(id: AddressId): AppIO[Option[Address]] = repo.find(id)
-
   override def get(id: AddressId): AppIO[Address] =
     repo.find(id).someOrFail(AddressNotFoundError.withId(id))
 

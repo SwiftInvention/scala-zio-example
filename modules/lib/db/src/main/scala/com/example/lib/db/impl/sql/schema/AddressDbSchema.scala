@@ -1,7 +1,7 @@
-package com.example.lib.db.impl.repo.sql.schema
+package com.example.lib.db.impl.sql.schema
 
-import com.example.lib.db.impl.repo.sql.SqlContext
-import com.example.lib.db.impl.repo.sql.entity.AddressPE
+import com.example.lib.db.impl.sql.SqlContext
+import com.example.lib.db.impl.sql.entity.AddressPE
 
 /** Quill schema declaration for the `address` table. */
 trait AddressDbSchema {

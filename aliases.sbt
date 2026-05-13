@@ -16,5 +16,5 @@ addCommandAlias(
 )
 addCommandAlias(
   "unitTest",
-  "libCommon/test; ctxCustomerApi/test; ctxCustomer/test; ctxNotificationApi/test; ctxNotification/test; appServer/test"
+  "libCommon/test; ctxCustomerApi/test; ctxCustomer/test; ctxNotification/test; appServer/test"
 )

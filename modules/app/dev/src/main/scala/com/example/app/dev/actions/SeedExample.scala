@@ -7,10 +7,10 @@ import com.example.lib.common.domain.model.Types.AppRIO
 import com.example.lib.common.impl.config.ConfigBootstrap
 import com.example.lib.common.impl.logging.AppLogger
 import com.example.lib.db.domain.service.Transactor
-import com.example.lib.db.impl.repo.sql.entity.{CustomerPE, NotificationPE}
-import com.example.lib.db.impl.repo.sql.schema.{CustomerDbSchema, NotificationDbSchema}
-import com.example.lib.db.impl.repo.sql.{DataSourceConfig, DataSourceLayer, SqlContext}
 import com.example.lib.db.impl.service.TransactorQuillImpl
+import com.example.lib.db.impl.sql.entity.{CustomerPE, NotificationPE}
+import com.example.lib.db.impl.sql.schema.{CustomerDbSchema, NotificationDbSchema}
+import com.example.lib.db.impl.sql.{DataSourceConfig, DataSourceLayer, SqlContext}
 import zio._
 
 /** Seeds the example fixtures used by the smoke test: three customers (Ada, Alan, Grace) and a handful of notifications

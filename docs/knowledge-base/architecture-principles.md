@@ -58,7 +58,7 @@ One `<Entity>Converter` object per entity in `<ctx>/impl/to/converter/`. Hand-wr
 
 ## `newtypes` — domain ids are zio-prelude `Newtype`s, not raw `String`/`Int`
 
-Identifiers (`CustomerId`, `AddressId`, `NotificationId`) flow through the system as typed wrappers — the compiler catches argument swaps, and serialization stays flat (no wrapping objects on the wire). Types live in `lib/common/.../domain/model/NewTypes.scala`; Quill `MappedEncoding`s live with the persistence infra in `lib/db/.../impl/repo/sql/NewTypeEncodings.scala`. Pattern: [`newtypes.md`](patterns/newtypes.md).
+Identifiers (`CustomerId`, `AddressId`, `NotificationId`) flow through the system as typed wrappers — the compiler catches argument swaps, and serialization stays flat (no wrapping objects on the wire). Types live in `lib/common/.../domain/model/NewTypes.scala`; Quill `MappedEncoding`s live with the persistence infra in `lib/db/.../impl/sql/NewTypeEncodings.scala`. Pattern: [`newtypes.md`](patterns/newtypes.md).
 
 ## `smart-constructors` — validated value objects use `sealed abstract case class Foo private (...)`
 

@@ -10,8 +10,7 @@ import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
 import com.example.lib.common.domain.model.Types.AppIO
 
 /** Public surface of the notification context. Domain-typed. `listForRecipient` returns plain `Notification`s — the
-  * recipient is implied by the path on the corresponding HTTP route. See `NotificationAppServiceImpl` for the
-  * cross-context call sites.
+  * recipient is implied by the path on the corresponding HTTP route.
   */
 trait NotificationAppService {
 

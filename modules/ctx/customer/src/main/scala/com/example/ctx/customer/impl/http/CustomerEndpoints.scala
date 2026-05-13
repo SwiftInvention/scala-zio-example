@@ -1,14 +1,15 @@
 package com.example.ctx.customer.impl.http
 
-import com.example.ctx.customer.api.to.{AddressTO, CustomerTO}
+import com.example.ctx.customer.api.to.CustomerTO
+import com.example.ctx.customer.impl.to.AddressTO
 import com.example.lib.common.impl.http.ApiFailure
 import zio.http._
 import zio.http.codec.PathCodec
 import zio.http.endpoint.Endpoint
 
-/** Typed endpoint definitions for the customer ctx. Pure shape — no implementation. Reused at two sites: by
-  * `CustomerRoutes` to provide the implementations, and by `ServerApp` to generate the OpenAPI document. See
-  * `patterns/http-endpoints.md` for the discipline (full variant set per endpoint, `ApiFailure.from` mapping).
+/** Typed endpoint definitions for the customer ctx. Pure shape — no implementation. Every endpoint declares the full
+  * `ApiFailure` variant set so the framework always has a codec for whatever the impl produces. See
+  * `patterns/http-endpoints.md`.
   */
 object CustomerEndpoints {
 

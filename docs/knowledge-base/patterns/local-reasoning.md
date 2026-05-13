@@ -39,11 +39,9 @@ Most existing principles are mechanisms for preserving local reasoning at one le
 - **`tx-default`** — the transaction scope of a method is readable at the method
 - **`db-lib`** — PEs live in the shared `lib/db`; ctx repo signatures are domain types
 
-When you find yourself adding action-at-a-distance, one of these is being violated.
-
 ## Where the codebase weakens local reasoning
 
-**Per-method failure precision.** `AppIO[A] = IO[AppFailure, A]` tells you the failure is one of our structured errors, not an arbitrary `Throwable`. It doesn't tell you *which* subclass — the channel widens to the family root. To know whether `CustomerService.get` can fail with `CustomerNotFoundError` vs `DbError`, you have to read the body. Scala 3 union types would close this gap.
+**Per-method failure precision.** `AppIO[A] = IO[AppFailure, A]` tells you the failure is one of our structured errors, not which subclass. To know whether `CustomerService.get` can fail with `CustomerNotFoundError` vs `DbError`, you read the body. The trade-off and its Scala 3 successor live in [`errors.md`](errors.md) §"Why not per-method failure types".
 
 **Trait contracts not fully captured by types.** Some of our traits have semantics (laws, ordering, what counts as nesting) that types don't express. `Transactor.withTransaction[A](io: AppIO[A]): AppIO[A]` doesn't tell you that nested calls reuse the outer connection — that's documented but not encoded. A reader has to descend or know the convention. The fix when it matters: tighten the docstring to be the contract; or richer types that encode more of the law.
 
@@ -66,7 +64,7 @@ Things that destroy local reasoning, listed so they're recognizable:
 
 ## Local reasoning applies to docs, too
 
-A doc that requires you to chase four links to understand its premise has bad local reasoning, same as a function that requires reading four others. The "respect the reader, lean prose" discipline in this knowledge base is the same property at the documentation level: a doc should let you understand what it's describing without descending into others, beyond a small set of named pointers.
+A doc that requires you to chase four links to understand its premise has bad local reasoning, same as a function that requires reading four others. A doc should be self-contained beyond a small set of named pointers.
 
 ## When the discipline bends
 
@@ -76,5 +74,3 @@ Some kinds of code legitimately need non-local mechanisms:
 - Cross-cutting infrastructure (logging, tracing — instrumentation by definition spans abstractions).
 - Performance-critical paths where mutation buys real wins (rare; isolate behind interfaces).
 - Pluggable extensibility where the dynamism is the feature.
-
-The judgment: is this code's job to be local-reasonable, or is its job to be the seam where non-local concerns are organized?

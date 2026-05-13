@@ -2,13 +2,9 @@ package com.example.ctx.customer.impl.service.repo.converter
 
 import com.example.ctx.customer.domain.model.{Address, AddressLine, City, PostalCode}
 import com.example.lib.common.domain.model.Types.AppIO
-import com.example.lib.db.impl.repo.sql.entity.AddressPE
+import com.example.lib.db.impl.sql.entity.AddressPE
 
-/** PE ↔ domain mapping for `Address`.
-  *
-  * `toAddress` is effectful because the smart constructors validate; a failure means a row violates a domain invariant
-  * (data drift or out-of-band write). `toAddressPE` is pure.
-  */
+/** PE ↔ domain mapping for `Address`. */
 object AddressPEConverter {
 
   def toAddress(pe: AddressPE): AppIO[Address] =

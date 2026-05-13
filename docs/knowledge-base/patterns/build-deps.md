@@ -1,6 +1,6 @@
 # Build Dependencies
 
-`build.sbt`'s `dependsOn` clauses determine what each module can `import`. The compile-time dep graph **is** the architectural boundary — not naming conventions, not docs. If you want a boundary the codebase actually respects, this is the only one with teeth.
+`build.sbt`'s `dependsOn` clauses determine what each module can `import`. The compile-time dep graph **is** the architectural boundary — not naming conventions, not docs.
 
 ## In `build.sbt`
 

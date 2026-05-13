@@ -6,8 +6,8 @@ import com.example.ctx.customer.impl.service.repo.converter.AddressPEConverter
 import com.example.lib.common.domain.model.NewTypes.{AddressId, CustomerId}
 import com.example.lib.common.domain.model.Types.AppIO
 import com.example.lib.db.domain.service.Transactor
-import com.example.lib.db.impl.repo.sql.SqlContext
-import com.example.lib.db.impl.repo.sql.schema.AddressDbSchema
+import com.example.lib.db.impl.sql.SqlContext
+import com.example.lib.db.impl.sql.schema.AddressDbSchema
 import zio._
 
 final class AddressRepoMySQLImpl(val ctx: SqlContext, transactor: Transactor) extends AddressRepo with AddressDbSchema {

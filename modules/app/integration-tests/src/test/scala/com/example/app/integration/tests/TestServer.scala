@@ -8,14 +8,13 @@ import com.example.ctx.customer.impl.service.repo.{AddressRepoMySQLImpl, Custome
 import com.example.ctx.customer.impl.service.{AddressServiceImpl, CustomerServiceImpl}
 import com.example.ctx.notification.app.NotificationAppServiceImpl
 import com.example.ctx.notification.impl.http.NotificationRoutes
-import com.example.ctx.notification.impl.service.NotificationServiceImpl
 import com.example.ctx.notification.impl.service.repo.NotificationRepoMySQLImpl
 import com.example.lib.common.impl.config.{OtelConfig, OtelTracing}
 import com.example.lib.common.impl.http.server.HealthRoutes
 import com.example.lib.common.impl.telemetry.AppTracing
 import com.example.lib.db.domain.service.Transactor
-import com.example.lib.db.impl.repo.sql.SqlContext
 import com.example.lib.db.impl.service.DbProbeQuillImpl
+import com.example.lib.db.impl.sql.SqlContext
 import com.example.lib.db.test.TestDb
 import zio._
 import zio.http._
@@ -27,13 +26,13 @@ import zio.telemetry.opentelemetry.tracing.Tracing
   * test gets an isolated MySQL schema underneath.
   *
   * The composition rebuilds the production layer stack from `CustomerRepoMySQLImpl` upward and ends in
-  * `ServerRoutes.layer` — the same composition `ServerApp` runs in production. Two substitutions:
+  * `ServerRoutes.layer`. Substitutions from production:
   *   - `DataSource` / `SqlContext` / `Transactor` come from `TestDb.freshSchemaLayer` (test schema, dropped on close)
-  *   - `Server.Config` is hardcoded to ephemeral port (`0`); the actual bound port is read back via `Server.port`
-  *   - `OtelConfig` is supplied directly with tracing disabled — `AppTracing.live` then builds a no-op `Tracing`
+  *   - `Server.Config` is hardcoded to ephemeral port `0`; the bound port is read back via `Server.port`
+  *   - `OtelConfig` is supplied directly with tracing disabled
   *
-  * Tests provide `TestServer.layer` to a spec, then issue requests via `testServer.get("/customers/...")`. The
-  * underlying `Client` and `Server` are shut down when the scope closes.
+  * Tests provide `TestServer.layer`, then issue requests via `testServer.get("/customers/...")`. The underlying
+  * `Client` and `Server` shut down when the scope closes.
   */
 final case class TestServer(baseUrl: String) {
 
@@ -44,8 +43,7 @@ final case class TestServer(baseUrl: String) {
     } yield res
 
   /** Issue a GET, decode the JSON body into `A`, return status + parsed body. Decoding failures surface as `Throwable`
-    * — tests asserting on a 404 still expect the body to parse as `ErrorTO`. The decoder is derived from the value's
-    * `Schema` via zio-schema-json — TOs carry only `Schema` instances, the zio-json codec materializes here.
+    * — tests asserting on a 404 still expect the body to parse as `ErrorTO`.
     */
   def getJson[A](path: String)(implicit schema: Schema[A]): ZIO[Client, Throwable, JsonResponse[A]] = {
     val decoder = SchemaJsonCodec.jsonCodec(schema).decoder
@@ -58,9 +56,7 @@ final case class TestServer(baseUrl: String) {
     } yield JsonResponse(status = response.status, body = parsed)
   }
 
-  /** Issue a POST with a typed JSON body, decode the response into `Resp`. Mirrors `getJson` — both the request and the
-    * response go through `Schema`-derived codecs, so the call site stays free of zio-json plumbing.
-    */
+  /** Issue a POST with a typed JSON body, decode the response into `Resp`. */
   def postJson[Req, Resp](path: String, body: Req)(implicit
       reqSchema: Schema[Req],
       respSchema: Schema[Resp]
@@ -113,7 +109,6 @@ object TestServer {
       CustomerRoutes.layer,
       // ── notification ctx ──
       NotificationRepoMySQLImpl.layer,
-      NotificationServiceImpl.layer,
       NotificationAppServiceImpl.layer,
       NotificationRoutes.layer,
       // ── operational ──

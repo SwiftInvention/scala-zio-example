@@ -2,9 +2,8 @@ package com.example.lib.common.domain.error
 
 /** Self-typed onto `AppFailure` to carry an HTTP status code with a typed error.
   *
-  * Each concrete error mixes in one of the status traits below. The route boundary reads `errorCode` to set the
-  * response status. `errorCode` is `final` on every status trait — a subtrait can't override the value (e.g. a
-  * hand-rolled `HttpTeapot extends HttpBadRequest` can't shift the wire status away from 400).
+  * Each concrete error mixes in one of the status traits below; the route boundary reads `errorCode` to set the
+  * response status. `errorCode` is `final` on every status trait — subtraits can't shift the wire status away.
   */
 sealed trait HttpError {
   val errorCode: Int

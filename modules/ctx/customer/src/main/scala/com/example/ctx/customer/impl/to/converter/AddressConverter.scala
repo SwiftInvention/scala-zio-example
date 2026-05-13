@@ -1,12 +1,10 @@
 package com.example.ctx.customer.impl.to.converter
 
-import com.example.ctx.customer.api.to.AddressTO
 import com.example.ctx.customer.domain.model.{Address, AddressLine, City, PostalCode}
+import com.example.ctx.customer.impl.to.AddressTO
 import com.example.lib.common.domain.model.Types.AppIO
 
-/** TO ↔ domain mapping for `Address`. `toAddress` is effectful because the smart constructors validate; `toAddressTO`
-  * is pure (`.value` extraction never fails).
-  */
+/** TO ↔ domain mapping for `Address`. */
 object AddressConverter {
 
   def toAddressTO(d: Address): AddressTO =

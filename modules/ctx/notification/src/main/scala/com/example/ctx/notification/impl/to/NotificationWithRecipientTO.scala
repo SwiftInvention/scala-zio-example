@@ -1,10 +1,8 @@
-package com.example.ctx.notification.api.to
+package com.example.ctx.notification.impl.to
 
 import zio.schema.{DeriveSchema, Schema}
 
-/** Composite response for list/get endpoints. Notifications are rarely useful without knowing who they're for, so the
-  * route enriches at the boundary. Built by `NotificationAppService` from a `Notification` and a recipient lookup.
-  */
+/** Composite response pairing a notification with its recipient for list/get endpoints. */
 final case class NotificationWithRecipientTO(
     notification: NotificationTO,
     recipient: NotificationRecipientTO

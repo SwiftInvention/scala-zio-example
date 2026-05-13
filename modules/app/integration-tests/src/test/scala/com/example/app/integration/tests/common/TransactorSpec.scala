@@ -8,7 +8,7 @@ import com.example.lib.common.domain.error.{AppFailure, ErrorCategory, HttpInter
 import com.example.lib.common.domain.model.NewTypes.CustomerId
 import com.example.lib.common.test.IntegrationSpec
 import com.example.lib.db.domain.service.Transactor
-import com.example.lib.db.impl.repo.sql.SqlContext
+import com.example.lib.db.impl.sql.SqlContext
 import com.example.lib.db.test.TestDb
 import zio._
 import zio.test.Assertion._
@@ -19,9 +19,8 @@ object TransactorSpec extends IntegrationSpec {
 
   private val testLayer = TestDb.freshSchemaLayer >+> CustomerRepoMySQLImpl.layer
 
-  /** Test-only `AppFailure` for simulating failures inside `withTransaction`. `withTransaction` takes an `AppIO[A]`, so
-    * any failure used inside it must be an `AppFailure`. Mixed in with `HttpInternalServerError` to satisfy the
-    * self-type — the HTTP code is irrelevant in tests, the value is never rendered.
+  /** Test-only `AppFailure` for simulating failures inside `withTransaction`. Mixed in with `HttpInternalServerError`
+    * to satisfy the self-type.
     */
   private final case class TestFailure(message: String) extends AppFailure(message, None) with HttpInternalServerError {
     val category: ErrorCategory    = ErrorCategory.Backend

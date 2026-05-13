@@ -1,10 +1,10 @@
-package com.example.ctx.notification.api.to
+package com.example.ctx.notification.impl.to
 
 import com.example.lib.common.domain.model.NewTypes.CustomerId
 import zio.schema.{DeriveSchema, Schema}
 
-/** Create-notification request body. `recipientId` must reference an existing customer — checked at the app-service
-  * boundary against `CustomerApi`; `CustomerNotFoundError` propagates as-is.
+/** Create-notification request body. `recipientId` must reference an existing customer; the existence check happens at
+  * the app-service boundary, and `CustomerNotFoundError` propagates unchanged on miss.
   */
 final case class NotificationCreateRequestTO(
     recipientId: CustomerId,

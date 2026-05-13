@@ -11,7 +11,7 @@ modules/lib/db/src/main/scala/com/example/lib/db/
 ├── domain/service/
 │   └── Transactor.scala                  trait — transaction boundary
 └── impl/
-    ├── repo/sql/
+    ├── sql/
     │   ├── DataSourceConfig.scala        typed DB config (PureConfig case class + layer)
     │   ├── DataSourceLayer.scala         Hikari pool from DataSourceConfig
     │   ├── SqlContext.scala              Quill JDBC context + encodings
@@ -78,7 +78,7 @@ The local workflow is `local-infra-up` → `db-migrate` → `run`, with each ste
 `<Name>DbSchema` is a trait holding the Quill `querySchema` declarations for one table. The repo impl mixes it in:
 
 ```scala
-// lib/db/.../impl/repo/sql/schema/CustomerDbSchema.scala
+// lib/db/.../impl/sql/schema/CustomerDbSchema.scala
 trait CustomerDbSchema {
   val ctx: SqlContext
   import ctx._

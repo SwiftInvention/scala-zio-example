@@ -5,15 +5,13 @@ import com.example.ctx.customer.api.to.CustomerTO
 import com.example.ctx.customer.fixture.CustomerFixtures
 import com.example.lib.common.impl.http.ErrorTO
 import com.example.lib.common.test.IntegrationSpec
-import com.example.lib.db.impl.repo.sql.SqlContext
+import com.example.lib.db.impl.sql.SqlContext
 import zio._
 import zio.http._
 import zio.test.Assertion._
 import zio.test._
 
-/** End-to-end tests for the customer HTTP routes — actual zio-http server bound to an ephemeral port, hit via the real
-  * `Client`. Each test gets its own fresh schema via `TestServer.layer`.
-  */
+/** End-to-end tests for the customer HTTP routes. */
 object CustomerHttpSpec extends IntegrationSpec {
 
   override def spec: Spec[Any, Throwable] = suite("Customer HTTP routes")(

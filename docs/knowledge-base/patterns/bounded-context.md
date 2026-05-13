@@ -1,18 +1,18 @@
 # Bounded Context
 
-A bounded context is a pair of sbt modules — a public contract (`<name>-api`) and an implementation (`<name>`). Other contexts depend only on the contract; the composition root supplies the impl.
+A bounded context is implemented in `ctx/<name>/`. When another context needs to call in, a sibling `ctx/<name>-api/` module appears holding the cross-context trait and the TOs that cross the boundary.
 
 ```text
-ctx/<name>-api/   cross-context contract (trait + TOs)
-ctx/<name>/       implementation
+ctx/<name>/       implementation (always present)
+ctx/<name>-api/   cross-context contract (added when a foreign ctx imports it)
 ```
 
-See [`cross-context-call.md`](cross-context-call.md) §"The api module: `ctx/<name>-api/`" for what lives in the `-api` module.
+A ctx without a cross-context caller has no `-api` module. The ctx's HTTP wire format lives in `ctx/<name>/impl/to/` — that's a separate concern from cross-context wire format (see [`cross-context-call.md`](cross-context-call.md) §"The api module"). When a consumer materializes, the trait + the TOs the trait references move (or come into existence) in the new `-api` module.
 
 ## Internal layout of `ctx/<name>/`
 
 ```text
-modules/ctx/<name>/src/main/scala/com/example/<name>/
+modules/ctx/<name>/src/main/scala/com/example/ctx/<name>/
 ├── domain/                          abstractions only — no concrete impls
 │   ├── error/                       domain errors
 │   ├── model/                       entities, value types
@@ -24,13 +24,17 @@ modules/ctx/<name>/src/main/scala/com/example/<name>/
 │   ├── <Name>AppService.scala
 │   └── <Name>AppServiceImpl.scala
 └── impl/                            concrete implementations
-    ├── <Name>ApiDirectImpl.scala    bridge to <name>-api contract
+    ├── <Name>ApiDirectImpl.scala    bridge to <name>-api contract (only when -api exists)
     ├── service/                     mirrors domain/service/
     │   ├── <Name>ServiceImpl.scala
     │   └── repo/
     │       ├── <Name>RepoMySQLImpl.scala  queries PE from lib/db, converts via PEConverter
     │       └── converter/
     │           └── <Name>PEConverter.scala
+    ├── to/                          HTTP wire format
+    │   ├── <Name>TO.scala           TOs that only the ctx's own HTTP routes use
+    │   └── converter/
+    │       └── <Name>Converter.scala
     └── http/
         ├── <Name>Endpoints.scala    typed endpoint definitions (wire shape, no behavior)
         └── <Name>Routes.scala       implementations against <Name>Endpoints
@@ -50,7 +54,7 @@ modules/ctx/<name>/src/main/scala/com/example/<name>/
    └─→ <Name>Routes.layer          takes <Name>AppService, exposes Routes[Any, Response]   (HTTP plane)
 ```
 
-`<Name>AppService` is the fan-out point: the cross-context bridge (`<Name>ApiDirectImpl`) and the HTTP routes are sibling consumers, not chained. See [`cross-context-call.md`](cross-context-call.md) §"Routes don't go through the api" for why the HTTP plane bypasses `<Name>Api`.
+`<Name>AppService` is the fan-out point: the cross-context bridge (`<Name>ApiDirectImpl`) and the HTTP routes are sibling consumers, not chained. The cross-context branch exists only when another ctx imports `<name>-api`; without a consumer, neither the trait nor the DirectImpl exist. See [`cross-context-call.md`](cross-context-call.md) §"Routes don't go through the api" for why the HTTP plane bypasses `<Name>Api`.
 
 Each link is a thin pass-through unless it has something to add. Domain services host validation and business rules; AppService orchestrates them. If `<Name>Service` would be pure delegation, drop it and have AppService call Repo directly.
 
@@ -60,4 +64,4 @@ Service and Repo impls live in `impl/` because they may have multiple variants �
 
 ## Import shape
 
-The `impl → app → domain` convention applies inside a context, the same way it applies across modules. Owner: [`build-deps.md`](build-deps.md) §"Convention-only: `impl → app → domain` import direction".
+The `impl → app → domain` convention applies inside a context, the same way it applies across modules. See [`build-deps.md`](build-deps.md) §"Convention-only: `impl → app → domain` import direction".

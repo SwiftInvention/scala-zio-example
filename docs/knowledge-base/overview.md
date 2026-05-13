@@ -10,10 +10,9 @@ A reference template for Scala + ZIO monoliths organized by bounded contexts. Th
 | ------------------------------ | -------------------- | ------------------------------------------------------------------------------------------ |
 | `modules/lib/common`           | `libCommon`          | shared infrastructure (effects, errors, IDs, config, telemetry, http server + client)      |
 | `modules/lib/db`               | `libDb`              | shared persistence (schema, PEs, `SqlContext`, `Transactor`, migrations)                   |
-| `modules/ctx/customer-api`     | `ctxCustomerApi`     | customer cross-context contract (trait + TOs)                                              |
+| `modules/ctx/customer-api`     | `ctxCustomerApi`     | customer cross-context contract (trait + TOs) — consumed by notification                   |
 | `modules/ctx/customer`         | `ctxCustomer`        | customer impl (domain, app, infra)                                                         |
-| `modules/ctx/notification-api` | `ctxNotificationApi` | notification cross-context contract (TOs only — no consumer yet)                           |
-| `modules/ctx/notification`     | `ctxNotification`    | notification impl; depends on `ctxCustomerApi` for recipient lookup                        |
+| `modules/ctx/notification`     | `ctxNotification`    | notification impl; depends on `ctxCustomerApi` for recipient lookup. No `-api` module — nothing calls into notification yet |
 | `modules/app/server`           | `appServer`          | deployment unit — composition root + entrypoint                                            |
 | `modules/app/dev`              | `appDev`             | local-only dev tools — `Experiment` scratchpad + one-off `actions/`                        |
 | `modules/app/integration-tests` | `appIntegrationTests` | test-only — integration specs against a real server + ephemeral MySQL schema             |

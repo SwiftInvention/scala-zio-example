@@ -7,10 +7,9 @@ import com.example.lib.common.domain.model.Types.AppIO
 import enumeratum.{Enum, EnumEntry}
 import zio._
 
-/** Channels a notification can be delivered through. ADT — `Email | Sms | InApp`. Closed set, exhaustive matching.
-  *
-  * Wire-side and DB-side use the enumeratum `entryName` string (`"Email"`, `"Sms"`, `"InApp"`). Use `parse` at the
-  * input boundaries; it fails with `InvalidNotificationChannelError` on unknown values.
+/** Channels a notification can be delivered through. Wire and DB use the enumeratum `entryName` string (`"Email"`,
+  * `"Sms"`, `"InApp"`); `parse` is the input-boundary constructor, failing with `InvalidNotificationChannelError` on
+  * unknown values.
   */
 sealed trait NotificationChannel extends EnumEntry
 

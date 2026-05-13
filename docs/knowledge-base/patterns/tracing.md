@@ -34,7 +34,7 @@ Before the SDK is built, `AppTracing.live` HEAD-probes the configured OTLP endpo
 
 Boot-time and runtime are asymmetric: an unreachable collector at boot fails the layer; an unreachable collector during runtime doesn't — `BatchSpanProcessor` logs export failures via the OpenTelemetry SDK and keeps the server serving traffic.
 
-Span context propagation uses `OpenTelemetry.contextZIO`, which stores the active span in a ZIO fiber-local. The alternative `contextJVM` exists for code running under the OpenTelemetry java-agent — pick the variant that matches your deployment, and use the same one consistently.
+Span context propagation uses `OpenTelemetry.contextZIO`, which stores the active span in a ZIO fiber-local.
 
 ## HTTP server spans
 

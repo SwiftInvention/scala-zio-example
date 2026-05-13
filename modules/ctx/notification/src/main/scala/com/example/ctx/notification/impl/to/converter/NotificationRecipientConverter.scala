@@ -1,10 +1,12 @@
 package com.example.ctx.notification.impl.to.converter
 
-import com.example.ctx.notification.api.to.NotificationRecipientTO
+import com.example.ctx.customer.api.to.CustomerTO
 import com.example.ctx.notification.domain.model.NotificationRecipient
+import com.example.ctx.notification.impl.to.NotificationRecipientTO
 
-/** TO mapping for the notification-domain `NotificationRecipient`. Pure rename — `NotificationRecipient` is already the
-  * right shape; this converter just translates it to the wire-format type.
+/** Mappings into and out of `NotificationRecipient`:
+  *   - `toNotificationRecipientTO` — domain → outbound wire format
+  *   - `fromCustomerTO` — cross-context boundary, projecting `CustomerTO` into notification's recipient view
   */
 object NotificationRecipientConverter {
 
@@ -13,5 +15,12 @@ object NotificationRecipientConverter {
       id = d.id,
       email = d.email,
       name = d.name
+    )
+
+  def fromCustomerTO(to: CustomerTO): NotificationRecipient =
+    NotificationRecipient(
+      id = to.id,
+      email = to.email,
+      name = to.name
     )
 }

@@ -41,8 +41,7 @@ final case class InvalidNotificationChannelError(message: String)
     with HttpBadRequest
 
 /** Data-integrity failure on the read path: a notification row references a customer the customer ctx can't produce.
-  * The customer ctx has no delete operation, so this represents drift from the schema's implied invariant. Renders as
-  * 500 — the request can't be served, but the failure is named, not generic.
+  * Represents drift from the schema's implied invariant.
   */
 final case class OrphanedRecipientError private (message: String, cause: Option[Throwable])
     extends NotificationError(errorReason = OrphanedRecipient, message = message, cause = cause)

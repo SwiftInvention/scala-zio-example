@@ -1,4 +1,4 @@
-package com.example.ctx.notification.api.to
+package com.example.ctx.notification.impl.to
 
 import com.example.lib.common.domain.model.NewTypes.CustomerId
 import com.example.lib.common.test.SnapshotSpec

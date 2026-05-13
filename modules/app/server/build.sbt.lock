@@ -1,6 +1,6 @@
 {
   "lockVersion" : 1,
-  "timestamp" : "2026-05-13T10:29:13.310440Z",
+  "timestamp" : "2026-05-13T12:53:06.116904Z",
   "configurations" : [
     "compile",
     "debian",
@@ -115,29 +115,6 @@
     {
       "org" : "com.example",
       "name" : "ctxnotification_2.13",
-      "version" : "0.1.1-SNAPSHOT",
-      "artifacts" : [
-      ],
-      "configurations" : [
-        "compile",
-        "debian",
-        "docker",
-        "linux",
-        "optional",
-        "provided",
-        "rpm",
-        "runtime",
-        "scalafix",
-        "test",
-        "universal",
-        "universal-docs",
-        "universal-src",
-        "windows"
-      ]
-    },
-    {
-      "org" : "com.example",
-      "name" : "ctxnotificationapi_2.13",
       "version" : "0.1.1-SNAPSHOT",
       "artifacts" : [
       ],

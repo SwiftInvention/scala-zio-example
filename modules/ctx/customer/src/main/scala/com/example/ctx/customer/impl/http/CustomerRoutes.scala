@@ -9,12 +9,8 @@ import com.example.lib.common.impl.logging.LogError
 import zio._
 import zio.http._
 
-/** HTTP route implementations for the customer ctx. Wires `CustomerEndpoints` definitions to `CustomerAppService`
-  * effects. Splitting endpoint definitions from implementations keeps the wire shape (used by OpenAPI generation) and
-  * the behavior (used by the server) at separate sites that can't drift.
-  *
-  * Error mapping: every endpoint declares the full `ApiFailure` variant set in `CustomerEndpoints`, so each impl uses
-  * `mapError(ApiFailure.from)` — matching on `f.asHttpError` picks the right variant by status family.
+/** HTTP routes for the customer ctx. Wires `CustomerEndpoints` to `CustomerAppService`; `AppFailure`s map to
+  * `ApiFailure` at the boundary via `mapError(ApiFailure.from)`.
   */
 final class CustomerRoutes(appService: CustomerAppService) {
 

@@ -5,19 +5,13 @@ import com.example.ctx.customer.fixture.CustomerFixtures
 import com.example.ctx.customer.impl.service.repo.CustomerRepoMySQLImpl
 import com.example.lib.common.domain.model.NewTypes.CustomerId
 import com.example.lib.common.test.IntegrationSpec
-import com.example.lib.db.impl.repo.sql.SqlContext
+import com.example.lib.db.impl.sql.SqlContext
 import com.example.lib.db.test.TestDb
 import zio._
 import zio.test.Assertion._
 import zio.test._
 
-/** Integration tests for `CustomerRepo` against a real MySQL test container.
-  *
-  * Each test gets a fresh schema via `TestDb.freshSchemaLayer`. Seeding goes through `CustomerFixtures.seed` (Quill),
-  * not raw SQL — same write path as production code.
-  *
-  * Organization: one nested suite per repo method, so failures point at the method under test.
-  */
+/** Integration tests for `CustomerRepo` against MySQL. Each test gets a fresh schema via `TestDb.freshSchemaLayer`. */
 object CustomerRepoSpec extends IntegrationSpec {
 
   private val testLayer = TestDb.freshSchemaLayer >+> CustomerRepoMySQLImpl.layer

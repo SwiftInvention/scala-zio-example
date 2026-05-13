@@ -1,8 +1,8 @@
 package com.example.ctx.notification.impl.http
 
-import com.example.ctx.notification.api.to.NotificationCreateRequestTO
 import com.example.ctx.notification.app.NotificationAppService
 import com.example.ctx.notification.domain.model.{NotificationChannel, NotificationMessage}
+import com.example.ctx.notification.impl.to.NotificationCreateRequestTO
 import com.example.ctx.notification.impl.to.converter.NotificationConverter.toNotificationTO
 import com.example.ctx.notification.impl.to.converter.NotificationWithRecipientConverter.toNotificationWithRecipientTO
 import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
@@ -11,15 +11,8 @@ import com.example.lib.common.impl.logging.LogError
 import zio._
 import zio.http._
 
-/** HTTP route implementations for the notification ctx. Wires `NotificationEndpoints` to `NotificationAppService`.
-  *
-  * Cross-context calls don't appear in this file — they live in `NotificationAppService`. The route parses inbound TOs
-  * to domain types (channel + message; recipient id passes through), calls the app service, and renders the domain
-  * return values back to TOs.
-  *
-  * Failures (from local validation, the customer existence check, or anything downstream) all enter the same
-  * `AppFailure` channel and are mapped via `ApiFailure.from`. `CustomerNotFoundError` reaches here from the customer
-  * ctx unchanged — see `patterns/cross-context-call.md`.
+/** HTTP routes for the notification ctx. Parses inbound TOs to domain types, calls `NotificationAppService`, renders
+  * results back to TOs; `AppFailure`s map to `ApiFailure` at the boundary.
   */
 final class NotificationRoutes(appService: NotificationAppService) {
 

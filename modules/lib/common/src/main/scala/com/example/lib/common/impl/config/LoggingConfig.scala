@@ -11,10 +11,8 @@ import zio._
   *   - `format` — `pretty` (dev) or `json` (deployed). Drives [[com.example.lib.common.impl.logging.AppLogger]].
   *   - `level` — global minimum log level. Records below this aren't emitted.
   *
-  * No defaults on the case class — fields are required per the `config-shape` principle.
-  *
-  * No `LoggingConfig.layer`: logging is installed at `bootstrap` time (see `AppLogger.bootstrap`), before any layer in
-  * the main env builds. `AppLogger.bootstrap` calls `ConfigBootstrap.load[LoggingConfig]("logging")` directly.
+  * Loaded directly by `AppLogger.bootstrap` (installed at process start, before any layer in the main env builds) — so
+  * the type ships no `layer` of its own.
   */
 final case class LoggingConfig(
     format: LogFormatKind,

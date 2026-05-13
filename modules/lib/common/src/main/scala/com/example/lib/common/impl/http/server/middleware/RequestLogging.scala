@@ -25,17 +25,15 @@ import zio.http._
 object RequestLogging {
 
   /** Per-request annotation scope. The lambda runs once per request and produces the annotation set zio-http hands to
-    * `ZIO.logAnnotate`. The UUID generation is a Java side effect; that's how zio-http's API is shaped (sync `Request
-    * \=> Set[LogAnnotation]`).
+    * `ZIO.logAnnotate`.
     */
   val requestId: Middleware[Any] =
     Middleware.logAnnotate { (_: Request) =>
       Set(LogAnnotation(key = "request_id", value = UUID.randomUUID().toString))
     }
 
-  /** Single access-log line per request. All parameters passed explicitly per the `no-default-args` rule (zio-http's
-    * own definition has defaults; we override them all). Headers and bodies are intentionally omitted — the route +
-    * status + duration is the operator-level summary.
+  /** Single access-log line per request. Headers and bodies are omitted — route + status + duration is the
+    * operator-level summary.
     */
   val accessLog: HandlerAspect[Any, Unit] =
     Middleware.requestLogging(

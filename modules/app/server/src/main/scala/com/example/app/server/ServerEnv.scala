@@ -8,28 +8,20 @@ import com.example.ctx.customer.impl.service.repo.{AddressRepoMySQLImpl, Custome
 import com.example.ctx.customer.impl.service.{AddressServiceImpl, CustomerServiceImpl}
 import com.example.ctx.notification.app.NotificationAppServiceImpl
 import com.example.ctx.notification.impl.http.NotificationRoutes
-import com.example.ctx.notification.impl.service.NotificationServiceImpl
 import com.example.ctx.notification.impl.service.repo.NotificationRepoMySQLImpl
 import com.example.lib.common.impl.config.{ConfigBootstrap, HttpClientConfig, OtelConfig}
 import com.example.lib.common.impl.http.client.AppHttpClient
 import com.example.lib.common.impl.http.server.HealthRoutes
 import com.example.lib.common.impl.telemetry.AppTracing
-import com.example.lib.db.impl.repo.sql.{DataSourceConfig, DataSourceLayer, SqlContext}
 import com.example.lib.db.impl.service.{DbProbeQuillImpl, TransactorQuillImpl}
+import com.example.lib.db.impl.sql.{DataSourceConfig, DataSourceLayer, SqlContext}
 import zio._
 import zio.http.Server
 import zio.telemetry.opentelemetry.tracing.Tracing
 
 /** Layer composition for the server app. The single place that sees concrete implementations and wires them together.
-  *
-  * Wiring order: ConfigBootstrap (`EnvLabel`) → typed config slices (DataSourceConfig, OtelConfig, ServerConfig,
-  * HttpClientConfig) → DataSourceLayer → SqlContext → Transactor → AppHttpClient → AppTracing → ctx services → zio-http
-  * Server.
-  *
-  * Logging is installed earlier — `ServerApp` overrides `bootstrap` with `AppLogger.bootstrap`, which runs before any
-  * layer here builds.
-  *
-  * Migrations are applied out-of-process (`just db-migrate`).
+  * Logging is installed by `ServerApp.bootstrap` before this layer builds; migrations are applied out-of-process via
+  * `just db-migrate`.
   */
 object ServerEnv {
   type AppEnv = ServerRoutes & Server & ServerConfig & Tracing
@@ -49,7 +41,7 @@ object ServerEnv {
       HttpClientConfig.layer,
       OtelConfig.layer,
       ServerConfig.layer,
-      // ── http client (used by AppTracing's startup probe; available to anyone needing outbound HTTP) ──
+      // ── http client (used by AppTracing's startup probe) ──
       AppHttpClient.layer,
       // ── tracing (OTLP HTTP exporter when endpoint set; no-op otherwise) ──
       AppTracing.live,
@@ -68,7 +60,6 @@ object ServerEnv {
       CustomerRoutes.layer,
       // ── notification ctx ──
       NotificationRepoMySQLImpl.layer,
-      NotificationServiceImpl.layer,
       NotificationAppServiceImpl.layer,
       NotificationRoutes.layer,
       // ── operational ──

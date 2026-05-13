@@ -38,14 +38,6 @@ A `CustomerTO` carries `email: String`, not `email: Email` — the wire format h
 
 Per-value exceptions to the outbound rule are deliberate. `CustomerId` (a `Newtype`) travels as a flat `String` over the wire via its codec but stays a typed value in Scala — worth it because typed ids prevent argument swaps at every call site that holds one. `Email`, by contrast, is internal-only: the smart-constructed type flattens to `String` outbound, since the wire receiver typically just renders it. The judgment is per-value: does the consumer at the boundary actually benefit from the type, or is the boundary just rendering / storing it?
 
-## Correct by construction — the property you get
-
-With ADTs, smart constructors, and parse-don't-validate in place, every function operating on a typed value trusts the type's invariants without re-checking.
-
-## Where this shows up
-
-The `newtypes`, `smart-constructors`, `errors`, `config-shape`, `to-converters`, and `pe-converters` principles are all instances. Owner of the per-principle enumeration: [`architecture-principles.md`](../architecture-principles.md).
-
 ## Antipatterns we reject
 
 **Validate-and-pass-through.** `def validate(s: String): Boolean; if (validate(s)) doSomething(s)` — the `s: String` keeps flowing, validation knowledge implicit. Parse: `def parse(s: String): Either[Err, T]; parse(s).foreach(doSomething)`.

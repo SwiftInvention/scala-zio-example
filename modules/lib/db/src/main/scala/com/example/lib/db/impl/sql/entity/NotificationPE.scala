@@ -1,4 +1,4 @@
-package com.example.lib.db.impl.repo.sql.entity
+package com.example.lib.db.impl.sql.entity
 
 import java.time.Instant
 

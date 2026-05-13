@@ -6,8 +6,8 @@ import com.example.ctx.notification.impl.service.repo.converter.NotificationPECo
 import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
 import com.example.lib.common.domain.model.Types.AppIO
 import com.example.lib.db.domain.service.Transactor
-import com.example.lib.db.impl.repo.sql.SqlContext
-import com.example.lib.db.impl.repo.sql.schema.NotificationDbSchema
+import com.example.lib.db.impl.sql.SqlContext
+import com.example.lib.db.impl.sql.schema.NotificationDbSchema
 import zio._
 
 /** MySQL-backed `NotificationRepo`. Each method opens its own transaction via `Transactor.withTransaction` (per the

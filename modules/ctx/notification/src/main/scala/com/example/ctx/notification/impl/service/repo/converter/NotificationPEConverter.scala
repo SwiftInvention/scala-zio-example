@@ -2,13 +2,10 @@ package com.example.ctx.notification.impl.service.repo.converter
 
 import com.example.ctx.notification.domain.model.{Notification, NotificationChannel, NotificationMessage}
 import com.example.lib.common.domain.model.Types.AppIO
-import com.example.lib.db.impl.repo.sql.entity.NotificationPE
+import com.example.lib.db.impl.sql.entity.NotificationPE
 
-/** PE ↔ domain mapping for `Notification`. See the `pe-converters` principle.
-  *
-  * `toNotification` is effectful — parsing the channel string and re-validating the message both go through the
-  * smart-constructor / parse path. A failure means a row violates a domain invariant (data drift), and propagates as
-  * `AppFailure`.
+/** PE ↔ domain mapping for `Notification`. `toNotification` parses the channel string and re-validates the message; a
+  * failure means a row violates a domain invariant (data drift).
   */
 object NotificationPEConverter {
 

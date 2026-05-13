@@ -15,21 +15,8 @@ Sweeps the codebase for structural and per-element issues. Three agents dispatch
 ## Arguments
 
 - No argument → global sweep.
-- A module name (see table below) → just that module.
+- An sbt module id (discovered from `build.sbt`) → just that module.
 - `cross-cutting` → just the cross-cutting scope.
-
-## Modules in scope
-
-| Module                | Folder                          |
-| --------------------- | ------------------------------- |
-| `libCommon`           | `modules/lib/common`            |
-| `ctxCustomerApi`      | `modules/ctx/customer-api`      |
-| `ctxCustomer`         | `modules/ctx/customer`          |
-| `ctxNotificationApi`  | `modules/ctx/notification-api`  |
-| `ctxNotification`     | `modules/ctx/notification`      |
-| `appServer`           | `modules/app/server`            |
-| `appDev`              | `modules/app/dev`               |
-| `appIntegrationTests` | `modules/app/integration-tests` |
 
 Markdown docs (`docs/knowledge-base/*.md`) aren't reviewed per-module — they go to `cross-cutting`.
 
@@ -147,7 +134,7 @@ End with a one-line verdict (`Solid` / `Minor cleanup needed` / `Substantial cle
 
 ## Orchestration
 
-For each scope (one for a targeted run; nine for global — one per module plus cross-cutting):
+For each scope (one for a targeted run; one per module plus cross-cutting for global):
 
 1. Dispatch the three agents in parallel.
 2. Collect the reports.

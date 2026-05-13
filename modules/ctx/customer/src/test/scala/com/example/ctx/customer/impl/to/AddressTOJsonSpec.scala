@@ -1,4 +1,4 @@
-package com.example.ctx.customer.api.to
+package com.example.ctx.customer.impl.to
 
 import com.example.lib.common.domain.model.NewTypes.{AddressId, CustomerId}
 import com.example.lib.common.test.SnapshotSpec

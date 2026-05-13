@@ -2,12 +2,12 @@ package com.example.app.integration.tests.http
 
 import com.example.app.integration.tests.TestServer
 import com.example.ctx.customer.fixture.CustomerFixtures
-import com.example.ctx.notification.api.to.{NotificationCreateRequestTO, NotificationTO, NotificationWithRecipientTO}
 import com.example.ctx.notification.fixture.NotificationFixtures
+import com.example.ctx.notification.impl.to.{NotificationCreateRequestTO, NotificationTO, NotificationWithRecipientTO}
 import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
 import com.example.lib.common.impl.http.ErrorTO
 import com.example.lib.common.test.IntegrationSpec
-import com.example.lib.db.impl.repo.sql.SqlContext
+import com.example.lib.db.impl.sql.SqlContext
 import zio._
 import zio.http._
 import zio.test.Assertion._
@@ -15,15 +15,9 @@ import zio.test._
 
 /** End-to-end tests for the notification HTTP routes.
   *
-  * The create path exercises the cross-context call into customer (`CustomerApi.get` for existence check). The list/get
-  * paths exercise the cross-context batch fetch (`CustomerApi.getMany`). Error pass-through is verified by the "missing
-  * recipient" branch — the 404 body carries `category: Customer`, demonstrating that notification doesn't re-wrap the
-  * foreign error. See `patterns/cross-context-call.md`.
-  *
-  * Coverage gap: `OrphanedRecipientError` (raised by `zipOne` when `getMany` returns an empty map for a referenced id)
-  * has no end-to-end test. The FK is `ON DELETE CASCADE`, so the natural reproduction — deleting a customer to leave a
-  * dangling notification — can't occur. Reaching it integratively would require swapping in a stub `CustomerApi`.
-  * Rendering is locked by `NotificationErrorRenderingSpec`'s snapshot.
+  * The create path exercises the cross-context call into customer (`CustomerApi.get` for existence check); list/get
+  * paths exercise the batch fetch (`CustomerApi.getMany`). The "missing recipient" branch verifies error pass-through —
+  * the 404 body carries `category: Customer`, showing notification doesn't re-wrap the foreign error.
   */
 object NotificationHttpSpec extends IntegrationSpec {
 

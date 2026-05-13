@@ -20,8 +20,6 @@ Each file is its own truth — no `reference.conf`, no merge with another env's 
 
 `APP_ENV=local|dev|prod` — required, no default. `ConfigBootstrap` reads it, parses to `EnvLabel`, and loads `application-${label.entryName}.conf` from the classpath. The app refuses to start if `APP_ENV` is unset, isn't a valid `EnvLabel`, or the resource is missing/empty.
 
-Why an env var instead of `-Dconfig.resource`: same selector serves other purposes (logs, metrics, feature flags), so it'd exist anyway; using two mechanisms doubles the surface.
-
 ## EnvLabel — the only thing that propagates from boot
 
 `EnvLabel` (in `lib/common/domain/model/`) is a sealed enumeratum trait with `Local | Dev | Prod`. `entryName` is lowercase — matches both the conf-file suffix and the shell convention for env-var values.

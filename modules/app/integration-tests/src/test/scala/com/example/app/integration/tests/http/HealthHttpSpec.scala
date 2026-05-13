@@ -7,6 +7,7 @@ import zio.http._
 import zio.test.Assertion._
 import zio.test._
 
+/** End-to-end tests for the operational HTTP routes (`/health`, `/ready`, `/docs`). */
 object HealthHttpSpec extends IntegrationSpec {
 
   override def spec: Spec[Any, Throwable] = suite("Health probes")(

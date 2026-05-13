@@ -7,18 +7,14 @@ import com.example.ctx.notification.impl.service.repo.NotificationRepoMySQLImpl
 import com.example.ctx.notification.impl.service.repo.converter.NotificationPEConverter
 import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
 import com.example.lib.common.test.IntegrationSpec
-import com.example.lib.db.impl.repo.sql.SqlContext
+import com.example.lib.db.impl.sql.SqlContext
 import com.example.lib.db.test.TestDb
 import zio._
 import zio.test.Assertion._
 import zio.test._
 
-/** Integration tests for `NotificationRepo` against a real MySQL test container.
-  *
-  * Each test gets a fresh schema via `TestDb.freshSchemaLayer`. Notification rows require a parent customer to exist
-  * (FK), so suites seed `CustomerFixtures.adaPE` / `alanPE` before inserting notifications.
-  *
-  * Organization: one nested suite per repo method.
+/** Integration tests for `NotificationRepo` against MySQL. Notification rows require a parent customer (FK), so suites
+  * seed customers before inserting notifications.
   */
 object NotificationRepoSpec extends IntegrationSpec {
 
@@ -36,9 +32,8 @@ object NotificationRepoSpec extends IntegrationSpec {
         } yield assert(result.map(_.id))(equalTo(Some(NotificationFixtures.adaEmailPE.id)))).provide(testLayer)
       },
       test("fails when recipient_id references a non-existent customer (FK violation)") {
-        // The FK on `notification.recipient_id` references `customer.id`; inserting against a missing parent
-        // raises a SQL constraint violation that the `Transactor` boundary wraps into the `AppFailure` channel.
-        // The precise wrapping is `TransactorSpec`'s concern; here we just confirm the FK is in force.
+        // The FK on `notification.recipient_id` references `customer.id`; inserting against a missing parent raises a
+        // SQL constraint violation that the `Transactor` boundary wraps into the `AppFailure` channel.
         (for {
           notification <- NotificationPEConverter.toNotification(NotificationFixtures.orphanPE)
           exit         <- ZIO.serviceWithZIO[NotificationRepo](_.insert(notification)).exit

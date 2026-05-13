@@ -5,16 +5,14 @@ import com.example.ctx.customer.fixture.{AddressFixtures, CustomerFixtures}
 import com.example.ctx.customer.impl.service.repo.AddressRepoMySQLImpl
 import com.example.lib.common.domain.model.NewTypes.{AddressId, CustomerId}
 import com.example.lib.common.test.IntegrationSpec
-import com.example.lib.db.impl.repo.sql.SqlContext
+import com.example.lib.db.impl.sql.SqlContext
 import com.example.lib.db.test.TestDb
 import zio._
 import zio.test.Assertion._
 import zio.test._
 
-/** Integration tests for `AddressRepo` against MySQL.
-  *
-  * Each test seeds parent customers first (FK requirement), then addresses. Demonstrates the FK relationship is
-  * enforced and queryable.
+/** Integration tests for `AddressRepo` against MySQL. Each test seeds a parent customer (FK requirement) before
+  * inserting addresses.
   */
 object AddressRepoSpec extends IntegrationSpec {
 

@@ -2,9 +2,9 @@ package com.example.ctx.customer.fixture
 
 import com.example.lib.common.domain.model.NewTypes.CustomerId
 import com.example.lib.common.domain.model.Types.AppIO
-import com.example.lib.db.impl.repo.sql.SqlContext
-import com.example.lib.db.impl.repo.sql.entity.CustomerPE
-import com.example.lib.db.impl.repo.sql.schema.CustomerDbSchema
+import com.example.lib.db.impl.sql.SqlContext
+import com.example.lib.db.impl.sql.entity.CustomerPE
+import com.example.lib.db.impl.sql.schema.CustomerDbSchema
 import zio._
 
 /** Typed test fixtures for `Customer`.

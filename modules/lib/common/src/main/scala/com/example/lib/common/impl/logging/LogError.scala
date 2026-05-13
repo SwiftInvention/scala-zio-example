@@ -15,7 +15,7 @@ import zio._
   *     `tapError` doesn't see them.
   *   - The app's top-level entrypoint — last-resort log before the runtime swallows the cause.
   *
-  * Duplicate logs across boundaries are fine; missing one is not. The principle is "don't fail silently."
+  * Duplicate logs across boundaries are fine; missing one is not.
   *
   * `context` is a free-form label that identifies the boundary in the log (e.g. `"CustomerRoutes.get"`,
   * `"BillMatchingFiber"`). Goes at the front of the message.

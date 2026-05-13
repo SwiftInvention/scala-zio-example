@@ -2,7 +2,7 @@ package com.example.lib.db.impl.service
 
 import com.example.lib.common.domain.model.Types.AppIO
 import com.example.lib.common.domain.service.DbProbe
-import com.example.lib.db.impl.repo.sql.SqlContext
+import com.example.lib.db.impl.sql.SqlContext
 import zio._
 
 /** `DbProbe` against the SQL datasource. A single-round-trip `SELECT 1`, with no surrounding transaction.

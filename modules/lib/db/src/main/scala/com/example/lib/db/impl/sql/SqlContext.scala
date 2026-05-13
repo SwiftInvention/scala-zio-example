@@ -1,4 +1,4 @@
-package com.example.lib.db.impl.repo.sql
+package com.example.lib.db.impl.sql
 
 import javax.sql.DataSource
 
@@ -12,9 +12,6 @@ import zio._
   *
   * Repos take a `SqlContext` and import its members (`import ctx._`) to use Quill DSL. The context owns query execution
   * but not transaction boundaries — see `Transactor` for that.
-  *
-  * Naming note: `SqlContext` is a deliberate carry-over from prior projects that used Postgres. Keeping the name
-  * decouples ctx-impl code from the underlying SQL dialect — swapping to Postgres later is a one-line change here.
   */
 final case class SqlContext(ds: DataSource) extends MysqlZioJdbcContext(SnakeCase) with NewTypeEncodings {
 

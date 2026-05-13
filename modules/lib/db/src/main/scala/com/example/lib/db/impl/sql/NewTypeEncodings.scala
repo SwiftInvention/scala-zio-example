@@ -1,12 +1,10 @@
-package com.example.lib.db.impl.repo.sql
+package com.example.lib.db.impl.sql
 
 import com.example.lib.common.domain.model.NewTypes.{AddressId, CustomerId, NotificationId}
 import io.getquill.MappedEncoding
 
-/** Quill `MappedEncoding`s for cross-cutting newtypes.
-  *
-  * Mixed into `SqlContext` so Quill can encode/decode `Newtype[String]` ids transparently. As new ids are added in
-  * `NewTypes`, mirror them here.
+/** Quill `MappedEncoding`s for cross-cutting newtypes. Mixed into `SqlContext` so Quill encodes/decodes
+  * `Newtype[String]` ids transparently.
   */
 trait NewTypeEncodings {
 

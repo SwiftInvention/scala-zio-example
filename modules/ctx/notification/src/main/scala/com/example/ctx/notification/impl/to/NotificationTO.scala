@@ -1,4 +1,4 @@
-package com.example.ctx.notification.api.to
+package com.example.ctx.notification.impl.to
 
 import java.time.Instant
 

@@ -6,8 +6,8 @@ import com.example.ctx.customer.impl.service.repo.converter.CustomerPEConverter
 import com.example.lib.common.domain.model.NewTypes.CustomerId
 import com.example.lib.common.domain.model.Types.AppIO
 import com.example.lib.db.domain.service.Transactor
-import com.example.lib.db.impl.repo.sql.SqlContext
-import com.example.lib.db.impl.repo.sql.schema.CustomerDbSchema
+import com.example.lib.db.impl.sql.SqlContext
+import com.example.lib.db.impl.sql.schema.CustomerDbSchema
 import zio._
 
 /** MySQL-backed `CustomerRepo`.

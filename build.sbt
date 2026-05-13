@@ -94,9 +94,9 @@ lazy val commonSettings = Seq(
 
 // libCommon holds cross-cutting concerns that aren't database-specific: effects/errors/ids/config/telemetry, plus the
 // HTTP infrastructure (typed-Endpoint wire format `ApiFailure`, operational probes `HealthEndpoints`/`HealthRoutes`,
-// shared middleware `RequestLogging`/`RequestTracing`, and the outbound `AppHttpClient`). `ctxCustomerApi` and
-// `ctxNotificationApi` only import wire-contract pieces; nothing forces them to reach into server-side code, and
-// transitively pulling `zio-http`'s classpath is an acceptable cost given the alternative (a second shared lib).
+// shared middleware `RequestLogging`/`RequestTracing`, and the outbound `AppHttpClient`). `-api` modules only import
+// wire-contract pieces; nothing forces them to reach into server-side code, and transitively pulling `zio-http`'s
+// classpath is an acceptable cost given the alternative (a second shared lib).
 lazy val libCommon = (project in file("modules/lib/common"))
   .settings(commonSettings)
   .settings(
@@ -131,40 +131,34 @@ lazy val ctxCustomer = (project in file("modules/ctx/customer"))
   .settings(commonSettings)
   .settings(
     libraryDependencies ++=
-      zioCoreDep ++ zioHttpDep ++ zioPreludeDep ++ zioSchemaDep ++ enumeratumDep ++ dbDep
+      zioCoreDep ++ zioHttpDep ++ zioPreludeDep ++ zioSchemaDep ++ zioSchemaDerivationDep ++ enumeratumDep ++ dbDep
   )
 
 // ── ctx: notification ───────────────────────────────────────
 
-// notification-api intentionally does NOT depend on customer-api. notification's wire format references customers by
-// id only; its own `NotificationRecipientTO` is a self-contained projection (id + display name + email). This keeps the
-// two contracts independent — customer-api can evolve `CustomerTO` without rippling into notification's wire shape.
-// See `patterns/cross-context-call.md`.
-lazy val ctxNotificationApi = (project in file("modules/ctx/notification-api"))
-  .dependsOn(libCommon)
-  .settings(commonSettings)
-  .settings(libraryDependencies ++= zioCoreDep ++ zioPreludeDep ++ zioSchemaDep ++ zioSchemaDerivationDep)
-
+// No `ctxNotificationApi` module: nothing currently calls into notification from another ctx, so the cross-context
+// contract has no consumer to publish to. See `patterns/cross-context-call.md` — the `-api` module appears when a
+// foreign ctx imports it.
+//
 // ctxNotification depends on ctxCustomerApi: notification's app service composes a customer existence check + recipient
 // enrichment via `CustomerApi`. This is the only cross-context coupling — at the impl layer, against the api contract.
 lazy val ctxNotification = (project in file("modules/ctx/notification"))
   .dependsOn(
     libCommon % "compile->compile;test->test",
     libDb     % "compile->compile;test->test",
-    ctxNotificationApi,
     ctxCustomerApi
   )
   .settings(commonSettings)
   .settings(
     libraryDependencies ++=
-      zioCoreDep ++ zioHttpDep ++ zioPreludeDep ++ zioSchemaDep ++ enumeratumDep ++ dbDep
+      zioCoreDep ++ zioHttpDep ++ zioPreludeDep ++ zioSchemaDep ++ zioSchemaDerivationDep ++ enumeratumDep ++ dbDep
   )
 
 // ── app: server ─────────────────────────────────────────────
 
 lazy val appServer = (project in file("modules/app/server"))
   .enablePlugins(BuildInfoPlugin, JavaAppPackaging, DockerPlugin)
-  .dependsOn(libCommon, libDb, ctxCustomerApi, ctxCustomer, ctxNotificationApi, ctxNotification)
+  .dependsOn(libCommon, libDb, ctxCustomerApi, ctxCustomer, ctxNotification)
   .settings(commonSettings)
   .settings(buildInfoSettings)
   .settings(dockerSettings)
@@ -177,11 +171,11 @@ lazy val appServer = (project in file("modules/app/server"))
 
 // ── app: dev (local-only dev tools) ─────────────────────────
 // Local-only by build: `publish / skip := true` keeps the artifact off any deployment.
-// Carries one-off scripts (data seeding, scratch experiments) that share the production
-// layer stack but never need to run in a deployed environment.
+// Carries one-off scripts (data seeding, scratch experiments). Today's actions only need libCommon + libDb, but the
+// module depends on every ctx so a new action can reach for ctx layers without first touching build.sbt.
 
 lazy val appDev = (project in file("modules/app/dev"))
-  .dependsOn(libCommon, libDb, ctxCustomerApi, ctxCustomer, ctxNotificationApi, ctxNotification)
+  .dependsOn(libCommon, libDb, ctxCustomerApi, ctxCustomer, ctxNotification)
   .settings(commonSettings)
   .settings(
     publish / skip      := true,
@@ -219,7 +213,6 @@ lazy val root = (project in file("."))
     libDb,
     ctxCustomerApi,
     ctxCustomer,
-    ctxNotificationApi,
     ctxNotification,
     appServer,
     appDev,

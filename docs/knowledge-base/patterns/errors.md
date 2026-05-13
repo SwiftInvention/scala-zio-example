@@ -97,4 +97,8 @@ The handler receives `AppFailure` — no pattern match against `Throwable`, no f
 
 ## Why not per-method failure types
 
-The channel widens at `AppFailure`, not at the specific subclass, so signatures don't tell you "this method can fail with `CustomerNotFoundError`." Owner of this trade-off discussion: [`local-reasoning.md`](local-reasoning.md) §"Per-method failure precision".
+The channel widens at `AppFailure`, not at the specific subclass: `def get(id: CustomerId): AppIO[Customer]` tells you the failure is one of our structured errors, not which one. To know whether `get` can fail with `CustomerNotFoundError` vs `DbError`, you read the body.
+
+Scala 2.13 has no union types, so encoding `IO[CustomerNotFoundError | DbError, A]` precisely costs a per-method error ADT — a layer of boilerplate that grows with every new method. The trade is worth taking: callers nearly always handle `AppFailure` uniformly at the route boundary (`mapError(ApiFailure.from)`), where the variant set is fixed and exhaustive. The cases that need to branch on a specific subclass do so in app-service code that's already reading the bodies of the methods it calls.
+
+Scala 3 union types would close this gap without the boilerplate. When we cross that line, the discussion is a candidate to revisit.

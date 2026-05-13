@@ -1,4 +1,4 @@
-package com.example.lib.db.impl.repo.sql
+package com.example.lib.db.impl.sql
 
 import com.example.lib.common.domain.error.AppFailure
 import com.example.lib.common.domain.model.EnvLabel
@@ -7,11 +7,7 @@ import pureconfig.ConfigReader
 import pureconfig.generic.semiauto.deriveReader
 import zio._
 
-/** Typed datasource config. Read from the `database.data-source` block of the active `application-<env>.conf`.
-  *
-  * No defaults on the case class — fields are required. PureConfig fails-fast if any are missing. See the
-  * `config-shape` principle.
-  */
+/** Typed datasource config. Read from the `database.data-source` block of the active `application-<env>.conf`. */
 final case class DataSourceConfig(
     jdbcUrl: String,
     user: String,

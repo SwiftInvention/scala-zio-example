@@ -1,7 +1,7 @@
 package com.example.ctx.notification.impl.to.converter
 
-import com.example.ctx.notification.api.to.NotificationWithRecipientTO
 import com.example.ctx.notification.domain.model.NotificationWithRecipient
+import com.example.ctx.notification.impl.to.NotificationWithRecipientTO
 
 object NotificationWithRecipientConverter {
 

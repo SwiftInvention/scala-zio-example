@@ -4,19 +4,15 @@ import com.example.ctx.customer.domain.service.repo.CustomerRepo
 import com.example.ctx.customer.fixture.CustomerFixtures
 import com.example.ctx.customer.impl.service.repo.CustomerRepoMySQLImpl
 import com.example.lib.common.test.IntegrationSpec
-import com.example.lib.db.impl.repo.sql.SqlContext
-import com.example.lib.db.test.TestDb
+import com.example.lib.db.impl.sql.SqlContext
+import com.example.lib.db.test.{TestDb, TestDbIntrospection}
 import zio._
 import zio.test.Assertion._
 import zio.test._
 
-/** Meta-tests for the test infrastructure itself.
-  *
-  * These verify that the building blocks tests rely on actually do what they claim:
+/** Meta-tests for the test infrastructure itself. Verify:
   *   - per-test isolation (one schema's data doesn't leak into another)
   *   - clone faithfulness (the cloned schema's structure matches the template)
-  *
-  * If these fail, every other integration test in the codebase becomes suspect.
   */
 object TestDbSpec extends IntegrationSpec {
 
@@ -47,22 +43,22 @@ object TestDbSpec extends IntegrationSpec {
       test("cloned `customer` table has the same columns as the template") {
         (for {
           ctx          <- ZIO.service[SqlContext]
-          clonedCols   <- TestDb.listColumns(ctx = ctx, table = "customer")
-          templateCols <- TestDb.listColumnsInTemplate(table = "customer")
+          clonedCols   <- TestDbIntrospection.listColumns(ctx = ctx, table = "customer")
+          templateCols <- TestDbIntrospection.listColumnsInTemplate(table = "customer")
         } yield assert(clonedCols)(equalTo(templateCols))).provide(testLayer)
       },
       test("cloned `address` table has the same columns as the template") {
         (for {
           ctx          <- ZIO.service[SqlContext]
-          clonedCols   <- TestDb.listColumns(ctx = ctx, table = "address")
-          templateCols <- TestDb.listColumnsInTemplate(table = "address")
+          clonedCols   <- TestDbIntrospection.listColumns(ctx = ctx, table = "address")
+          templateCols <- TestDbIntrospection.listColumnsInTemplate(table = "address")
         } yield assert(clonedCols)(equalTo(templateCols))).provide(testLayer)
       },
       test("cloned `address` table preserves the FK to `customer`") {
         (for {
           ctx         <- ZIO.service[SqlContext]
-          clonedFks   <- TestDb.listForeignKeys(ctx = ctx, table = "address")
-          templateFks <- TestDb.listForeignKeysInTemplate(table = "address")
+          clonedFks   <- TestDbIntrospection.listForeignKeys(ctx = ctx, table = "address")
+          templateFks <- TestDbIntrospection.listForeignKeysInTemplate(table = "address")
         } yield assert(clonedFks)(equalTo(templateFks)) && assert(clonedFks.size)(equalTo(1))).provide(testLayer)
       },
       test("cloned schema is empty (no template data leaked through)") {

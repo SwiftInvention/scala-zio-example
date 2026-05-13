@@ -19,6 +19,6 @@ object HealthEndpoints {
       .out[Unit]
       .outError[ApiFailure.ServiceUnavailableResponse](Status.ServiceUnavailable)
 
-  /** All endpoints in this module. Aggregated by `ServerRoutes` for OpenAPI generation. */
+  /** All endpoints in this module. */
   val all: List[Endpoint[_, _, _, _, _]] = List(health, ready)
 }

@@ -16,8 +16,6 @@ import zio._
   *
   * The ADT makes the binary "tracing on / tracing off" semantic explicit at the consumer site (exhaustive pattern
   * match), where `Option[String]` would conflate "off", "missing key", and "set to null" into one shape.
-  *
-  * Per `config-shape`: `Disabled` is "tracing genuinely off", not a substitute for a baked-in default.
   */
 final case class OtelConfig(
     serviceName: String,
@@ -32,11 +30,7 @@ object OtelTracing {
 
 object OtelConfig {
 
-  /** Internal HOCON-shape mirror used only for parsing. Public API exposes [[OtelConfig]] with the ADT.
-    *
-    * `ProductHint` makes the camelCase → kebab-case mapping explicit at the type, so a future field rename can't
-    * silently flip the wire key.
-    */
+  /** Internal HOCON-shape mirror used only for parsing. Public API exposes [[OtelConfig]] with the ADT. */
   private final case class Raw(serviceName: String, otlpEndpoint: Option[String])
   private implicit val rawHint: ProductHint[Raw]    = ProductHint[Raw](ConfigFieldMapping(CamelCase, KebabCase))
   private implicit val rawReader: ConfigReader[Raw] = deriveReader[Raw]

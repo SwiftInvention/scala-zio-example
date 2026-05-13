@@ -4,9 +4,7 @@ import com.example.ctx.notification.domain.error.InvalidNotificationMessageError
 import com.example.lib.common.domain.model.Types.AppIO
 import zio._
 
-/** Validated notification message body. Canonicalizes whitespace (trim) and enforces `1 <= length <= MaxLength`. See
-  * the `smart-constructors` pattern doc.
-  */
+/** Validated notification message body. Trimmed; `1 <= length <= MaxLength`. */
 sealed abstract case class NotificationMessage private (value: String)
 
 object NotificationMessage {

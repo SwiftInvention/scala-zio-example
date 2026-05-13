@@ -7,9 +7,7 @@ import pureconfig.ConfigReader
 import pureconfig.generic.semiauto.deriveReader
 import zio._
 
-/** Typed HTTP server config. Read from the `server` block of the active `application-<env>.conf`. No defaults on the
-  * case class.
-  */
+/** Typed HTTP server config. Read from the `server` block of the active `application-<env>.conf`. */
 final case class ServerConfig(
     host: String,
     port: Int

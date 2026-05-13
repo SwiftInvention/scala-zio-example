@@ -1,11 +1,9 @@
 package com.example.ctx.notification.impl.to.converter
 
-import com.example.ctx.notification.api.to.NotificationTO
 import com.example.ctx.notification.domain.model.Notification
+import com.example.ctx.notification.impl.to.NotificationTO
 
-/** TO ↔ domain mapping for `Notification`. Channel renders as its enumeratum `entryName`; the parse direction (used on
-  * inbound create requests) lives on `NotificationChannel.parse` and is invoked by `NotificationRoutes`.
-  */
+/** Domain → TO mapping for `Notification`. Channel renders as its enumeratum `entryName`. */
 object NotificationConverter {
 
   def toNotificationTO(d: Notification): NotificationTO =

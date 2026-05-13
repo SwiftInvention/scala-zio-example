@@ -4,9 +4,9 @@ import java.time.Instant
 
 import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
 import com.example.lib.common.domain.model.Types.AppIO
-import com.example.lib.db.impl.repo.sql.SqlContext
-import com.example.lib.db.impl.repo.sql.entity.NotificationPE
-import com.example.lib.db.impl.repo.sql.schema.NotificationDbSchema
+import com.example.lib.db.impl.sql.SqlContext
+import com.example.lib.db.impl.sql.entity.NotificationPE
+import com.example.lib.db.impl.sql.schema.NotificationDbSchema
 import zio._
 
 /** Typed test fixtures for `Notification`.

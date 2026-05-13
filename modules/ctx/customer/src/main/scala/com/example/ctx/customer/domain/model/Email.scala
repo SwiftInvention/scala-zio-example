@@ -4,12 +4,7 @@ import com.example.ctx.customer.domain.error.InvalidEmailError
 import com.example.lib.common.domain.model.Types.AppIO
 import zio._
 
-/** Validated email address.
-  *
-  * Smart constructor canonicalizes (trim + lowercase) and validates against a pragmatic regex. Construction goes
-  * through `apply`, which is the only public path to a value. See [`smart-constructors.md`](smart-constructors.md) for
-  * why the class declaration uses `sealed abstract case class ... private`.
-  */
+/** Validated email address. Trimmed, lowercased; validates against a pragmatic regex. */
 sealed abstract case class Email private (value: String)
 
 object Email {

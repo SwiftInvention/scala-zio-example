@@ -1,14 +1,14 @@
 package com.example.ctx.notification.impl.http
 
-import com.example.ctx.notification.api.to.{NotificationCreateRequestTO, NotificationTO, NotificationWithRecipientTO}
+import com.example.ctx.notification.impl.to.{NotificationCreateRequestTO, NotificationTO, NotificationWithRecipientTO}
 import com.example.lib.common.impl.http.ApiFailure
 import zio.http._
 import zio.http.codec.PathCodec
 import zio.http.endpoint.Endpoint
 
-/** Typed endpoint definitions for the notification ctx. Pure shape — no implementation. Same discipline as
-  * `CustomerEndpoints`: every endpoint declares the full `ApiFailure` variant set so the framework always has a codec
-  * for whatever the impl ends up producing. See `patterns/http-endpoints.md`.
+/** Typed endpoint definitions for the notification ctx. Pure shape — no implementation. Every endpoint declares the
+  * full `ApiFailure` variant set so the framework always has a codec for whatever the impl produces. See
+  * `patterns/http-endpoints.md`.
   */
 object NotificationEndpoints {
 
@@ -70,6 +70,6 @@ object NotificationEndpoints {
         serviceUnavailableCodec
       )
 
-  /** All endpoints in this ctx. Aggregated by `ServerRoutes` for OpenAPI generation. */
+  /** All endpoints in this ctx. */
   val all: List[Endpoint[_, _, _, _, _]] = List(create, get, list, listForRecipient)
 }

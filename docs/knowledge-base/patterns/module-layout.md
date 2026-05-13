@@ -10,21 +10,12 @@ modules/
 └── app/<name>/        deployment unit (composition root + entrypoint)
 ```
 
-sbt project IDs follow `<layer><CamelCaseName>`; Scala packages mirror the layer with `com.example.<layer>.<name>.*`:
-
-| Folder                          | sbt ID                | Package root                     |
-| ------------------------------- | --------------------- | -------------------------------- |
-| `modules/lib/common`            | `libCommon`           | `com.example.lib.common.*`       |
-| `modules/lib/db`                | `libDb`               | `com.example.lib.db.*`           |
-| `modules/ctx/customer`          | `ctxCustomer`         | `com.example.ctx.customer.*`     |
-| `modules/ctx/customer-api`      | `ctxCustomerApi`      | `com.example.ctx.customer.api.*` |
-| `modules/app/server`            | `appServer`           | `com.example.app.server.*`       |
-| `modules/app/integration-tests` | `appIntegrationTests` | `com.example.app.integration.tests.*` |
+sbt project IDs follow `<layer><CamelCaseName>`; Scala packages mirror the layer with `com.example.<layer>.<name>.*`. See [`overview.md`](../overview.md#modules) for the full module → folder → sbt ID table.
 
 ## Lib internal structure
 
 ```text
-modules/lib/<name>/src/main/scala/com/example/<name>/
+modules/lib/<name>/src/main/scala/com/example/lib/<name>/
 ├── domain/        traits, types, errors
 └── impl/          concrete implementations
 ```

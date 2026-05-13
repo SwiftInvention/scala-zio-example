@@ -8,25 +8,20 @@ import zio.telemetry.opentelemetry.tracing.{StatusMapper, Tracing}
 /** Server-span middleware: opens one span per HTTP request, named `<METHOD> <path>`, kind `SERVER`. The handler runs
   * inside the span scope; the span closes on response (success or failure).
   *
-  * Hand-rolled because zio-telemetry doesn't ship a zio-http binding — its `tracing.aspects.span` is a `ZIOAspect`, not
-  * a `Middleware[Tracing]`. The wrapping logic here is what would otherwise live in such a binding.
-  *
-  * The middleware adds `Tracing` to the env requirement of the routes it's applied to. The composition root wires
-  * `Tracing` so the dependency is satisfied at boot time.
+  * Hand-rolled because zio-telemetry's `tracing.aspects.span` is a `ZIOAspect`, not a zio-http `Middleware[Tracing]`.
+  * The middleware adds `Tracing` to the env requirement of the routes it's applied to; the composition root supplies
+  * it.
   *
   * Span status follows HTTP semantics: 4xx ends the span with `OK` (the server responded correctly to a bad request);
   * 5xx ends with `ERROR`. zio-http's `Routes[R, Response]` puts both 4xx and 5xx in the failure channel, so without
   * this mapper a 404 would be tagged as a span error.
   *
-  * Trace propagation (reading `traceparent` from incoming headers to chain under an upstream caller) is intentionally
-  * not wired here — opens a fresh root span per request. Add `tracing.extractSpan(...)` if you need distributed traces
-  * inbound from another service.
+  * No trace-context extraction from inbound headers — every request opens a fresh root span. Add
+  * `tracing.extractSpan(...)` here if/when the system needs to chain under an upstream caller.
   */
 object RequestTracing {
 
-  /** Status mapper: 5xx response → `ERROR`, anything else → `OK`. Same logic on success and failure channels because
-    * zio-http typed errors carry response codes too.
-    */
+  /** Status mapper: 5xx response → `ERROR`, anything else → `OK`. */
   private val httpStatusMapper: StatusMapper[Response, Response] =
     StatusMapper.both(
       failure = StatusMapper.failureNoException[Response] { resp =>

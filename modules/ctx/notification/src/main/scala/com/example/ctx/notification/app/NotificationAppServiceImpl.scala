@@ -2,20 +2,20 @@ package com.example.ctx.notification.app
 
 import com.example.ctx.customer.api.CustomerApi
 import com.example.ctx.customer.api.to.CustomerTO
-import com.example.ctx.notification.domain.error.OrphanedRecipientError
+import com.example.ctx.notification.domain.error.{NotificationNotFoundError, OrphanedRecipientError}
 import com.example.ctx.notification.domain.model.{
   Notification,
   NotificationChannel,
   NotificationMessage,
-  NotificationRecipient,
   NotificationWithRecipient
 }
-import com.example.ctx.notification.domain.service.NotificationService
+import com.example.ctx.notification.domain.service.repo.NotificationRepo
+import com.example.ctx.notification.impl.to.converter.NotificationRecipientConverter
 import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
 import com.example.lib.common.domain.model.Types.AppIO
 import zio._
 
-/** Composes notification's domain service with the customer cross-context contract.
+/** Composes notification's repo with the customer cross-context contract.
   *
   *   - **Create** — calls `CustomerApi.get(recipientId)` for the existence check. `CustomerNotFoundError` flows through
   *     unchanged; the HTTP layer renders it as 404.
@@ -23,7 +23,7 @@ import zio._
   *     surfaced as `OrphanedRecipientError` (500). See `patterns/cross-context-call.md`.
   */
 final class NotificationAppServiceImpl(
-    notificationService: NotificationService,
+    repo: NotificationRepo,
     customerApi: CustomerApi
 ) extends NotificationAppService {
 
@@ -43,8 +43,11 @@ final class NotificationAppServiceImpl(
         message = message,
         createdAt = now
       )
-      created <- notificationService.create(notification)
-    } yield NotificationWithRecipient(notification = created, recipient = toRecipient(recipientTO))
+      _ <- repo.insert(notification)
+    } yield NotificationWithRecipient(
+      notification = notification,
+      recipient = NotificationRecipientConverter.fromCustomerTO(recipientTO)
+    )
 
     build.tap(result =>
       ZIO.logAnnotate(
@@ -59,7 +62,7 @@ final class NotificationAppServiceImpl(
 
   override def get(id: NotificationId): AppIO[NotificationWithRecipient] =
     (for {
-      notification <- notificationService.get(id)
+      notification <- repo.find(id).someOrFail(NotificationNotFoundError.withId(id))
       recipients   <- customerApi.getMany(Set(notification.recipientId))
       enriched     <- zipOne(notification, recipients)
     } yield enriched).tap(result =>
@@ -73,7 +76,7 @@ final class NotificationAppServiceImpl(
 
   override def list: AppIO[List[NotificationWithRecipient]] =
     (for {
-      notifications <- notificationService.list
+      notifications <- repo.list
       recipientIds = notifications.iterator.map(_.recipientId).toSet
       _ <- ZIO.logAnnotate(
         Set(
@@ -93,7 +96,7 @@ final class NotificationAppServiceImpl(
     )
 
   override def listForRecipient(recipientId: CustomerId): AppIO[List[Notification]] =
-    notificationService
+    repo
       .listForRecipient(recipientId)
       .tap(result =>
         ZIO.logAnnotate(
@@ -110,16 +113,15 @@ final class NotificationAppServiceImpl(
   ): AppIO[NotificationWithRecipient] =
     recipients.get(n.recipientId) match {
       case Some(to) =>
-        ZIO.succeed(NotificationWithRecipient(notification = n, recipient = toRecipient(to)))
+        ZIO.succeed(
+          NotificationWithRecipient(notification = n, recipient = NotificationRecipientConverter.fromCustomerTO(to))
+        )
       case None =>
         ZIO.fail(OrphanedRecipientError.withIds(notificationId = n.id, recipientId = n.recipientId))
     }
-
-  private def toRecipient(to: CustomerTO): NotificationRecipient =
-    NotificationRecipient(id = to.id, email = to.email, name = to.name)
 }
 
 object NotificationAppServiceImpl {
-  val layer: URLayer[NotificationService & CustomerApi, NotificationAppService] =
+  val layer: URLayer[NotificationRepo & CustomerApi, NotificationAppService] =
     ZLayer.fromFunction(new NotificationAppServiceImpl(_, _))
 }

@@ -6,18 +6,20 @@ The example to read against this doc: `NotificationAppService` calls `CustomerAp
 
 ## The api module: `ctx/<name>-api/`
 
+The `-api` module exists when (and only when) another ctx imports it. No consumer → no module. When one materializes, the contract lands here:
+
 ```text
-modules/ctx/<name>-api/src/main/scala/com/example/<name>/api/
+modules/ctx/<name>-api/src/main/scala/com/example/ctx/<name>/api/
 ├── <Name>Api.scala       the trait (TO-typed signatures)
-└── to/                   transfer objects (wire format)
+└── to/                   the TOs the trait references
     └── <Name>TO.scala
 ```
 
-Only the trait and its TOs. No errors, no domain logic — those live in the impl ctx.
+Only the trait and the TOs it references. No errors, no domain logic — those live in the impl ctx. The ctx's HTTP wire format lives in `ctx/<name>/impl/to/`, separately — see "Routes don't go through the api" below.
 
 `<ctx>-api` modules are **leaves** in the build graph. They depend on `libCommon` and nothing else — including no other `-api` module. The codebase-wide rule lives in [`build-deps.md`](build-deps.md); the reason it matters here is co-evolution: any module that imports `<foreign>-api` is shaped by the foreign ctx's wire format. If contracts cross-reference each other, you can't evolve one without considering callers of the other.
 
-This rules out a tempting shape: `NotificationWithRecipientTO(notification: NotificationTO, recipient: CustomerTO)`. Embedding `CustomerTO` would make `notification-api` transitively expose customer-api's wire format. Instead, notification defines its own `NotificationRecipientTO` — a projection of what notification cares about (id, name, email). The boundary mapping `CustomerTO → NotificationRecipientTO` lives in `notification/impl/` (the only place that sees both sides).
+This rules out a tempting shape: a `-api` TO that embeds another ctx's `-api` TO. The receiving `-api` would transitively expose the foreign wire format and couple the two contracts. Each ctx defines its own projection of what it needs (e.g. notification's `NotificationRecipientTO` carries just id + email + name) and converts at the boundary in `impl/`.
 
 The same pattern applies on the domain side. `NotificationRecipient` is a notification-domain type, not an import of `Customer`. Customer's domain types stay private to customer; notification reasons about its own representation of "who this notification is for."
 
@@ -61,7 +63,7 @@ The cross-context API is for *intra-system* calls (between contexts in the same 
 Two consequences:
 
 - The route's signature stays free of `<Foreign>Api`. A second endpoint needing the same cross-ctx data doesn't introduce a second call site.
-- The app-service's signature is honest about every collaborator. `NotificationAppServiceImpl(notificationService, customerApi)` declares both ctxs at the constructor; reading the constructor tells you the full local frame ([`local-reasoning.md`](local-reasoning.md) §"Explicit dependencies").
+- The app-service's signature is honest about every collaborator. `NotificationAppServiceImpl(repo, customerApi)` declares both the local repo and the foreign api at the constructor; reading the constructor tells you the full local frame.
 
 ## Failure handling: pass-through by default
 

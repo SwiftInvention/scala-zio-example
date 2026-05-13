@@ -2,7 +2,7 @@
 
 A constructor that enforces invariants. Producing an instance is the only way to assert "this value is valid", and the constructor is the only place that assertion can fail.
 
-Used wherever a value has constraints (`Email` is well-formed; `PositiveInt` is positive; `Email` also normalizes to lowercase). Different mechanism from `Newtype` (see [`newtypes.md`](newtypes.md), which handles unvalidated id wrapping) — smart constructors use `sealed abstract case class` rather than zio-prelude's `Newtype`. Pick by use case: ids without validation → `Newtype`; values with constraints → smart constructor.
+Used wherever a value has constraints (`Email` is well-formed; `PositiveInt` is positive; `Email` also normalizes to lowercase). For unvalidated id wrapping use `Newtype` instead (see [`newtypes.md`](newtypes.md)).
 
 ## Canonical idiom
 
