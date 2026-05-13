@@ -100,7 +100,7 @@ jobs:
       - name: Install Flyway CLI
         run: |
           FLYWAY_VERSION=12.5.0
-          curl -sSL "https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${FLYWAY_VERSION}/flyway-commandline-${FLYWAY_VERSION}-linux-x64.tar.gz" \
+          curl -sSL "https://github.com/flyway/flyway/releases/download/flyway-${FLYWAY_VERSION}/flyway-commandline-${FLYWAY_VERSION}-linux-x64.tar.gz" \
             | tar -xz
           sudo ln -s "${GITHUB_WORKSPACE}/flyway-${FLYWAY_VERSION}/flyway" /usr/local/bin/flyway
           flyway --version
