@@ -67,5 +67,3 @@ Adding a new id: two lines here, no other module touches.
 - Strings that have a name but no domain identity (`note`, `comment`)
 
 For values with **validation rules** (an email format, a positive integer), use the smart-constructor recipe instead — that's a different mechanism with the validation baked into the construction. See [`smart-constructors.md`](smart-constructors.md).
-
-The middle case — "should I newtype this `Name`?" — is judgment. When in doubt: ids yes, things-with-validation yes (via smart constructors), things that are just named strings probably no.

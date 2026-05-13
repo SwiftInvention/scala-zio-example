@@ -26,7 +26,7 @@ http-client {
 
 Per-endpoint timeouts (full response read) belong on the caller via `effect.timeoutFail(...)(...)`.
 
-Other zio-http knobs — connection-pool size, `requestDecompression`, SSL config beyond the JVM default — aren't exposed yet. Add fields per consumer demand: the field `requestDecompression` is the most likely first ask the moment a real upstream returns gzipped JSON.
+Other zio-http knobs — connection-pool size, `requestDecompression`, SSL config beyond the JVM default — aren't exposed yet. Add fields per consumer demand.
 
 ## Consumer pattern
 

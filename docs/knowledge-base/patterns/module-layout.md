@@ -47,7 +47,7 @@ HTTP server + client adapters live under `impl/http/`. The wire-format error typ
 
 ## App internal structure
 
-Apps are thin deployment units. Required at the module root:
+Apps are thin deployment units. The default shape — one entrypoint backed by one composition root:
 
 ```text
 modules/app/<name>/src/main/scala/com/example/app/<name>/
@@ -57,7 +57,10 @@ modules/app/<name>/src/main/scala/com/example/app/<name>/
 
 Beyond `App` + `Env`, an app organizes its own files however its deployment shape needs. `server/` adds `ServerRoutes.scala` (route composition feeding OpenAPI) and `config/ServerConfig.scala`. A worker might add a queue handler; a migrator might need nothing else.
 
-`integration-tests/` is the test-only variant: no `main` sources, just `src/test/scala/com/example/app/integration/tests/` with `TestServer.scala` (the integration composition root) at the top and per-area sub-packages below it (`http/`, `customer/`, `notification/`, `common/`).
+Variants on the default shape:
+
+- `dev/` — local-only one-off scripts. Each entrypoint (`Experiment.scala`, every action under `actions/`) is its own `ZIOAppDefault` with an inline `provide(...)`. No shared composition root. See [`dev-tools.md`](dev-tools.md).
+- `integration-tests/` — test-only: no `main` sources, just `src/test/scala/com/example/app/integration/tests/` with `TestServer.scala` (the integration composition root) at the top and per-area sub-packages below it (`http/`, `customer/`, `notification/`, `common/`).
 
 ## When to add what
 

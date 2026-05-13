@@ -33,7 +33,7 @@ The unit changes; the rule doesn't. At each level, what you need to understand t
 Most existing principles are mechanisms for preserving local reasoning at one level or another:
 
 - **`bounded-context`, `ctx-api`, `import-direction`, `build-deps`** — module/context boundaries, build-graph-enforced
-- **`errors`** — failure modes visible at signatures (with one caveat below)
+- **`errors`** — failure modes visible at signatures
 - **`newtypes`, `smart-constructors`** — types carry validated facts; callers don't re-derive them
 - **`config-shape`** — config is a typed value flowing through the system; nobody reads `Config` ambiently
 - **`tx-default`** — the transaction scope of a method is readable at the method
@@ -47,11 +47,9 @@ When you find yourself adding action-at-a-distance, one of these is being violat
 
 **Trait contracts not fully captured by types.** Some of our traits have semantics (laws, ordering, what counts as nesting) that types don't express. `Transactor.withTransaction[A](io: AppIO[A]): AppIO[A]` doesn't tell you that nested calls reuse the outer connection — that's documented but not encoded. A reader has to descend or know the convention. The fix when it matters: tighten the docstring to be the contract; or richer types that encode more of the law.
 
-**Implicit resolution.** Quill encodings, zio-json codecs, PureConfig readers — implicits get pulled into scope from elsewhere. The use site doesn't show what's resolved. Mostly fine because the resolutions are predictable, but a reader debugging "why does this not compile?" has to know the rules of implicit search, which are global.
+**Implicit resolution.** Quill encodings, zio-json codecs, PureConfig readers — implicits get pulled into scope from elsewhere. The use site doesn't show what's resolved. A reader debugging "why does this not compile?" has to know the rules of implicit search, which are global.
 
-**Macro-generated code.** Quill's `quote { ... }` generates SQL at compile time. What runs at runtime is the generated query, not the Scala source. Reading the source isn't quite the truth — though for the queries we write, the gap is small.
-
-These don't invalidate the principle; they're trade-offs we made for other reasons (Scala 2 ergonomics, library choices). Naming them lets us see the cost.
+**Macro-generated code.** Quill's `quote { ... }` generates SQL at compile time. What runs at runtime is the generated query, not the Scala source. Reading the source isn't quite the truth.
 
 ## Antipatterns
 

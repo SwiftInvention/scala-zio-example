@@ -63,7 +63,7 @@ The local workflow is `local-infra-up` → `db-migrate` → `run`, with each ste
 
 PEs default to the ctx whose repo owns the table — `customer/impl/service/repo/sql/entity/CustomerPE.scala`, not `lib/common`.
 
-Rationale: this template is built to demonstrate bounded-context separation; centralizing PEs in `lib/common` would mean the lib layer knows every context's persistence shape, which contradicts the point. The ctx-local default also fails loudly when boundaries are wrong (cross-ctx PE imports become visible in the build graph) instead of failing silently (everything in one shared bag).
+Rationale: centralizing PEs in `lib/common` would mean the lib layer knows every context's persistence shape, breaking bounded-context separation. The ctx-local default also fails loudly when boundaries are wrong — a cross-ctx PE import becomes visible in the build graph rather than disappearing into a shared bag.
 
 When two contexts genuinely read the same table:
 

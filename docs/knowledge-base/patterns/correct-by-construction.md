@@ -42,8 +42,6 @@ Per-value exceptions to the outbound rule are deliberate. `CustomerId` (a `Newty
 
 With ADTs, smart constructors, and parse-don't-validate in place, every function operating on a typed value trusts the type's invariants without re-checking.
 
-You pay upfront with richer types and smarter boundaries. In return, invalid-state bugs become compile errors.
-
 ## Where this shows up
 
 The `newtypes`, `smart-constructors`, `errors`, `config-shape`, `to-converters`, and `pe-converters` principles are all instances. Owner of the per-principle enumeration: [`architecture-principles.md`](../architecture-principles.md).

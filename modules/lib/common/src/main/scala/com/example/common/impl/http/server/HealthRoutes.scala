@@ -28,7 +28,7 @@ import zio.http._
 final class HealthRoutes(ctx: SqlContext) {
   import ctx._
 
-  // styleguide: config-shape FIXME — should come from a HealthConfig rather than a literal in code.
+  // architecture: config-shape FIXME — should come from a HealthConfig rather than a literal in code.
   private val ProbeTimeout: Duration = 2.seconds
 
   private val pingDb: AppIO[Unit] = {

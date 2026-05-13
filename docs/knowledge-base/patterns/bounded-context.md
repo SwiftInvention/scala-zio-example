@@ -50,7 +50,7 @@ modules/ctx/<name>/src/main/scala/com/example/<name>/
 
 `<Name>AppService` is the fan-out point: the cross-context bridge (`<Name>ApiDirectImpl`) and the HTTP routes are sibling consumers, not chained. See [`cross-context-call.md`](cross-context-call.md) §"Routes don't go through the api" for why the HTTP plane bypasses `<Name>Api`.
 
-Each link is a thin pass-through unless it has something to add. Domain services host validation and business rules; AppService orchestrates them. When a link has nothing to add, drop it — AppService can call Repo directly when there's no domain logic worth a Service layer, and `<Name>Service` doesn't need to exist if it would be pure delegation.
+Each link is a thin pass-through unless it has something to add. Domain services host validation and business rules; AppService orchestrates them. If `<Name>Service` would be pure delegation, drop it and have AppService call Repo directly.
 
 ## Why `app/` colocates trait and impl
 

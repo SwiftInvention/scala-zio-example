@@ -15,6 +15,4 @@ A new `app/<name>/` module gets one — for a new deployment unit, a scoped dev 
 
 ## The rule: roots stay parallel
 
-Different roots wire similar things in different ways (`DataSourceLayer` vs `TestDb.freshSchemaLayer`, `AppTracing.live` vs `AppTracing.liveWithoutProbe`, real `Server.Config` vs ephemeral). Don't factor that overlap into a shared layer set — the variation *is* what having more than one root buys you. If the impulse is "let's reuse some wiring," the move is to lift the shared *mechanism* (a service trait + impl, a ctx), not the composition.
-
-This is the [`local-reasoning`](local-reasoning.md) carve-out: roots are exempt because they are the place where the global view lives.
+Different roots wire similar things in different ways (`DataSourceLayer` vs `TestDb.freshSchemaLayer`, `AppTracing.live` vs `AppTracing.liveWithoutProbe`, real `Server.Config` vs ephemeral). Don't factor that overlap into a shared layer set — the variation *is* what having more than one root buys you. Share *mechanisms* (a service trait + impl, a ctx) by lifting them into modules; let each root compose them itself.

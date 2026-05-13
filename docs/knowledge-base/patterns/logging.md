@@ -28,7 +28,7 @@ object ServerApp extends ZIOAppDefault {
 
 `ZIOAppDefault` builds the bootstrap layer before any layer in the main `run` effect, so the configured logger replaces ZIO's defaults before the first user-level log line emits — including `ConfigBootstrap.layer`'s `APP_ENV resolved: ...` line that fires once the main layer chain starts.
 
-`bootstrap` does its own minimal config load: it reads `APP_ENV` directly, then calls `ConfigBootstrap.load[LoggingConfig]("logging")` against the parsed `EnvLabel`. This duplicates what `ConfigBootstrap.layer` + `LoggingConfig.load` would do later, but typesafe-config's classloader caches the parsed file, so the cost is negligible. The duplication is the price of installing the logger before any layer in the main env builds.
+`bootstrap` does its own minimal config load: it reads `APP_ENV` directly, then calls `ConfigBootstrap.load[LoggingConfig]("logging")` against the parsed `EnvLabel`. This duplicates what `ConfigBootstrap.layer` + `LoggingConfig.load` would do later — the price of installing the logger before any layer in the main env builds. Typesafe-config caches the parsed file, so the duplicate read is free.
 
 `LoggingConfig` exists as a typed slice and a reader, but has no `layer` — `AppLogger.bootstrap` is the only consumer. `ConfigBootstrap.readEnvLabel` is the silent variant of `ConfigBootstrap.layer` (no `APP_ENV resolved` log) used by the bootstrap.
 

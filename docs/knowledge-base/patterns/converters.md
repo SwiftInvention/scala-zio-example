@@ -32,14 +32,6 @@ object CustomerConverter {
 
 Method names are entity-qualified: `to<Entity>TO` for domain → TO, `to<Entity>` for TO → domain. For create-command shapes: `toNew<Entity>(to: CreateXRequestTO): NewX`.
 
-## Object, not trait mixin
-
-Trait mixin gives unqualified method names inside the inheritor (`toCustomerTO(c)` directly), at the cost of obscuring where each method comes from and forcing every consumer to extend the trait. Object + explicit import (`import CustomerConverter._`) gives the same brevity at use sites with none of the inheritance plumbing, and `CustomerConverter.toCustomerTO` is greppable.
-
-## Hand-written, not chimney
-
-Every field appears in the source. Errors are immediate, no macro-expanded code to debug. chimney is the right call if a converter grows to dozens of fields with mostly-matching names — but for the typical case (single-digit fields, some renames, some type changes), hand-written is cheaper to read.
-
 ## At call sites
 
 Either qualified or imported:

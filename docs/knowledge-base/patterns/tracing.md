@@ -32,7 +32,7 @@ The SDK builders are wrapped in `ZIO.fromAutoCloseable`, so `BatchSpanProcessor.
 
 Before the SDK is built, `AppTracing.live` HEAD-probes the configured OTLP endpoint via `Client` with bounded exponential-backoff retry inside a fixed budget. An unreachable collector otherwise emits a stream of `BatchSpanProcessor` reconnect failures into the log; the probe makes the layer fail at boot instead. Any HTTP response counts — including `405 Method Not Allowed` or `404 Not Found` — the probe asserts "the host is reachable and speaking HTTP at this URL", not "the OTLP path and method are correct".
 
-Boot-time and runtime are asymmetric on purpose: an unreachable collector at boot fails the layer; an unreachable collector during runtime doesn't — `BatchSpanProcessor` logs export failures via the OpenTelemetry SDK and keeps the server serving traffic.
+Boot-time and runtime are asymmetric: an unreachable collector at boot fails the layer; an unreachable collector during runtime doesn't — `BatchSpanProcessor` logs export failures via the OpenTelemetry SDK and keeps the server serving traffic.
 
 Span context propagation uses `OpenTelemetry.contextZIO`, which stores the active span in a ZIO fiber-local. The alternative `contextJVM` exists for code running under the OpenTelemetry java-agent — pick the variant that matches your deployment, and use the same one consistently.
 

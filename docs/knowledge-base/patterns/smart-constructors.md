@@ -25,8 +25,6 @@ Each keyword in `sealed abstract case class ... private` defeats a specific Scal
 - **`private` constructor** — hides the auto-generated public `apply` in the companion. Without this, callers could do `Email("anything")` via the case class's default machinery.
 - **`abstract`** — suppresses both `copy()` and `apply()` auto-generation. In modern Scala (2.12.2+), even with a private constructor, the case class's auto-generated `copy()` stays public — so any caller could do `email.copy(value = "anything")` and bypass validation entirely. `abstract` neutralizes the case-class auto-generation.
 
-Naive `final case class Foo private (...)` leaks `copy()`. Use the canonical idiom.
-
 Construction goes through `new Email(normalized) {}` — anonymous-subclass syntax — inside the companion. Outside the file, only the validating `apply` is reachable. Pattern matching via `unapply` still works; field access and `equals` are preserved.
 
 ## Effect channel

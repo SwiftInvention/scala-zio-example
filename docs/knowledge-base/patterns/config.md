@@ -14,9 +14,7 @@ modules/<app>/src/main/resources/
 
 Only `application-local.conf` is gitignored. `dev`/`prod` files are committed because they contain no real secrets — only defaults and `${VAR}` references. The `.example` template exists for `local` because local config typically has actual values baked in (passwords, API keys for dev convenience) that shouldn't be in git.
 
-Each file is its own truth — no `reference.conf`, no merge with another env's file. The bug this guards against: a value changes in `reference.conf`, an env file doesn't mention it, the new default silently activates. With self-contained per-env files, "what's the runtime value?" is one lookup.
-
-The trade-off is duplication: adding a new field means editing every env file. That's a feature — schema changes become visible in every environment, not silently inherited.
+Each file is its own truth — no `reference.conf`, no merge with another env's file. The bug this guards against: a value changes in `reference.conf`, an env file doesn't mention it, the new default silently activates. With self-contained per-env files, "what's the runtime value?" is one lookup, and a new field has to be set in every env file (or boot fails there).
 
 ## Selecting the env at runtime
 
@@ -100,7 +98,7 @@ val port = if (cfg.port.isEmpty) 8080 else cfg.port.get
 val port = cfg.port match { case Some(p) => p; case None => 8080 }
 ```
 
-The question "what's `port` at runtime?" must always be answered by reading the active conf file — never by reading code. Code defaults split that question across two sources, and the bug pattern is the same one we close everywhere else: silent fallback masking missing config.
+The question "what's `port` at runtime?" must always be answered by reading the active conf file — never by reading code. Code defaults split that question across two sources and let missing config silently activate a fallback.
 
 ### Internal-mechanism constants are not config
 
