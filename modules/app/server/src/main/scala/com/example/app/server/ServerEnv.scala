@@ -1,21 +1,21 @@
 package com.example.app.server
 
 import com.example.app.server.config.ServerConfig
-import com.example.common.impl.config.{ConfigBootstrap, HttpClientConfig, OtelConfig}
-import com.example.common.impl.http.client.AppHttpClient
-import com.example.common.impl.http.server.HealthRoutes
-import com.example.common.impl.repo.sql.{DataSourceConfig, DataSourceLayer, SqlContext}
-import com.example.common.impl.service.TransactorQuillImpl
-import com.example.common.impl.telemetry.AppTracing
-import com.example.customer.app.CustomerAppServiceImpl
-import com.example.customer.impl.CustomerApiDirectImpl
-import com.example.customer.impl.http.CustomerRoutes
-import com.example.customer.impl.service.repo.{AddressRepoMySQLImpl, CustomerRepoMySQLImpl}
-import com.example.customer.impl.service.{AddressServiceImpl, CustomerServiceImpl}
-import com.example.notification.app.NotificationAppServiceImpl
-import com.example.notification.impl.http.NotificationRoutes
-import com.example.notification.impl.service.NotificationServiceImpl
-import com.example.notification.impl.service.repo.NotificationRepoMySQLImpl
+import com.example.ctx.customer.app.CustomerAppServiceImpl
+import com.example.ctx.customer.impl.CustomerApiDirectImpl
+import com.example.ctx.customer.impl.http.CustomerRoutes
+import com.example.ctx.customer.impl.service.repo.{AddressRepoMySQLImpl, CustomerRepoMySQLImpl}
+import com.example.ctx.customer.impl.service.{AddressServiceImpl, CustomerServiceImpl}
+import com.example.ctx.notification.app.NotificationAppServiceImpl
+import com.example.ctx.notification.impl.http.NotificationRoutes
+import com.example.ctx.notification.impl.service.NotificationServiceImpl
+import com.example.ctx.notification.impl.service.repo.NotificationRepoMySQLImpl
+import com.example.lib.common.impl.config.{ConfigBootstrap, HttpClientConfig, OtelConfig}
+import com.example.lib.common.impl.http.client.AppHttpClient
+import com.example.lib.common.impl.http.server.HealthRoutes
+import com.example.lib.common.impl.telemetry.AppTracing
+import com.example.lib.db.impl.repo.sql.{DataSourceConfig, DataSourceLayer, SqlContext}
+import com.example.lib.db.impl.service.{DbProbeQuillImpl, TransactorQuillImpl}
 import zio._
 import zio.http.Server
 import zio.telemetry.opentelemetry.tracing.Tracing
@@ -57,6 +57,7 @@ object ServerEnv {
       DataSourceLayer.layer,
       SqlContext.layer,
       TransactorQuillImpl.layer,
+      DbProbeQuillImpl.layer,
       // ── customer ctx ──
       CustomerRepoMySQLImpl.layer,
       AddressRepoMySQLImpl.layer,

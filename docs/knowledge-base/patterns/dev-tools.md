@@ -1,6 +1,6 @@
 # Dev tools
 
-`appDev` is a deployment unit for local-only one-off code: data seeding, scratchpad experiments, ad-hoc debugging actions. It lives at `modules/app/dev/` and depends on `libCommon` plus the ctx modules.
+`appDev` is a deployment unit for local-only one-off code: data seeding, scratchpad experiments, ad-hoc debugging actions. It lives at `modules/app/dev/` and depends on `libCommon`, `libDb`, plus the ctx modules.
 
 ## Scope
 
@@ -58,7 +58,7 @@ Repos sidestep this — they're regular classes with no `def run` from a parent.
 
 ## Relationship to migrations
 
-- **Flyway migration** (`lib/common/.../db/migration/`): structural (DDL). Versioned, runs in every env.
+- **Flyway migration** (`lib/db/.../db/migration/`): structural (DDL). Versioned, runs in every env.
 - **Dev seed action**: data-only, runs only locally. Idempotency is the action's responsibility.
 
 Fixture rows in a Flyway migration would either ship to production or require env-conditional migrations — neither is pleasant.

@@ -1,13 +1,14 @@
 package com.example.app.integration.tests.notification
 
-import com.example.common.domain.model.NewTypes.{CustomerId, NotificationId}
-import com.example.common.impl.repo.sql.SqlContext
-import com.example.common.test.{IntegrationSpec, TestDb}
-import com.example.customer.fixture.CustomerFixtures
-import com.example.notification.domain.service.repo.NotificationRepo
-import com.example.notification.fixture.NotificationFixtures
-import com.example.notification.impl.service.repo.NotificationRepoMySQLImpl
-import com.example.notification.impl.service.repo.sql.converter.NotificationPEConverter
+import com.example.ctx.customer.fixture.CustomerFixtures
+import com.example.ctx.notification.domain.service.repo.NotificationRepo
+import com.example.ctx.notification.fixture.NotificationFixtures
+import com.example.ctx.notification.impl.service.repo.NotificationRepoMySQLImpl
+import com.example.ctx.notification.impl.service.repo.converter.NotificationPEConverter
+import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
+import com.example.lib.common.test.IntegrationSpec
+import com.example.lib.db.impl.repo.sql.SqlContext
+import com.example.lib.db.test.TestDb
 import zio._
 import zio.test.Assertion._
 import zio.test._

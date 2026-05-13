@@ -30,7 +30,7 @@ Pattern: [`correct-by-construction.md`](patterns/correct-by-construction.md).
 
 ## `module-layout` — three module types: lib, ctx, app
 
-Modules live under `modules/{lib,ctx,app}/`. Each layer has a fixed internal shape. sbt project IDs follow `<layer><CamelCaseName>`. Pattern: [`module-layout.md`](patterns/module-layout.md).
+Modules live under `modules/{lib,ctx,app}/`. Each layer has a fixed internal shape. sbt project IDs follow `<layer><CamelCaseName>`; Scala packages mirror the layer with `com.example.<layer>.<name>.*`. Pattern: [`module-layout.md`](patterns/module-layout.md).
 
 ## `bounded-context` — each context is a 2-module pair with domain/app/impl internals
 
@@ -58,7 +58,7 @@ One `<Entity>Converter` object per entity in `<ctx>/impl/to/converter/`. Hand-wr
 
 ## `newtypes` — domain ids are zio-prelude `Newtype`s, not raw `String`/`Int`
 
-Identifiers (`CustomerId`, `AddressId`, `NotificationId`) flow through the system as typed wrappers — the compiler catches argument swaps, and serialization stays flat (no wrapping objects on the wire). Centralized in `lib/common/.../domain/model/NewTypes.scala`; encodings co-located in `NewTypeEncodings`. Pattern: [`newtypes.md`](patterns/newtypes.md).
+Identifiers (`CustomerId`, `AddressId`, `NotificationId`) flow through the system as typed wrappers — the compiler catches argument swaps, and serialization stays flat (no wrapping objects on the wire). Types live in `lib/common/.../domain/model/NewTypes.scala`; Quill `MappedEncoding`s live with the persistence infra in `lib/db/.../impl/repo/sql/NewTypeEncodings.scala`. Pattern: [`newtypes.md`](patterns/newtypes.md).
 
 ## `smart-constructors` — validated value objects use `sealed abstract case class Foo private (...)`
 
@@ -76,13 +76,13 @@ Configurable values — anything an operator is meant to tune per env — live i
 
 ---
 
-## `pe-layout` — persistence entities live with their owning ctx, not in lib
+## `db-lib` — the schema is one schema; `lib/db` owns it
 
-PEs (`<Entity>PE`) live in `<ctx>/impl/service/repo/sql/entity/`, alongside the repo impl that uses them. They don't leak past `impl/` — repo trait signatures use domain types only. Genuinely cross-cutting PEs (audit log, outbox) go in `lib/common/impl/repo/sql/entity/`. Pattern: [`persistence.md`](patterns/persistence.md).
+The deployment has one MySQL schema, applied as one Flyway migration set, and consumed by every ctx that needs a repo. `lib/db` is the module that owns it: migrations, PEs (`<Entity>PE`), DbSchema traits, `SqlContext`, `Transactor`, `DataSourceLayer`, `NewTypeEncodings`. Ctxes depend on `libDb` and import PEs by name; a foreign-table read is an ordinary library import. Pattern: [`persistence.md`](patterns/persistence.md).
 
 ## `pe-converters` — PE ↔ domain mapping in dedicated converter objects
 
-Mirrors `to-converters` for the persistence boundary. One `<Entity>PEConverter` object per PE in `<ctx>/impl/service/repo/sql/converter/`. Methods named `to<Entity>` and `to<Entity>PE`. Pattern: [`persistence.md`](patterns/persistence.md).
+Mirrors `to-converters` for the persistence boundary. One `<Entity>PEConverter` object per PE in `<ctx>/impl/service/repo/converter/`. Methods named `to<Entity>` and `to<Entity>PE`. Pattern: [`persistence.md`](patterns/persistence.md).
 
 ## `tx-default` — repo methods open transactions; app services may wrap
 

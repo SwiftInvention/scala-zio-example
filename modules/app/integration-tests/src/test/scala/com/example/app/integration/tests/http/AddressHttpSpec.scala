@@ -1,12 +1,12 @@
 package com.example.app.integration.tests.http
 
 import com.example.app.integration.tests.TestServer
-import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
-import com.example.common.impl.http.ErrorTO
-import com.example.common.impl.repo.sql.SqlContext
-import com.example.common.test.IntegrationSpec
-import com.example.customer.api.to.AddressTO
-import com.example.customer.fixture.{AddressFixtures, CustomerFixtures}
+import com.example.ctx.customer.api.to.AddressTO
+import com.example.ctx.customer.fixture.{AddressFixtures, CustomerFixtures}
+import com.example.lib.common.domain.model.NewTypes.{AddressId, CustomerId}
+import com.example.lib.common.impl.http.ErrorTO
+import com.example.lib.common.test.IntegrationSpec
+import com.example.lib.db.impl.repo.sql.SqlContext
 import zio._
 import zio.http._
 import zio.test.Assertion._

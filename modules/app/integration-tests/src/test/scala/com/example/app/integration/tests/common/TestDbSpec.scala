@@ -1,10 +1,11 @@
 package com.example.app.integration.tests.common
 
-import com.example.common.impl.repo.sql.SqlContext
-import com.example.common.test.{IntegrationSpec, TestDb}
-import com.example.customer.domain.service.repo.CustomerRepo
-import com.example.customer.fixture.CustomerFixtures
-import com.example.customer.impl.service.repo.CustomerRepoMySQLImpl
+import com.example.ctx.customer.domain.service.repo.CustomerRepo
+import com.example.ctx.customer.fixture.CustomerFixtures
+import com.example.ctx.customer.impl.service.repo.CustomerRepoMySQLImpl
+import com.example.lib.common.test.IntegrationSpec
+import com.example.lib.db.impl.repo.sql.SqlContext
+import com.example.lib.db.test.TestDb
 import zio._
 import zio.test.Assertion._
 import zio.test._

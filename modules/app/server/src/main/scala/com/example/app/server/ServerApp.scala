@@ -1,7 +1,7 @@
 package com.example.app.server
 
 import com.example.app.server.config.ServerConfig
-import com.example.common.impl.logging.AppLogger
+import com.example.lib.common.impl.logging.AppLogger
 import zio._
 import zio.http.Server
 

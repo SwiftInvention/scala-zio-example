@@ -10,15 +10,16 @@ modules/
 └── app/<name>/        deployment unit (composition root + entrypoint)
 ```
 
-sbt project IDs follow `<layer><CamelCaseName>`:
+sbt project IDs follow `<layer><CamelCaseName>`; Scala packages mirror the layer with `com.example.<layer>.<name>.*`:
 
-| Folder                          | sbt ID                |
-| ------------------------------- | --------------------- |
-| `modules/lib/common`            | `libCommon`           |
-| `modules/ctx/customer`          | `ctxCustomer`         |
-| `modules/ctx/customer-api`      | `ctxCustomerApi`      |
-| `modules/app/server`            | `appServer`           |
-| `modules/app/integration-tests` | `appIntegrationTests` |
+| Folder                          | sbt ID                | Package root                     |
+| ------------------------------- | --------------------- | -------------------------------- |
+| `modules/lib/common`            | `libCommon`           | `com.example.lib.common.*`       |
+| `modules/lib/db`                | `libDb`               | `com.example.lib.db.*`           |
+| `modules/ctx/customer`          | `ctxCustomer`         | `com.example.ctx.customer.*`     |
+| `modules/ctx/customer-api`      | `ctxCustomerApi`      | `com.example.ctx.customer.api.*` |
+| `modules/app/server`            | `appServer`           | `com.example.app.server.*`       |
+| `modules/app/integration-tests` | `appIntegrationTests` | `com.example.app.integration.tests.*` |
 
 ## Lib internal structure
 
@@ -35,8 +36,7 @@ No `app/` — libs don't have an application surface. Same `domain` / `impl` spl
 - `domain/error/AppFailure.scala` — base error class
 - `domain/model/Types.scala` — effect aliases (`AppIO`, `AppRIO`)
 - `domain/model/NewTypes.scala` — cross-cutting newtype IDs
-- `domain/service/Transactor.scala` — transaction-boundary trait
-- `impl/repo/sql/` — Quill context, datasource, encodings
+- `domain/service/DbProbe.scala` — readiness-probe trait (impl in `lib/db`)
 - `impl/config/` — config bootstrap
 - `impl/telemetry/AppTracing.scala` — OTLP exporter wiring
 - `impl/http/server/` — operational routes, request middleware
@@ -44,6 +44,8 @@ No `app/` — libs don't have an application surface. Same `domain` / `impl` spl
 - `impl/http/{ApiFailure,ErrorTO}.scala` — wire-format error plumbing
 
 HTTP server + client adapters live under `impl/http/`. The wire-format error types (`ApiFailure`, `ErrorTO`) sit at the top of `impl/http/`; `HttpError` (the status-code mixin on every `AppFailure`) lives in `domain/error/` because every typed error mixes it in at the type level.
+
+`lib/db` is the shared persistence module — `SqlContext`, `Transactor` + impl, `DataSourceLayer`, `NewTypeEncodings`, every PE and DbSchema, the Flyway migrations under `src/main/resources/`. Ctxes depend on it for the PE types their repos query. See [`persistence.md`](persistence.md).
 
 ## App internal structure
 

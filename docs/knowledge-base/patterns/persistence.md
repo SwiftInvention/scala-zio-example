@@ -4,38 +4,52 @@ Quill + MySQL + Flyway, with explicit transaction boundaries.
 
 ## Layout
 
+`lib/db` is the shared persistence module: one schema for the whole deployment, plus the infrastructure that talks to it — migrations, PEs, DbSchema traits, `SqlContext`, `DataSourceLayer`, `Transactor` + impl, `NewTypeEncodings`.
+
 ```text
-modules/lib/common/src/main/scala/com/example/common/
+modules/lib/db/src/main/scala/com/example/lib/db/
 ├── domain/service/
-│   └── Transactor.scala                 trait — transaction boundary
+│   └── Transactor.scala                  trait — transaction boundary
 └── impl/
     ├── repo/sql/
-    │   ├── DataSourceConfig.scala       typed DB config (PureConfig case class + layer)
-    │   ├── DataSourceLayer.scala        Hikari pool from DataSourceConfig
+    │   ├── DataSourceConfig.scala        typed DB config (PureConfig case class + layer)
+    │   ├── DataSourceLayer.scala         Hikari pool from DataSourceConfig
     │   ├── SqlContext.scala              Quill JDBC context + encodings
-    │   └── NewTypeEncodings.scala       MappedEncodings for Newtype ids
+    │   ├── NewTypeEncodings.scala        MappedEncodings for Newtype ids
+    │   ├── schema/
+    │   │   └── <Name>DbSchema.scala      Quill querySchema declarations per table
+    │   └── entity/
+    │       └── <Name>PE.scala            case class mirroring the table
     └── service/
-        └── TransactorQuillImpl.scala    Transactor impl
+        ├── TransactorQuillImpl.scala     Transactor impl
+        └── DbProbeQuillImpl.scala        DbProbe impl — SELECT 1 against SqlContext
 
-modules/lib/common/src/main/resources/
+modules/lib/db/src/main/resources/
 └── db/migration/
-    └── V<date>.<seq>__<name>.sql        Flyway-versioned migrations (applied out-of-process)
+    └── V<date>.<seq>__<name>.sql         Flyway-versioned migrations (applied out-of-process)
 
-modules/ctx/<name>/src/main/scala/com/example/<name>/impl/service/repo/
-├── <Name>RepoMySQLImpl.scala            MySQL impl (per impl-suffix rule)
-└── sql/
-    ├── <Name>DbSchema.scala             trait: querySchema for the table(s)
-    ├── entity/
-    │   └── <Name>PE.scala               case class mirroring the table
+modules/ctx/<name>/src/main/scala/com/example/ctx/<name>/
+├── domain/service/repo/
+│   └── <Name>Repo.scala                  repo trait — domain types only
+└── impl/service/repo/
+    ├── <Name>RepoMySQLImpl.scala         MySQL impl (per impl-suffix rule)
     └── converter/
-        └── <Name>PEConverter.scala      PE ↔ domain mapping
+        └── <Name>PEConverter.scala       PE ↔ domain mapping
 ```
 
-The `sql/` package and `SqlContext` name are dialect-agnostic by design: switching MySQL for Postgres later is a one-line change in the Quill base trait the context extends, not a rename across every ctx.
+The `sql/` package and `SqlContext` name are dialect-agnostic — `MySQLImpl` is the dialect-specific suffix on the repo impl, the rest is portable.
+
+## PE ownership
+
+The schema is one schema. Migrations apply as one batch; PEs are the in-Scala mirror of that batch. A foreign-table consumer imports the PE from `lib/db` like any other library type.
+
+What `lib/db` ships: PEs (data shapes), DbSchema traits (Quill `querySchema` declarations), and the infrastructure to run queries. It has no awareness of any ctx's domain.
+
+What each ctx keeps: the repo trait (signatures in domain types), the repo impl (queries against PEs + conversion), the `<Name>PEConverter`. The converter stays in the ctx because it's the only place both the PE and the domain entity are visible.
 
 ## Migrations
 
-**Location:** `lib/common/src/main/resources/db/migration/`, not `app/server`. Any future deployment unit (worker, sync-job, batch) will share the same schema; pinning migrations to one unit forces every other unit to depend on it just for the SQL files.
+**Location:** `lib/db/src/main/resources/db/migration/`.
 
 **Filename:** `V<date>.<seq>__<snake_case_name>.sql`. Lexicographic order ⇒ chronological order, and the date prefix avoids merge conflicts on the version counter.
 
@@ -57,39 +71,29 @@ The local workflow is `local-infra-up` → `db-migrate` → `run`, with each ste
 
 ## PE shape vs domain shape
 
-`<Entity>PEConverter` is the projection between domain and persistence. Domain types stay at the domain; PEs match the schema's column shape (which may diverge from the domain — denormalized fields, computed columns, audit metadata). Pulling smart-constructed domain types like `Email` into the PE creates conflicts the schema can't accommodate; the converter handles the flattening on the way out and the parse on the way in. See [`correct-by-construction.md`](correct-by-construction.md#domain-types-stay-at-the-domain) for the principle.
-
-## PE ownership (the `pe-layout` principle)
-
-PEs default to the ctx whose repo owns the table — `customer/impl/service/repo/sql/entity/CustomerPE.scala`, not `lib/common`.
-
-Rationale: centralizing PEs in `lib/common` would mean the lib layer knows every context's persistence shape, breaking bounded-context separation. The ctx-local default also fails loudly when boundaries are wrong — a cross-ctx PE import becomes visible in the build graph rather than disappearing into a shared bag.
-
-When two contexts genuinely read the same table:
-
-1. **Cross-ctx import** — the reading ctx imports the owning ctx's PE. Cheapest, fine for occasional sharing.
-2. **Local projection** — the reading ctx defines its own PE for the projection it cares about. Useful when the two contexts read different column subsets or want different field types.
-3. **Promote to lib** — only for entities owned by no single ctx (audit log, outbox). Goes in `lib/common/impl/repo/sql/entity/`.
-
-PEs never leave `impl/`. Repo trait signatures use domain types; PE→domain conversion happens in the repo method body via `<Entity>PEConverter`. This is enforced by import direction (the `import-direction` principle) plus the fact that domain-layer files have no reason to import anything from `impl/`.
+`<Entity>PEConverter` is the projection between domain and persistence. Domain types stay at the domain; PEs match the schema's column shape (which may diverge from the domain — denormalized fields, computed columns, audit metadata). Pulling smart-constructed domain types like `Email` into the PE creates conflicts the schema can't accommodate; the converter handles the flattening on the way out and the parse on the way in.
 
 ## DbSchema mixin
 
-`<Name>DbSchema` is a trait holding the Quill `querySchema` declarations for that ctx's tables. The repo impl mixes it in:
+`<Name>DbSchema` is a trait holding the Quill `querySchema` declarations for one table. The repo impl mixes it in:
 
 ```scala
+// lib/db/.../impl/repo/sql/schema/CustomerDbSchema.scala
 trait CustomerDbSchema {
   val ctx: SqlContext
   import ctx._
   protected val customerTable = quote(querySchema[CustomerPE]("customer"))
 }
 
+// ctx/customer/.../impl/service/repo/CustomerRepoMySQLImpl.scala
 final class CustomerRepoMySQLImpl(val ctx: SqlContext, transactor: Transactor)
     extends CustomerRepo
     with CustomerDbSchema { ... }
 ```
 
-Splitting the schema out of the impl keeps the impl focused on query logic and makes the table-name source obvious. With `SnakeCase` naming on the context, the explicit `("customer")` is only needed when the on-disk name diverges from the type name minus the `PE` suffix.
+Splitting the schema out of the impl keeps the impl focused on query logic and makes the table-name source obvious. With `SnakeCase` naming on the context, the explicit `("customer")` is only required when the on-disk name diverges from the type name minus the `PE` suffix.
+
+A ctx querying multiple tables (its own + a foreign one for a join) mixes in multiple `DbSchema` traits.
 
 ## The `Transactor` (and the `tx-default` principle)
 
@@ -118,12 +122,12 @@ def transferCredits(from: CustomerId, to: CustomerId, amount: Int): AppIO[Unit] 
   }
 ```
 
-The inner `withTransaction` calls in the repo methods become no-ops (Quill's `transaction` is reentrant on a fiber-local connection — the inner block sees the outer's connection and doesn't open a new SQL transaction).
+Quill's `transaction` is reentrant on the fiber-local connection, so the inner `withTransaction` calls join the outer scope rather than opening a new SQL transaction.
 
-**Why both layers, not just one:**
+Roles of each layer:
 
 - Repos always wrap → consistent isolation guarantee for any repo call, not just orchestrated ones.
-- App services may wrap → atomicity across multiple repos is expressible at the layer that owns the orchestration. No need to push multi-step business logic down into the repo.
+- App services may wrap → atomicity across multiple repos is expressible at the layer that owns the orchestration, without pushing multi-step business logic down into the repo.
 
 ## Error translation
 
@@ -135,26 +139,24 @@ The chain is:
 4. `Transactor.withTransaction` runs Quill's `transaction`, which widens back to `Throwable`. A total `mapError` narrows: `AppFailure` passes through, `SQLException` becomes `DbError`, anything else becomes `InternalServerError`.
 5. Route renders `AppFailure` as `ErrorTO`.
 
+## Readiness probe
+
+`DbProbe` (trait in `lib/common/domain/service/`, impl `DbProbeQuillImpl` in `lib/db/impl/service/`) exposes a single-round-trip reachability check. `HealthRoutes` (in `lib/common`) consumes the trait for `/ready`. Since `lib/db` depends on `lib/common`, the trait has to live in `lib/common` — placing it in `lib/db` would close a cycle.
+
 ## Wiring
 
 ```text
 ConfigBootstrap.layer  → DataSourceConfig.layer
                           → DataSourceLayer.layer
                             → SqlContext.layer
-                              → TransactorQuillImpl.layer
-                                → <Ctx>RepoMySQLImpl.layer → ...
+                              ├─→ TransactorQuillImpl.layer
+                              │     → <Ctx>RepoMySQLImpl.layer → ...
+                              └─→ DbProbeQuillImpl.layer
+                                    → HealthRoutes.layer
 ```
 
 `DataSourceLayer` is a thin Hikari constructor over a typed `DataSourceConfig` — see [`config.md`](config.md) for the typed-config pattern. Migrations are applied out-of-process; the server assumes the schema is in place when it starts.
 
 ## Local dev
 
-```sh
-just local-infra-up                  # MySQL + Jaeger containers, blocks until healthy
-just db-migrate                # apply Flyway migrations
-just run                       # server in foreground
-just start-fresh-local-server  # local-infra-reset + db-migrate + seed + run, all in one
-just local-infra-reset               # wipe + restart (drops the MySQL volume; re-run db-migrate after)
-```
-
-Connection config lives in `app/server/src/main/resources/application-local.conf` (gitignored, copied from `application-local.conf.example` on `just initial-setup`). Default targets `localhost:3306/localDatabase` with `localUser`/`localPassword`, matching `docker-compose.yml`. See [`config.md`](config.md) for the broader config pattern.
+Connection config lives in `app/server/src/main/resources/application-local.conf`. Default targets `localhost:3306/localDatabase` with `localUser`/`localPassword`, matching `docker-compose.yml`. See [`commands.md`](../commands.md) for the local infra / migrate / run recipes, and [`config.md`](config.md) for the broader config pattern.

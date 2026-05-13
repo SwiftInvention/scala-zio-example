@@ -1,7 +1,7 @@
 package com.example.app.integration.tests.http
 
 import com.example.app.integration.tests.TestServer
-import com.example.common.test.IntegrationSpec
+import com.example.lib.common.test.IntegrationSpec
 import zio._
 import zio.http._
 import zio.test.Assertion._

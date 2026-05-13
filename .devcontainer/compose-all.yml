@@ -92,7 +92,7 @@ services:
       MYSQL_PASSWORD: "localPassword"
       MYSQL_ROOT_PASSWORD: "localPassword"
     volumes:
-      - ../modules/lib/common/src/main/resources/db/migration:/docker-entrypoint-initdb.d:ro
+      - ../modules/lib/db/src/main/resources/db/migration:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: mysql -h localhost -P 3306 --protocol=tcp -u $$MYSQL_USER --password=$$MYSQL_PASSWORD $$MYSQL_DATABASE -e 'SELECT 1'
       interval: 3s

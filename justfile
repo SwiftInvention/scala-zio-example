@@ -228,14 +228,14 @@ local-infra-reset:
   docker compose down -v mysql jaeger
   just local-infra-up
 
-# apply Flyway migrations to local MySQL (uses lib/common/.../db/migration). `MYSQL_HOST` comes from .env (localhost on host, mysql in the devcontainer).
+# apply Flyway migrations to local MySQL (uses lib/db/.../db/migration). `MYSQL_HOST` comes from .env (localhost on host, mysql in the devcontainer).
 [group('dev infra')]
 db-migrate:
   flyway \
     -url="jdbc:mysql://${MYSQL_HOST}:3306/localDatabase" \
     -user=localUser \
     -password=localPassword \
-    -locations="filesystem:modules/lib/common/src/main/resources/db/migration" \
+    -locations="filesystem:modules/lib/db/src/main/resources/db/migration" \
     migrate
 
 # ── Test infra ────────────────────────────────────────────────────────────────
@@ -263,7 +263,7 @@ test-db-migrate:
     -url="jdbc:mysql://localhost:3307/localDatabase" \
     -user=localUser \
     -password=localPassword \
-    -locations="filesystem:modules/lib/common/src/main/resources/db/migration" \
+    -locations="filesystem:modules/lib/db/src/main/resources/db/migration" \
     migrate
 
 # ── Docker ────────────────────────────────────────────────────────────────────

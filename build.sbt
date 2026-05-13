@@ -21,8 +21,8 @@ lazy val commonSettings = Seq(
 
 // ── lib ─────────────────────────────────────────────────────
 
-// libCommon holds every cross-cutting concern: effects/errors/ids/config/persistence/telemetry, plus the HTTP
-// infrastructure (typed-Endpoint wire format `ApiFailure`, operational probes `HealthEndpoints`/`HealthRoutes`,
+// libCommon holds cross-cutting concerns that aren't database-specific: effects/errors/ids/config/telemetry, plus the
+// HTTP infrastructure (typed-Endpoint wire format `ApiFailure`, operational probes `HealthEndpoints`/`HealthRoutes`,
 // shared middleware `RequestLogging`/`RequestTracing`, and the outbound `AppHttpClient`). `ctxCustomerApi` and
 // `ctxNotificationApi` only import wire-contract pieces; nothing forces them to reach into server-side code, and
 // transitively pulling `zio-http`'s classpath is an acceptable cost given the alternative (a second shared lib).
@@ -30,10 +30,20 @@ lazy val libCommon = (project in file("modules/lib/common"))
   .settings(commonSettings)
   .settings(
     libraryDependencies ++=
-      zioCoreDep ++ zioPreludeDep ++ zioSchemaDep ++ enumeratumDep ++ dbDep ++ pureconfigDep ++ loggingDep ++
+      zioCoreDep ++ zioPreludeDep ++ zioSchemaDep ++ enumeratumDep ++ pureconfigDep ++ loggingDep ++
         telemetryDep ++ zioHttpDep,
     excludeDependencies ++= logExcludeDep
   )
+
+// libDb owns the shared MySQL schema and the persistence infrastructure that sits on it: `Transactor` + impl,
+// `SqlContext`, `DataSourceLayer`, all PEs and DbSchema traits, NewType encodings, and the Flyway migrations under
+// `src/main/resources/db/migration/`. The DB is one schema for the whole deployment, and centralizing it here means
+// cross-ctx reads of foreign PEs are an ordinary import rather than a special case. `DbProbe` (defined in libCommon)
+// is implemented here as `SqlDbProbe`.
+lazy val libDb = (project in file("modules/lib/db"))
+  .dependsOn(libCommon % "compile->compile;test->test")
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= zioCoreDep ++ dbDep)
 
 // ── ctx: customer ───────────────────────────────────────────
 
@@ -43,7 +53,7 @@ lazy val ctxCustomerApi = (project in file("modules/ctx/customer-api"))
   .settings(libraryDependencies ++= zioCoreDep)
 
 lazy val ctxCustomer = (project in file("modules/ctx/customer"))
-  .dependsOn(libCommon % "compile->compile;test->test", ctxCustomerApi)
+  .dependsOn(libCommon % "compile->compile;test->test", libDb % "compile->compile;test->test", ctxCustomerApi)
   .settings(commonSettings)
   .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ dbDep)
 
@@ -61,7 +71,12 @@ lazy val ctxNotificationApi = (project in file("modules/ctx/notification-api"))
 // ctxNotification depends on ctxCustomerApi: notification's app service composes a customer existence check + recipient
 // enrichment via `CustomerApi`. This is the only cross-context coupling — at the impl layer, against the api contract.
 lazy val ctxNotification = (project in file("modules/ctx/notification"))
-  .dependsOn(libCommon % "compile->compile;test->test", ctxNotificationApi, ctxCustomerApi)
+  .dependsOn(
+    libCommon % "compile->compile;test->test",
+    libDb     % "compile->compile;test->test",
+    ctxNotificationApi,
+    ctxCustomerApi
+  )
   .settings(commonSettings)
   .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ dbDep)
 
@@ -69,7 +84,7 @@ lazy val ctxNotification = (project in file("modules/ctx/notification"))
 
 lazy val appServer = (project in file("modules/app/server"))
   .enablePlugins(BuildInfoPlugin, JavaAppPackaging, DockerPlugin)
-  .dependsOn(libCommon, ctxCustomerApi, ctxCustomer, ctxNotificationApi, ctxNotification)
+  .dependsOn(libCommon, libDb, ctxCustomerApi, ctxCustomer, ctxNotificationApi, ctxNotification)
   .settings(commonSettings)
   .settings(buildInfoSettings)
   .settings(dockerSettings)
@@ -86,7 +101,7 @@ lazy val appServer = (project in file("modules/app/server"))
 // layer stack but never need to run in a deployed environment.
 
 lazy val appDev = (project in file("modules/app/dev"))
-  .dependsOn(libCommon, ctxCustomerApi, ctxCustomer, ctxNotificationApi, ctxNotification)
+  .dependsOn(libCommon, libDb, ctxCustomerApi, ctxCustomer, ctxNotificationApi, ctxNotification)
   .settings(commonSettings)
   .settings(
     publish / skip      := true,
@@ -104,6 +119,7 @@ lazy val appIntegrationTests = (project in file("modules/app/integration-tests")
   .dependsOn(
     appServer,
     libCommon       % "test->test",
+    libDb           % "test->test",
     ctxCustomer     % "test->test",
     ctxNotification % "test->test"
   )
@@ -118,6 +134,7 @@ lazy val appIntegrationTests = (project in file("modules/app/integration-tests")
 lazy val root = (project in file("."))
   .aggregate(
     libCommon,
+    libDb,
     ctxCustomerApi,
     ctxCustomer,
     ctxNotificationApi,

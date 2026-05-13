@@ -1,21 +1,22 @@
 package com.example.app.integration.tests
 
 import com.example.app.server.ServerRoutes
-import com.example.common.domain.service.Transactor
-import com.example.common.impl.config.{OtelConfig, OtelTracing}
-import com.example.common.impl.http.server.HealthRoutes
-import com.example.common.impl.repo.sql.SqlContext
-import com.example.common.impl.telemetry.AppTracing
-import com.example.common.test.TestDb
-import com.example.customer.app.CustomerAppServiceImpl
-import com.example.customer.impl.CustomerApiDirectImpl
-import com.example.customer.impl.http.CustomerRoutes
-import com.example.customer.impl.service.repo.{AddressRepoMySQLImpl, CustomerRepoMySQLImpl}
-import com.example.customer.impl.service.{AddressServiceImpl, CustomerServiceImpl}
-import com.example.notification.app.NotificationAppServiceImpl
-import com.example.notification.impl.http.NotificationRoutes
-import com.example.notification.impl.service.NotificationServiceImpl
-import com.example.notification.impl.service.repo.NotificationRepoMySQLImpl
+import com.example.ctx.customer.app.CustomerAppServiceImpl
+import com.example.ctx.customer.impl.CustomerApiDirectImpl
+import com.example.ctx.customer.impl.http.CustomerRoutes
+import com.example.ctx.customer.impl.service.repo.{AddressRepoMySQLImpl, CustomerRepoMySQLImpl}
+import com.example.ctx.customer.impl.service.{AddressServiceImpl, CustomerServiceImpl}
+import com.example.ctx.notification.app.NotificationAppServiceImpl
+import com.example.ctx.notification.impl.http.NotificationRoutes
+import com.example.ctx.notification.impl.service.NotificationServiceImpl
+import com.example.ctx.notification.impl.service.repo.NotificationRepoMySQLImpl
+import com.example.lib.common.impl.config.{OtelConfig, OtelTracing}
+import com.example.lib.common.impl.http.server.HealthRoutes
+import com.example.lib.common.impl.telemetry.AppTracing
+import com.example.lib.db.domain.service.Transactor
+import com.example.lib.db.impl.repo.sql.SqlContext
+import com.example.lib.db.impl.service.DbProbeQuillImpl
+import com.example.lib.db.test.TestDb
 import zio._
 import zio.http._
 import zio.schema.Schema
@@ -116,6 +117,7 @@ object TestServer {
       NotificationAppServiceImpl.layer,
       NotificationRoutes.layer,
       // ── operational ──
+      DbProbeQuillImpl.layer,
       HealthRoutes.layer,
       // ── route composition ──
       ServerRoutes.layer

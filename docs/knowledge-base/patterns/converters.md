@@ -16,10 +16,10 @@ The converter is also the place where smart-constructed domain types (`Email`, `
 ## Shape
 
 ```scala
-package com.example.customer.impl.to.converter
+package com.example.ctx.customer.impl.to.converter
 
-import com.example.customer.api.to.CustomerTO
-import com.example.customer.domain.model.Customer
+import com.example.ctx.customer.api.to.CustomerTO
+import com.example.ctx.customer.domain.model.Customer
 
 object CustomerConverter {
   def toCustomerTO(d: Customer): CustomerTO =
@@ -37,7 +37,7 @@ Method names are entity-qualified: `to<Entity>TO` for domain → TO, `to<Entity>
 Either qualified or imported:
 
 ```scala
-import com.example.customer.impl.to.converter.CustomerConverter._
+import com.example.ctx.customer.impl.to.converter.CustomerConverter._
 
 appService.list.map(_.map(toCustomerTO))                // imported
 appService.list.map(_.map(CustomerConverter.toCustomerTO))  // qualified

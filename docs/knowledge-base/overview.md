@@ -10,7 +10,8 @@ The example domain is intentionally thin — two bounded contexts where one call
 
 | Folder                         | sbt ID               | Role                                                                                       |
 | ------------------------------ | -------------------- | ------------------------------------------------------------------------------------------ |
-| `modules/lib/common`           | `libCommon`          | shared infrastructure (effects, errors, IDs, config, persistence, http server + client)    |
+| `modules/lib/common`           | `libCommon`          | shared infrastructure (effects, errors, IDs, config, telemetry, http server + client)      |
+| `modules/lib/db`               | `libDb`              | shared persistence (schema, PEs, `SqlContext`, `Transactor`, migrations)                   |
 | `modules/ctx/customer-api`     | `ctxCustomerApi`     | customer cross-context contract (trait + TOs)                                              |
 | `modules/ctx/customer`         | `ctxCustomer`        | customer impl (domain, app, infra)                                                         |
 | `modules/ctx/notification-api` | `ctxNotificationApi` | notification cross-context contract (TOs only — no consumer yet)                           |
@@ -43,7 +44,7 @@ One outbound `zio.http.Client` is wired by `AppHttpClient.layer` (`lib/common/im
 
 ## Service wiring
 
-`ServerEnv.scala` is the composition root — the only place that sees concrete impls. Four tiers: config (`ConfigBootstrap` → typed `XConfig`s) → infra (datasource, transactor, HTTP client, tracing) → ctx (repo → service → app-service → api → routes) → http server. Adding a new ctx adds a leg to the third tier. Cross-context coupling shows up in the wiring too: notification's app-service requires `CustomerApi`, so `CustomerApiDirectImpl.layer` is provided ahead of `NotificationAppServiceImpl.layer`. See [`patterns/cross-context-call.md`](patterns/cross-context-call.md).
+`ServerEnv.scala` is the composition root — the only place that sees concrete impls. Four tiers: config (`ConfigBootstrap` → typed `XConfig`s) → infra (datasource, transactor, HTTP client, tracing, DB probe) → ctx (repo → service → app-service → api → routes) → http server. Adding a new ctx adds a leg to the third tier. Cross-context coupling shows up in the wiring too: notification's app-service requires `CustomerApi`, so `CustomerApiDirectImpl.layer` is provided ahead of `NotificationAppServiceImpl.layer`. See [`patterns/cross-context-call.md`](patterns/cross-context-call.md).
 
 Config loaded from `application-${APP_ENV}.conf` at boot ([`patterns/config.md`](patterns/config.md)). Migrations apply out-of-process via `just db-migrate`. A service that exists but is never wired is dead code.
 

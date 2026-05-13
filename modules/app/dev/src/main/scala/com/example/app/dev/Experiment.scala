@@ -1,6 +1,6 @@
 package com.example.app.dev
 
-import com.example.common.impl.logging.AppLogger
+import com.example.lib.common.impl.logging.AppLogger
 import zio._
 
 /** A scratchpad for development-time experiments. Edit `experiment` to do the thing you want to try once.

@@ -28,13 +28,15 @@ modules/ctx/<name>/src/main/scala/com/example/<name>/
     ├── service/                     mirrors domain/service/
     │   ├── <Name>ServiceImpl.scala
     │   └── repo/
-    │       └── <Name>RepoImpl.scala
+    │       ├── <Name>RepoMySQLImpl.scala  queries PE from lib/db, converts via PEConverter
+    │       └── converter/
+    │           └── <Name>PEConverter.scala
     └── http/
         ├── <Name>Endpoints.scala    typed endpoint definitions (wire shape, no behavior)
         └── <Name>Routes.scala       implementations against <Name>Endpoints
 ```
 
-`impl/service/` mirrors `domain/service/` so finding a trait's impl is a mechanical translation. See [`http-endpoints.md`](http-endpoints.md) for how `<Name>Endpoints` definitions feed both the routes and the OpenAPI document.
+`impl/service/` mirrors `domain/service/` so finding a trait's impl is a mechanical translation. PEs and DbSchema traits live in `lib/db` (one schema for the whole deployment — see [`persistence.md`](persistence.md)); the ctx ships the repo impl that queries them and the PE↔domain converter. See [`http-endpoints.md`](http-endpoints.md) for how `<Name>Endpoints` definitions feed both the routes and the OpenAPI document.
 
 ## Layer chain
 

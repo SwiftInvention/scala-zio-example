@@ -37,7 +37,7 @@ Most existing principles are mechanisms for preserving local reasoning at one le
 - **`newtypes`, `smart-constructors`** — types carry validated facts; callers don't re-derive them
 - **`config-shape`** — config is a typed value flowing through the system; nobody reads `Config` ambiently
 - **`tx-default`** — the transaction scope of a method is readable at the method
-- **`pe-layout`** — PEs don't leak; repo signatures are domain types
+- **`db-lib`** — PEs live in the shared `lib/db`; ctx repo signatures are domain types
 
 When you find yourself adding action-at-a-distance, one of these is being violated.
 

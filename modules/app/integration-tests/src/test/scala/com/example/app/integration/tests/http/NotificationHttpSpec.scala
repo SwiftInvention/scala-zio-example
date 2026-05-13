@@ -1,13 +1,13 @@
 package com.example.app.integration.tests.http
 
 import com.example.app.integration.tests.TestServer
-import com.example.common.domain.model.NewTypes.{CustomerId, NotificationId}
-import com.example.common.impl.http.ErrorTO
-import com.example.common.impl.repo.sql.SqlContext
-import com.example.common.test.IntegrationSpec
-import com.example.customer.fixture.CustomerFixtures
-import com.example.notification.api.to.{NotificationCreateRequestTO, NotificationTO, NotificationWithRecipientTO}
-import com.example.notification.fixture.NotificationFixtures
+import com.example.ctx.customer.fixture.CustomerFixtures
+import com.example.ctx.notification.api.to.{NotificationCreateRequestTO, NotificationTO, NotificationWithRecipientTO}
+import com.example.ctx.notification.fixture.NotificationFixtures
+import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
+import com.example.lib.common.impl.http.ErrorTO
+import com.example.lib.common.test.IntegrationSpec
+import com.example.lib.db.impl.repo.sql.SqlContext
 import zio._
 import zio.http._
 import zio.test.Assertion._

@@ -2,15 +2,15 @@ package com.example.app.dev.actions
 
 import java.time.Instant
 
-import com.example.common.domain.model.NewTypes.{CustomerId, NotificationId}
-import com.example.common.domain.model.Types.AppRIO
-import com.example.common.domain.service.Transactor
-import com.example.common.impl.config.ConfigBootstrap
-import com.example.common.impl.logging.AppLogger
-import com.example.common.impl.repo.sql.{DataSourceConfig, DataSourceLayer, SqlContext}
-import com.example.common.impl.service.TransactorQuillImpl
-import com.example.customer.impl.service.repo.sql.entity.CustomerPE
-import com.example.notification.impl.service.repo.sql.entity.NotificationPE
+import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
+import com.example.lib.common.domain.model.Types.AppRIO
+import com.example.lib.common.impl.config.ConfigBootstrap
+import com.example.lib.common.impl.logging.AppLogger
+import com.example.lib.db.domain.service.Transactor
+import com.example.lib.db.impl.repo.sql.entity.{CustomerPE, NotificationPE}
+import com.example.lib.db.impl.repo.sql.schema.{CustomerDbSchema, NotificationDbSchema}
+import com.example.lib.db.impl.repo.sql.{DataSourceConfig, DataSourceLayer, SqlContext}
+import com.example.lib.db.impl.service.TransactorQuillImpl
 import zio._
 
 /** Seeds the example fixtures used by the smoke test: three customers (Ada, Alan, Grace) and a handful of notifications
@@ -72,17 +72,19 @@ object SeedExample extends ZIOAppDefault {
 
   // Quill's `run` collides with `ZIOAppDefault.run`; invoke qualified as `ctx.run(q)`.
   private def insertCustomers(ctx: SqlContext, pes: List[CustomerPE]): AppRIO[Any, Unit] = {
+    val schema = CustomerDbSchema(ctx)
     import ctx.{run => _, _}
     ZIO.foreachDiscard(pes) { pe =>
-      val q = quote(querySchema[CustomerPE]("customer").insertValue(lift(pe)))
+      val q = quote(schema.customerTable.insertValue(lift(pe)))
       ctx.runQuery(ctx.run(q)).unit
     }
   }
 
   private def insertNotifications(ctx: SqlContext, pes: List[NotificationPE]): AppRIO[Any, Unit] = {
+    val schema = NotificationDbSchema(ctx)
     import ctx.{run => _, _}
     ZIO.foreachDiscard(pes) { pe =>
-      val q = quote(querySchema[NotificationPE]("notification").insertValue(lift(pe)))
+      val q = quote(schema.notificationTable.insertValue(lift(pe)))
       ctx.runQuery(ctx.run(q)).unit
     }
   }

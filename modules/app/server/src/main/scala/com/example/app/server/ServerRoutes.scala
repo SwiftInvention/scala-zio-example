@@ -1,10 +1,10 @@
 package com.example.app.server
 
 import com.example.BuildInfo
-import com.example.common.impl.http.server.middleware.{RequestLogging, RequestTracing}
-import com.example.common.impl.http.server.{HealthEndpoints, HealthRoutes}
-import com.example.customer.impl.http.{CustomerEndpoints, CustomerRoutes}
-import com.example.notification.impl.http.{NotificationEndpoints, NotificationRoutes}
+import com.example.ctx.customer.impl.http.{CustomerEndpoints, CustomerRoutes}
+import com.example.ctx.notification.impl.http.{NotificationEndpoints, NotificationRoutes}
+import com.example.lib.common.impl.http.server.middleware.{RequestLogging, RequestTracing}
+import com.example.lib.common.impl.http.server.{HealthEndpoints, HealthRoutes}
 import zio._
 import zio.http._
 import zio.http.codec.PathCodec

@@ -9,26 +9,31 @@ lazy val libCommon = (project in file("modules/lib/common"))
   .settings(commonSettings)
   .settings(libraryDependencies ++= zioCoreDep ++ zioPreludeDep ++ zioJsonDep)
 
+lazy val libDb = (project in file("modules/lib/db"))
+  .dependsOn(libCommon)
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= zioCoreDep ++ dbDep)
+
 lazy val ctxCustomerApi = (project in file("modules/ctx/customer-api"))
   .dependsOn(libCommon)
   .settings(commonSettings)
   .settings(libraryDependencies ++= zioCoreDep ++ zioJsonDep)
 
 lazy val ctxCustomer = (project in file("modules/ctx/customer"))
-  .dependsOn(libCommon, ctxCustomerApi)
+  .dependsOn(libCommon, libDb, ctxCustomerApi)
   .settings(commonSettings)
   .settings(libraryDependencies ++= zioCoreDep ++ zioHttpDep ++ zioJsonDep ++ dbDep)
 
 lazy val appServer = (project in file("modules/app/server"))
-  .dependsOn(libCommon, ctxCustomerApi, ctxCustomer)
+  .dependsOn(libCommon, libDb, ctxCustomerApi, ctxCustomer)
   .settings(...)
 ```
 
 ## Rules
 
-- **Libs depend on libs only.** Never on a ctx or an app.
+- **Libs depend on libs only.** Never on a ctx or an app. Libs may depend on other libs — e.g. `libDb` depends on `libCommon` for `AppFailure` and the newtype ids.
 - **`<ctx>-api` modules** depend only on libs. No ctx impls. No other `-api` modules.
-- **`<ctx>` modules** depend on libs, on their own `<ctx>-api`, and on *other* contexts' `<ctx>-api` (when calling them cross-context). Never on another ctx's impl module.
+- **`<ctx>` modules** depend on libs (`libCommon` + `libDb` if they have a repo), on their own `<ctx>-api`, and on *other* contexts' `<ctx>-api` (when calling them cross-context). Never on another ctx's impl module.
 - **`<app>` modules** depend on everything they compose: libs, all relevant `-api` modules, all relevant ctx impl modules.
 
 ## Convention-only: `impl → app → domain` import direction

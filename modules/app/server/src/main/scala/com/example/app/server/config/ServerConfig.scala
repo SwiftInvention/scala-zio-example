@@ -1,8 +1,8 @@
 package com.example.app.server.config
 
-import com.example.common.domain.error.AppFailure
-import com.example.common.domain.model.EnvLabel
-import com.example.common.impl.config.ConfigBootstrap
+import com.example.lib.common.domain.error.AppFailure
+import com.example.lib.common.domain.model.EnvLabel
+import com.example.lib.common.impl.config.ConfigBootstrap
 import pureconfig.ConfigReader
 import pureconfig.generic.semiauto.deriveReader
 import zio._

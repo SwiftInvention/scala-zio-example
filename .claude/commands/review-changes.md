@@ -71,7 +71,7 @@ You're reviewing code for adherence to the codebase's documented principles and 
 
 Read the relevant `patterns/<...>.md` for any specific principle you need to disambiguate.
 
-**Principles by slug** (see `architecture-principles.md`): `local-reasoning`, `correct-by-construction`, `module-layout`, `bounded-context`, `import-direction`, `build-deps`, `ctx-api`, `to-converters`, `newtypes`, `smart-constructors`, `errors`, `config-shape`, `pe-layout`, `pe-converters`, `tx-default`, `logging`, `tracing`.
+**Principles by slug** (see `architecture-principles.md`): `local-reasoning`, `correct-by-construction`, `module-layout`, `bounded-context`, `import-direction`, `build-deps`, `ctx-api`, `to-converters`, `newtypes`, `smart-constructors`, `errors`, `config-shape`, `db-lib`, `pe-converters`, `tx-default`, `logging`, `tracing`.
 
 **Style rules by slug** (see `styleguide.md`): `impl-suffix`, `no-package-files`, `final-by-default`, `no-default-args`, `named-args`, `no-null`, `no-var`.
 

@@ -126,7 +126,7 @@ Read first:
 - `docs/knowledge-base/patterns/correct-by-construction.md` — for type-discipline checks.
 - The relevant `patterns/<...>.md` for any specific principle you need to disambiguate.
 
-**Principles by slug**: `local-reasoning`, `correct-by-construction`, `module-layout`, `bounded-context`, `import-direction`, `build-deps`, `ctx-api`, `to-converters`, `newtypes`, `smart-constructors`, `errors`, `config-shape`, `pe-layout`, `pe-converters`, `tx-default`, `logging`. (The slug list lives in `architecture-principles.md`; if that doc adds an entry, add it here too.)
+**Principles by slug**: `local-reasoning`, `correct-by-construction`, `module-layout`, `bounded-context`, `import-direction`, `build-deps`, `ctx-api`, `to-converters`, `newtypes`, `smart-constructors`, `errors`, `config-shape`, `db-lib`, `pe-converters`, `tx-default`, `logging`. (The slug list lives in `architecture-principles.md`; if that doc adds an entry, add it here too.)
 
 **Style rules by slug**: `impl-suffix`, `no-package-files`, `final-by-default`, `no-default-args`, `named-args`, `no-null`, `no-var`.
 

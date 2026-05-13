@@ -35,13 +35,13 @@ The `type CustomerId = CustomerId.Type` alias lets call sites write `CustomerId`
 
 ## Where they live
 
-All `<Entity>Id`s live in `lib/common/.../domain/model/NewTypes.scala` — centralized.
+All `<Entity>Id`s live in `lib/common/.../domain/model/NewTypes.scala` — centralized. Quill `MappedEncoding`s for them live with the rest of the persistence infrastructure in `lib/db/.../impl/repo/sql/NewTypeEncodings.scala`.
 
-Centralizing makes sense for ids specifically because they have no validation logic (a `CustomerId` is whatever the database calls it), and centralization keeps Quill-encoding setup trivially co-located. Validated value objects don't centralize the same way — see [`smart-constructors.md`](smart-constructors.md).
+Centralizing makes sense for ids specifically because they have no validation logic (a `CustomerId` is whatever the database calls it), and one home for both the type and its encoding keeps "adding a new id" a two-line change. Validated value objects don't centralize the same way — see [`smart-constructors.md`](smart-constructors.md).
 
 ## Quill `MappedEncoding`
 
-Quill needs `MappedEncoding[NT, U]` and `MappedEncoding[U, NT]` to read/write a newtype-typed column. For centralized ids, encodings live in `lib/common/.../impl/repo/sql/NewTypeEncodings.scala` and are mixed into `SqlContext`:
+Quill needs `MappedEncoding[NT, U]` and `MappedEncoding[U, NT]` to read/write a newtype-typed column. For centralized ids, encodings live in `lib/db/.../impl/repo/sql/NewTypeEncodings.scala` and are mixed into `SqlContext`:
 
 ```scala
 trait NewTypeEncodings {
