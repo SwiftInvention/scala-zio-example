@@ -76,15 +76,6 @@ Out of scope:
 
 No Scala Steward or Renovate in the loop — deps change by human PR, and the gate covers both initial adds and bumps.
 
-## Vulnerability scanning
-
-Two complementary mechanisms, both CI-only (network-heavy, not part of `precommit-fix`):
-
-- **`sbt-dependency-submission` GitHub Action** submits the resolved dependency graph to GitHub's Dependency Submission API. Dependabot then raises *security alerts* against the Maven coordinates in the graph (alerts surface in the Security tab). One workflow step, no plugin to install. The Scala Center maintains the action[^6].
-- **CVE scanning plugin** ([`nMoncho/sbt-dependency-check`](https://github.com/nMoncho/sbt-dependency-check)) cross-references the resolved graph against NVD + OSS Index. Runs as a CI job, fails the build on findings above a configured severity. Slower than the GitHub submission path; gives us a build-failing gate rather than just an alert.
-
-Both have false-positive tax. Neither catches a malicious package that hasn't been disclosed yet — that's what cooldown + the lockfile are for.
-
 ## CI workflow actions
 
 Actions referenced in `.github/workflows/*.yml` run on the CI runner with access to `GITHUB_TOKEN` and any workflow-scoped secrets — a compromised release can exfiltrate or alter the build. Unlike Maven Central coordinates, GitHub tags aren't immutable: a maintainer (or an attacker with maintainer credentials) can move `@v4.3.1` to point at different code without bumping the version.
@@ -100,12 +91,6 @@ SHAs are immutable; the workflow runs exactly the code reviewed when the pin was
 Coverage: every `uses:` clause across `.github/workflows/` resolves to a SHA. The trailing tag comment is documentation only — GitHub ignores it at run time.
 
 The pin fixes the action's source, not what that source does at run time. An action's body can fetch external resources mid-run — `setup-node` downloads Node binaries from a CDN, `actions/cache` reads and writes a GitHub-managed blob store, container actions pull images that may themselves reference mutable tags. Vetting that runtime behavior is a separate review.
-
-## SBOM
-
-[`sbt-sbom`](https://github.com/sbt/sbt-sbom) emits a CycloneDX SBOM via `sbt appServer/makeBom` (exposed locally as `just sbom`), scoped to `appServer` (the deployable unit). CI runs it on every push to `main` and uploads `modules/app/server/target/server-<version>.bom.json` as a workflow artifact.
-
-The use case: when CVE-N is disclosed against `foo:bar:1.2.3` six months from now, the SBOM archive is a precise per-commit record of what was shipped, queryable via `jq` against any past build.
 
 ## Dependency surface
 
@@ -127,6 +112,12 @@ Two narrow filter sets cover what the plugin can't see through (configured in `b
 
 Each filter entry is documented inline at its declaration site. Adding a new runtime-only dep or umbrella means adding a filter line.
 
+## SBOM
+
+[`sbt-sbom`](https://github.com/sbt/sbt-sbom) emits a CycloneDX SBOM via `sbt appServer/makeBom` (exposed locally as `just sbom`), scoped to `appServer` (the deployable unit). CI runs it on every push to `main` and uploads `modules/app/server/target/server-<version>.bom.json` as a workflow artifact.
+
+The use case: when CVE-N is disclosed against `foo:bar:1.2.3` six months from now, the SBOM archive is a precise per-commit record of what was shipped, queryable via `jq` against any past build.
+
 ## Local development
 
 Two practices that limit blast radius when an AI coding agent runs on a developer machine:
@@ -143,11 +134,9 @@ Two practices that limit blast radius when an AI coding agent runs on a develope
 | No source deps       | convention; no `ProjectRef(uri(...))` anywhere | review catches additions       |
 | Lockfile             | `sbt-dependency-lock` → `build.sbt.lock`       | `dependencyLockCheck` in CI    |
 | Cooldown             | `scripts/deps-cooldown-check.sh`               | `just deps-cooldown` in CI gate |
-| CVE alerts           | `sbt-dependency-submission` action             | Dependabot security tab        |
-| CVE gate             | `sbt-dependency-check` (CI job)                | CI fails on disclosed CVEs     |
 | Action pinning       | full SHA + tag-as-comment in `.github/workflows/` | reviewable in PR diff       |
-| SBOM                 | `sbt-sbom` → `makeBom`                         | CI artifact on `main`          |
 | Dependency surface   | `sbt-explicit-dependencies`                    | `(un)declaredCompileDependenciesTest` in CI |
+| SBOM                 | `sbt-sbom` → `makeBom`                         | CI artifact on `main`          |
 | Sandbox              | `.devcontainer/` + `.sandcat/`                 | see [`devcontainer.md`](devcontainer.md) |
 
 [^1]: [Scala Center: Fixing a Command Injection Vulnerability in sbt](https://www.scala-lang.org/blog/2026/03/31/sbt-security-advisory.html) (March 2026). Covers both the framing quote and CVE-2026-32948.
@@ -155,4 +144,3 @@ Two practices that limit blast radius when an AI coding agent runs on a develope
 [^3]: [GitGuardian — Shai-Hulud 2](https://blog.gitguardian.com/shai-hulud-2/) (November 2025). The Maven Central propagation went through the `org.mvnpm` mirror.
 [^4]: [committing-crimes.com — jitpack.io, Dangerously Simple](https://committing-crimes.com/articles/2024-09-09-jitpack/) (September 2024).
 [^5]: [Sonatype — Namespace Confusion Protection](https://help.sonatype.com/en/namespace-confusion-protection.html).
-[^6]: [scalacenter/sbt-dependency-submission](https://github.com/scalacenter/sbt-dependency-submission).
