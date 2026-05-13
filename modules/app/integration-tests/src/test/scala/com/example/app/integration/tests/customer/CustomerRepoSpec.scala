@@ -1,4 +1,4 @@
-package com.example.it.customer
+package com.example.app.integration.tests.customer
 
 import com.example.common.domain.model.NewTypes.CustomerId
 import com.example.common.impl.repo.sql.SqlContext

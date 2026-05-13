@@ -17,6 +17,7 @@ The example domain is intentionally thin — two bounded contexts where one call
 | `modules/ctx/notification`     | `ctxNotification`    | notification impl; depends on `ctxCustomerApi` for recipient lookup                        |
 | `modules/app/server`           | `appServer`          | deployment unit — composition root + entrypoint                                            |
 | `modules/app/dev`              | `appDev`             | local-only dev tools — `Experiment` scratchpad + one-off `actions/`                        |
+| `modules/app/integration-tests` | `appIntegrationTests` | test-only — integration specs against a real server + ephemeral MySQL schema             |
 
 Module layout: [`patterns/module-layout.md`](patterns/module-layout.md). Cross-module deps: [`patterns/build-deps.md`](patterns/build-deps.md).
 

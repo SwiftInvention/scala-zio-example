@@ -58,11 +58,11 @@ One `<Entity>Converter` object per entity in `<ctx>/impl/to/converter/`. Hand-wr
 
 ## `newtypes` — domain ids are zio-prelude `Newtype`s, not raw `String`/`Int`
 
-Identifiers (`CustomerId`, `OrderId`) flow through the system as typed wrappers — the compiler catches argument swaps, and serialization stays flat (no wrapping objects on the wire). Centralized in `lib/common/.../domain/model/NewTypes.scala`; encodings co-located in `NewTypeEncodings`. Pattern: [`newtypes.md`](patterns/newtypes.md).
+Identifiers (`CustomerId`, `AddressId`, `NotificationId`) flow through the system as typed wrappers — the compiler catches argument swaps, and serialization stays flat (no wrapping objects on the wire). Centralized in `lib/common/.../domain/model/NewTypes.scala`; encodings co-located in `NewTypeEncodings`. Pattern: [`newtypes.md`](patterns/newtypes.md).
 
 ## `smart-constructors` — validated value objects use `sealed abstract case class Foo private (...)`
 
-Values with invariants (`Email`, `Phone`) construct through a smart-constructor `apply` that returns `AppIO[T]` and is the only path to a value. The triple `sealed abstract case class Foo private (...)` is load-bearing: naive `final case class Foo private (...)` leaks validation via the auto-generated `copy()`, so `abstract` is required to suppress it. Construction via `new Foo(...) {}` inside the companion. Value objects live with the owning ctx. Pattern: [`smart-constructors.md`](patterns/smart-constructors.md).
+Values with invariants (`Email`, `CustomerName`, `PostalCode`) construct through a smart-constructor `apply` that returns `AppIO[T]` and is the only path to a value. The triple `sealed abstract case class Foo private (...)` is load-bearing: naive `final case class Foo private (...)` leaks validation via the auto-generated `copy()`, so `abstract` is required to suppress it. Construction via `new Foo(...) {}` inside the companion. Value objects live with the owning ctx. Pattern: [`smart-constructors.md`](patterns/smart-constructors.md).
 
 ## `errors` — typed `AppFailure` channel, no implicit Throwable leakage
 

@@ -1,4 +1,4 @@
-package com.example.it.notification
+package com.example.app.integration.tests.notification
 
 import com.example.common.domain.model.NewTypes.{CustomerId, NotificationId}
 import com.example.common.impl.repo.sql.SqlContext

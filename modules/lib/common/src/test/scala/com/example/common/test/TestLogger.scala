@@ -18,8 +18,9 @@ import zio.logging.{consoleLogger, ConsoleLoggerConfig, LogFilter, LogFormat}
   * reach the test runtime's default-logger set, so default loggers leak through and emit log lines from inside the code
   * under test.
   *
-  * sbt's forked test JVM inherits the parent process's environment by default, so `TEST_LOG_LEVEL=debug sbt it/test`
-  * (or per-spec `sbt "it/testOnly *SpecName"`) propagates the value into the running test JVM without extra plumbing.
+  * sbt's forked test JVM inherits the parent process's environment by default, so `TEST_LOG_LEVEL=debug sbt
+  * appIntegrationTests/test` (or per-spec `sbt "appIntegrationTests/testOnly *SpecName"`) propagates the value into the
+  * running test JVM without extra plumbing.
   */
 object TestLogger {
 

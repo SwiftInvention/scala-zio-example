@@ -68,7 +68,7 @@ test-it level='':
     just test-db-migrate
   fi
   export TEST_LOG_LEVEL='{{ level }}'
-  sbt "dev; it/test"
+  sbt "dev; appIntegrationTests/test"
 
 # lint, check format (warnings as errors). Covers Scala (sbt) + Markdown (markdownlint-cli2).
 [group('dev loop')]

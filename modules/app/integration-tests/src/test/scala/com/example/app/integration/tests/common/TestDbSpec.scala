@@ -1,4 +1,4 @@
-package com.example.it.common
+package com.example.app.integration.tests.common
 
 import com.example.common.impl.repo.sql.SqlContext
 import com.example.common.test.{IntegrationSpec, TestDb}

@@ -1,4 +1,4 @@
-package com.example.it.http
+package com.example.app.integration.tests
 
 import com.example.app.server.ServerRoutes
 import com.example.common.domain.service.Transactor

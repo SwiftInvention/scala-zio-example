@@ -74,9 +74,9 @@ A doc that requires you to chase four links to understand its premise has bad lo
 
 Some kinds of code legitimately need non-local mechanisms:
 
-- Boot-time wiring (the composition root sees everything; that's its job)
-- Cross-cutting infrastructure (logging, tracing — instrumentation by definition spans abstractions)
-- Performance-critical paths where mutation buys real wins (rare; isolate behind interfaces)
-- Pluggable extensibility where the dynamism is the feature
+- Composition roots — see [`composition-roots.md`](composition-roots.md).
+- Cross-cutting infrastructure (logging, tracing — instrumentation by definition spans abstractions).
+- Performance-critical paths where mutation buys real wins (rare; isolate behind interfaces).
+- Pluggable extensibility where the dynamism is the feature.
 
-The judgment: is this code's job to be local-reasonable, or is its job to be the seam where non-local concerns are organized? Composition roots are exempt from local reasoning because they *are* the place where the global view lives.
+The judgment: is this code's job to be local-reasonable, or is its job to be the seam where non-local concerns are organized?

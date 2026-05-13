@@ -12,12 +12,13 @@ modules/
 
 sbt project IDs follow `<layer><CamelCaseName>`:
 
-| Folder                     | sbt ID            |
-| -------------------------- | ----------------- |
-| `modules/lib/common`       | `libCommon`       |
-| `modules/ctx/customer`     | `ctxCustomer`     |
-| `modules/ctx/customer-api` | `ctxCustomerApi`  |
-| `modules/app/server`       | `appServer`       |
+| Folder                          | sbt ID                |
+| ------------------------------- | --------------------- |
+| `modules/lib/common`            | `libCommon`           |
+| `modules/ctx/customer`          | `ctxCustomer`         |
+| `modules/ctx/customer-api`      | `ctxCustomerApi`      |
+| `modules/app/server`            | `appServer`           |
+| `modules/app/integration-tests` | `appIntegrationTests` |
 
 ## Lib internal structure
 
@@ -54,6 +55,8 @@ modules/app/<name>/src/main/scala/com/example/app/<name>/
 ```
 
 `server/` is the canonical example. A future `migrator/` or `worker/` would follow the same shape.
+
+`integration-tests/` is the test-only variant: it ships no `main` sources — just a `src/test/scala/com/example/app/integration/tests/` tree with `TestServer.scala` (the integration composition root) at the top and per-area sub-packages below it (`http/`, `customer/`, `notification/`, `common/`).
 
 ## When to add what
 

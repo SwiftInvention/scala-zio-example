@@ -27,8 +27,8 @@ Per-spec sbt invocations when iterating on a specific spec:
 ```sh
 sbt "ctxCustomer/testOnly *SpecName"
 sbt "ctxCustomer/testOnly *SpecName -- -t \"test name\""
-sbt "it/testOnly *SpecName"                              # integration specs
-TEST_LOG_LEVEL=debug sbt "it/testOnly *SpecName"         # see logs while debugging
+sbt "appIntegrationTests/testOnly *SpecName"                              # integration specs
+TEST_LOG_LEVEL=debug sbt "appIntegrationTests/testOnly *SpecName"         # see logs while debugging
 ```
 
 Integration specs are silent by default; `TEST_LOG_LEVEL=trace|debug|info|warn|error|fatal` enables a pretty console logger at the requested level. The env var inherits into sbt's forked test JVM. See [`patterns/logging.md`](patterns/logging.md#test-runs).

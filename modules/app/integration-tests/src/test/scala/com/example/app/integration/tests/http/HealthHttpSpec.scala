@@ -1,5 +1,6 @@
-package com.example.it.http
+package com.example.app.integration.tests.http
 
+import com.example.app.integration.tests.TestServer
 import com.example.common.test.IntegrationSpec
 import zio._
 import zio.http._

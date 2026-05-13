@@ -1,5 +1,6 @@
-package com.example.it.http
+package com.example.app.integration.tests.http
 
+import com.example.app.integration.tests.TestServer
 import com.example.common.domain.error.api.ErrorTO
 import com.example.common.impl.repo.sql.SqlContext
 import com.example.common.test.IntegrationSpec

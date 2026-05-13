@@ -96,11 +96,11 @@ lazy val appDev = (project in file("modules/app/dev"))
     name := "dev"
   )
 
-// ── app: it (integration tests) ─────────────────────────────
-// Single integration-test project per the sbt 1.9.0+ recommendation
+// ── app: integration-tests ──────────────────────────────────
+// Single integration-test project per the sbt 1.9.0+ recommendation.
 // Assumes infra is up — `just db-up && just db-migrate` runs externally before the test session.
 
-lazy val it = (project in file("modules/app/it"))
+lazy val appIntegrationTests = (project in file("modules/app/integration-tests"))
   .dependsOn(
     appServer,
     libCommon       % "test->test",
@@ -124,7 +124,7 @@ lazy val root = (project in file("."))
     ctxNotification,
     appServer,
     appDev,
-    it
+    appIntegrationTests
   )
   .settings(name := "scala-zio-example")
 

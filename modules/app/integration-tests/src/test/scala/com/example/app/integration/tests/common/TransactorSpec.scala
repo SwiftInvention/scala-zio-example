@@ -1,4 +1,4 @@
-package com.example.it.common
+package com.example.app.integration.tests.common
 
 import com.example.common.domain.error.api.HttpInternalServerError
 import com.example.common.domain.error.backend.BackendErrorReason
