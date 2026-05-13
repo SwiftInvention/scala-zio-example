@@ -2,9 +2,7 @@
 
 ## What this is
 
-A reference template for Scala + ZIO monoliths organized by bounded contexts. Patterns are documented in [`patterns/`](patterns/) and summarized in [`architecture-principles.md`](architecture-principles.md).
-
-The example domain is intentionally thin — two bounded contexts where one calls the other through its `-api` contract — so the patterns are visible without domain noise.
+A reference template for Scala + ZIO monoliths organized by bounded contexts. The example domain is intentionally thin — two bounded contexts where one calls the other through its `-api` contract — so the patterns are visible without domain noise. Specific patterns documented in [`patterns/`](patterns/); principles indexed in [`architecture-principles.md`](architecture-principles.md).
 
 ## Modules
 
@@ -22,47 +20,9 @@ The example domain is intentionally thin — two bounded contexts where one call
 
 Module layout: [`patterns/module-layout.md`](patterns/module-layout.md). Cross-module deps: [`patterns/build-deps.md`](patterns/build-deps.md).
 
-## HTTP server
+## System shape
 
-One zio-http server, started by `ServerApp` (`modules/app/server/.../ServerApp.scala`). Routes are defined via zio-http's typed `Endpoint` API: each context has an `<Name>Endpoints.scala` (pure definitions) plus a `<Name>Routes.scala` (implementations against those endpoints), both colocated in `impl/http/`. The split lets the same `Endpoint` values feed both the running routes and the OpenAPI document. Pattern: [`patterns/http-endpoints.md`](patterns/http-endpoints.md).
-
-Application routes are owned by contexts (`customer/impl/http/`); operational routes (health probes), the typed-Endpoint wire-format errors (`ApiFailure`), and the shared HTTP middleware (`RequestLogging`, `RequestTracing`) live in `lib/common/impl/http/server/`. `ServerApp` instantiates `ServerRoutes` (in `app/server/`), which composes the route graph and aggregates `<Name>Endpoints.all` from each contributor for OpenAPI generation. Host/port from `ServerConfig`.
-
-Application routes get the full middleware chain (tracing, access log, request id). Operational routes (health, ready, docs) are served bare so that probes and doc fetches don't flood traces and access logs.
-
-Operational endpoints:
-
-- `GET /health` — liveness probe; always 200 if the process is up. No DB call. Wire as a k8s `livenessProbe`.
-- `GET /ready` — readiness probe; 200 if the DB is reachable (`SELECT 1`), 503 otherwise. Wire as a k8s `readinessProbe`.
-- `GET /docs` — Swagger UI. The OpenAPI spec is at `/docs/scala-zio-example.json` (filename derived from the title in `ServerRoutes`).
-
-Application endpoint ↔ operation mapping is documented alongside each operation in [`domain.md`](domain.md).
-
-## HTTP client
-
-One outbound `zio.http.Client` is wired by `AppHttpClient.layer` (`lib/common/impl/http/client/`) from typed `HttpClientConfig` (`connection-timeout`, `idle-timeout`). The composition root provides it once; any consumer that needs to call an external HTTP endpoint depends on `Client` and gets the shared instance. Pattern: [`patterns/http-client.md`](patterns/http-client.md).
-
-## Service wiring
-
-`ServerEnv.scala` is the composition root — the only place that sees concrete impls. Four tiers: config (`ConfigBootstrap` → typed `XConfig`s) → infra (datasource, transactor, HTTP client, tracing, DB probe) → ctx (repo → service → app-service → api → routes) → http server. Adding a new ctx adds a leg to the third tier. Cross-context coupling shows up in the wiring too: notification's app-service requires `CustomerApi`, so `CustomerApiDirectImpl.layer` is provided ahead of `NotificationAppServiceImpl.layer`. See [`patterns/cross-context-call.md`](patterns/cross-context-call.md).
-
-Config loaded from `application-${APP_ENV}.conf` at boot ([`patterns/config.md`](patterns/config.md)). Migrations apply out-of-process via `just db-migrate`. A service that exists but is never wired is dead code.
-
-## Dev tools
-
-`appDev` is a separate deployment unit for local-only one-off scripts: data seeding, scratchpad experiments, debugging actions. Each entrypoint (`Experiment.scala`, every action under `actions/`) is its own `ZIOAppDefault` with its own `provide(...)` block — no shared composition root. `SeedExample` is the starter action; it seeds the example customers and notifications used by the smoke test. Local-only by build: `publish / skip := true` keeps the artifact off any deployment. Pattern: [`patterns/dev-tools.md`](patterns/dev-tools.md).
-
-## Devcontainer
-
-`.devcontainer/` + `.sandcat/` configure a VS Code Dev Container that runs the agent (Claude Code) in a network-isolated sandbox (WireGuard tunnel + mitmproxy secret injection). The agent reaches its inline `mysql` and `jaeger` services by name; sbt-driven recipes (`compile`, `test`, `run`, `db-migrate`, `style-*`, `precommit-fix`) work from inside, while host-side infra orchestration (`docker-build`, `local-infra-*`, `test-it`) stays on the host. Pattern: [`patterns/devcontainer.md`](patterns/devcontainer.md).
-
-## Docker
-
-`appServer` packages as a docker image via sbt-native-packager's `DockerPlugin` (`build.sbt`'s `dockerSettings`). One image, env-driven config: `application-dev.conf` and `application-prod.conf` use `${VAR}` substitution, filled by env vars at runtime. Compose-local runs the same image with `APP_ENV=dev` and the substitution vars supplied in `docker-compose.yml`. Pattern: [`patterns/docker-build.md`](patterns/docker-build.md).
-
-## Supply chain
-
-Practices for narrowing the blast radius of a compromised upstream: pinned plugins, lockfile-gated dependency resolution, a custom publish-age cooldown check across main deps + sbt plugins, CVE alerts via the GitHub Dependency Submission API, CycloneDX SBOMs on `main`, and trusted-compute-base hygiene via `sbt-explicit-dependencies`. The build itself is production code: sbt plugins and macros run with full host privileges at compile time. Pattern: [`patterns/supply-chain-security.md`](patterns/supply-chain-security.md).
+A single zio-http server in `ServerApp` routes each request to the contributing ctx's `<Name>Routes`; routes call the ctx's app-service, which orchestrates service calls and any cross-context lookups via `<other-ctx>-api`. The composition root at `appServer/.../ServerEnv.scala` is the only place that sees concrete impls, wiring four tiers: config → infra → ctx → http. Migrations apply out-of-process via the `flyway` CLI.
 
 ## Tech stack
 
