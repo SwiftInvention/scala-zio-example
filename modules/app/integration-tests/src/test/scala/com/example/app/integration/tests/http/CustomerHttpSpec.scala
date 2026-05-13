@@ -1,7 +1,7 @@
 package com.example.app.integration.tests.http
 
 import com.example.app.integration.tests.TestServer
-import com.example.common.domain.error.api.ErrorTO
+import com.example.common.impl.http.ErrorTO
 import com.example.common.impl.repo.sql.SqlContext
 import com.example.common.test.IntegrationSpec
 import com.example.customer.api.to.CustomerTO

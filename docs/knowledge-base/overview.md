@@ -25,7 +25,7 @@ Module layout: [`patterns/module-layout.md`](patterns/module-layout.md). Cross-m
 
 One zio-http server, started by `ServerApp` (`modules/app/server/.../ServerApp.scala`). Routes are defined via zio-http's typed `Endpoint` API: each context has an `<Name>Endpoints.scala` (pure definitions) plus a `<Name>Routes.scala` (implementations against those endpoints), both colocated in `impl/http/`. The split lets the same `Endpoint` values feed both the running routes and the OpenAPI document. Pattern: [`patterns/http-endpoints.md`](patterns/http-endpoints.md).
 
-Application routes are owned by contexts (`customer/impl/http/`); operational routes (health probes), the typed-Endpoint wire-format errors (`ApiFailure`), and the shared HTTP middleware (`RequestLogging`, `RequestTracing`) live in `lib/common/http/server/` so multiple server deployments wire the same probes. `ServerApp` instantiates `ServerRoutes` (in `app/server/`), which composes the route graph and aggregates `<Name>Endpoints.all` from each contributor for OpenAPI generation. Host/port from `ServerConfig`.
+Application routes are owned by contexts (`customer/impl/http/`); operational routes (health probes), the typed-Endpoint wire-format errors (`ApiFailure`), and the shared HTTP middleware (`RequestLogging`, `RequestTracing`) live in `lib/common/impl/http/server/`. `ServerApp` instantiates `ServerRoutes` (in `app/server/`), which composes the route graph and aggregates `<Name>Endpoints.all` from each contributor for OpenAPI generation. Host/port from `ServerConfig`.
 
 Application routes get the full middleware chain (tracing, access log, request id). Operational routes (health, ready, docs) are served bare so that probes and doc fetches don't flood traces and access logs.
 
@@ -39,7 +39,7 @@ Application endpoint ↔ operation mapping is documented alongside each operatio
 
 ## HTTP client
 
-One outbound `zio.http.Client` is wired by `AppHttpClient.layer` (`lib/common/http/client/`) from typed `HttpClientConfig` (`connection-timeout`, `idle-timeout`). The composition root provides it once; any consumer that needs to call an external HTTP endpoint depends on `Client` and gets the shared instance. Pattern: [`patterns/http-client.md`](patterns/http-client.md).
+One outbound `zio.http.Client` is wired by `AppHttpClient.layer` (`lib/common/impl/http/client/`) from typed `HttpClientConfig` (`connection-timeout`, `idle-timeout`). The composition root provides it once; any consumer that needs to call an external HTTP endpoint depends on `Client` and gets the shared instance. Pattern: [`patterns/http-client.md`](patterns/http-client.md).
 
 ## Service wiring
 

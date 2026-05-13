@@ -2,8 +2,8 @@ package com.example.app.integration.tests
 
 import com.example.app.server.ServerRoutes
 import com.example.common.domain.service.Transactor
-import com.example.common.http.server.HealthRoutes
 import com.example.common.impl.config.{OtelConfig, OtelTracing}
+import com.example.common.impl.http.server.HealthRoutes
 import com.example.common.impl.repo.sql.SqlContext
 import com.example.common.impl.telemetry.AppTracing
 import com.example.common.test.TestDb

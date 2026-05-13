@@ -1,7 +1,6 @@
 package com.example.customer.domain.error
 
-import com.example.common.domain.error.api.{HttpBadRequest, HttpError, HttpNotFound}
-import com.example.common.domain.error.{AppFailure, ErrorCategory}
+import com.example.common.domain.error.{AppFailure, ErrorCategory, HttpBadRequest, HttpError, HttpNotFound}
 import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
 import com.example.customer.domain.error.CustomerErrorReason._
 

@@ -4,7 +4,7 @@ Outbound HTTP via `zio.http.Client`. One client is wired at the composition root
 
 ## Wiring
 
-`AppHttpClient.layer` (in `lib/common/http/client/`) consumes typed `HttpClientConfig` and produces `zio.http.Client`:
+`AppHttpClient.layer` (in `lib/common/impl/http/client/`) consumes typed `HttpClientConfig` and produces `zio.http.Client`:
 
 ```text
 HttpClientConfig.layer → HttpClientConfig

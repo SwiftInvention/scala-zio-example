@@ -1,7 +1,13 @@
 package com.example.notification.domain.error
 
-import com.example.common.domain.error.api.{HttpBadRequest, HttpError, HttpInternalServerError, HttpNotFound}
-import com.example.common.domain.error.{AppFailure, ErrorCategory}
+import com.example.common.domain.error.{
+  AppFailure,
+  ErrorCategory,
+  HttpBadRequest,
+  HttpError,
+  HttpInternalServerError,
+  HttpNotFound
+}
 import com.example.common.domain.model.NewTypes.{CustomerId, NotificationId}
 import com.example.notification.domain.error.NotificationErrorReason._
 

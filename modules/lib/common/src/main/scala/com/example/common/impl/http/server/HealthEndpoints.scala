@@ -1,6 +1,6 @@
-package com.example.common.http.server
+package com.example.common.impl.http.server
 
-import com.example.common.http.server.api.ApiFailure
+import com.example.common.impl.http.ApiFailure
 import zio.http._
 import zio.http.endpoint.Endpoint
 

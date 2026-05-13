@@ -1,6 +1,6 @@
 package com.example.customer.impl.http
 
-import com.example.common.http.server.api.ApiFailure
+import com.example.common.impl.http.ApiFailure
 import com.example.customer.api.to.{AddressTO, CustomerTO}
 import zio.http._
 import zio.http.codec.PathCodec

@@ -39,14 +39,15 @@ No `app/` — libs don't have an application surface. Same `domain` / `impl` spl
 - `impl/repo/sql/` — Quill context, datasource, encodings
 - `impl/config/` — config bootstrap
 - `impl/telemetry/AppTracing.scala` — OTLP exporter wiring
-- `http/server/` — operational routes, wire-format `ApiFailure`, request middleware
-- `http/client/` — outbound `Client` layer (`AppHttpClient`)
+- `impl/http/server/` — operational routes, request middleware
+- `impl/http/client/` — outbound `Client` layer (`AppHttpClient`)
+- `impl/http/{ApiFailure,ErrorTO}.scala` — wire-format error plumbing
 
-The `http/` subpackage sits next to `domain/` and `impl/` and holds HTTP transport adapters in both directions.
+HTTP server + client adapters live under `impl/http/`. The wire-format error types (`ApiFailure`, `ErrorTO`) sit at the top of `impl/http/`; `HttpError` (the status-code mixin on every `AppFailure`) lives in `domain/error/` because every typed error mixes it in at the type level.
 
 ## App internal structure
 
-Flat — no subfolders:
+Apps are thin deployment units. Required at the module root:
 
 ```text
 modules/app/<name>/src/main/scala/com/example/app/<name>/
@@ -54,9 +55,9 @@ modules/app/<name>/src/main/scala/com/example/app/<name>/
 └── <Name>Env.scala       layer composition (AppEnv type alias + wiring)
 ```
 
-`server/` is the canonical example. A future `migrator/` or `worker/` would follow the same shape.
+Beyond `App` + `Env`, an app organizes its own files however its deployment shape needs. `server/` adds `ServerRoutes.scala` (route composition feeding OpenAPI) and `config/ServerConfig.scala`. A worker might add a queue handler; a migrator might need nothing else.
 
-`integration-tests/` is the test-only variant: it ships no `main` sources — just a `src/test/scala/com/example/app/integration/tests/` tree with `TestServer.scala` (the integration composition root) at the top and per-area sub-packages below it (`http/`, `customer/`, `notification/`, `common/`).
+`integration-tests/` is the test-only variant: no `main` sources, just `src/test/scala/com/example/app/integration/tests/` with `TestServer.scala` (the integration composition root) at the top and per-area sub-packages below it (`http/`, `customer/`, `notification/`, `common/`).
 
 ## When to add what
 

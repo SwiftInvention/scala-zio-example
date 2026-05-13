@@ -9,7 +9,7 @@ modules/ctx/<name>/src/main/scala/com/example/<name>/impl/to/converter/
 └── <Entity>Converter.scala
 ```
 
-`impl/to/` collects TO-related impl-side concerns (currently just converters; later may grow to validators, custom codecs, etc.). It's the only place that can see both sides — the domain entity (its own module) and the TO (`<name>-api`). See [`ctx-api.md`](ctx-api.md) for why.
+`impl/to/` collects TO-related impl-side concerns (currently just converters; later may grow to validators, custom codecs, etc.). It's the only place that can see both sides — the domain entity (its own module) and the TO (`<name>-api`). See [`cross-context-call.md`](cross-context-call.md) §"The DirectClient impl" for why.
 
 The converter is also the place where smart-constructed domain types (`Email`, `CustomerName`) flatten to wire-side primitives — domain types stay at the domain, TOs serve the wire's own constraints. See [`correct-by-construction.md`](correct-by-construction.md#domain-types-stay-at-the-domain) for the principle.
 

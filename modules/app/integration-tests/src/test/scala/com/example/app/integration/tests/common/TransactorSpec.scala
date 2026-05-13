@@ -1,8 +1,7 @@
 package com.example.app.integration.tests.common
 
-import com.example.common.domain.error.api.HttpInternalServerError
 import com.example.common.domain.error.backend.BackendErrorReason
-import com.example.common.domain.error.{AppFailure, ErrorCategory}
+import com.example.common.domain.error.{AppFailure, ErrorCategory, HttpInternalServerError}
 import com.example.common.domain.model.NewTypes.CustomerId
 import com.example.common.domain.service.Transactor
 import com.example.common.impl.repo.sql.SqlContext

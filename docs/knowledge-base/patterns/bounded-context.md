@@ -7,7 +7,7 @@ ctx/<name>-api/   cross-context contract (trait + TOs)
 ctx/<name>/       implementation
 ```
 
-See [`ctx-api.md`](ctx-api.md) for what lives in the `-api` module.
+See [`cross-context-call.md`](cross-context-call.md) §"The api module: `ctx/<name>-api/`" for what lives in the `-api` module.
 
 ## Internal layout of `ctx/<name>/`
 
@@ -48,7 +48,7 @@ modules/ctx/<name>/src/main/scala/com/example/<name>/
    └─→ <Name>Routes.layer          takes <Name>AppService, exposes Routes[Any, Response]   (HTTP plane)
 ```
 
-`<Name>AppService` is the fan-out point: the cross-context bridge (`<Name>ApiDirectImpl`) and the HTTP routes are sibling consumers, not chained. See [`ctx-api.md`](ctx-api.md#relationship-to-http-routes) for why the HTTP plane bypasses `<Name>Api`.
+`<Name>AppService` is the fan-out point: the cross-context bridge (`<Name>ApiDirectImpl`) and the HTTP routes are sibling consumers, not chained. See [`cross-context-call.md`](cross-context-call.md) §"Routes don't go through the api" for why the HTTP plane bypasses `<Name>Api`.
 
 Each link is a thin pass-through unless it has something to add. Domain services host validation and business rules; AppService orchestrates them. When a link has nothing to add, drop it — AppService can call Repo directly when there's no domain logic worth a Service layer, and `<Name>Service` doesn't need to exist if it would be pure delegation.
 

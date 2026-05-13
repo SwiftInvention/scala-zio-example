@@ -1,4 +1,4 @@
-package com.example.common.domain.error.api
+package com.example.common.impl.http
 
 import com.example.common.domain.error.AppFailure
 import zio.schema.{DeriveSchema, Schema}

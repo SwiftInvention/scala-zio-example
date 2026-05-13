@@ -1,6 +1,6 @@
 package com.example.notification.impl.http
 
-import com.example.common.http.server.api.ApiFailure
+import com.example.common.impl.http.ApiFailure
 import com.example.notification.api.to.{NotificationCreateRequestTO, NotificationTO, NotificationWithRecipientTO}
 import zio.http._
 import zio.http.codec.PathCodec

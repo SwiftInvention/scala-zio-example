@@ -15,11 +15,11 @@ Routes are defined via zio-http's typed `Endpoint` API: each route's wire shape 
 
 `<Name>Endpoints.scala` exports `val all: List[Endpoint[...]]` — the aggregator that `ServerApp` collects for OpenAPI generation. New endpoints get added to `all` at the same time they're defined.
 
-Operational endpoints live in `lib/common/http/server/` (so multiple server deployments can wire them) — same split: `HealthEndpoints` + `HealthRoutes`. The typed-Endpoint wire format (`ApiFailure`) and shared middleware (`RequestLogging`, `RequestTracing`) live next to them for the same reason.
+Operational endpoints live in `lib/common/impl/http/server/` — same split: `HealthEndpoints` + `HealthRoutes`. The typed-Endpoint wire format (`ApiFailure`) and shared middleware (`RequestLogging`, `RequestTracing`) live next to them.
 
 ## Error model: `ApiFailure`
 
-zio-http's Endpoint API binds HTTP status to error type at definition time — different statuses require different value types. The codebase reconciles this with the `AppFailure` family via a small wire-format ADT in `lib/common/http/server/api/ApiFailure.scala`:
+zio-http's Endpoint API binds HTTP status to error type at definition time — different statuses require different value types. The codebase reconciles this with the `AppFailure` family via a small wire-format ADT in `lib/common/impl/http/ApiFailure.scala`:
 
 ```scala
 sealed trait ApiFailure { def body: ErrorTO }

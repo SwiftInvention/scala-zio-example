@@ -1,7 +1,16 @@
 package com.example.common.domain.error.api
 
 import com.example.common.domain.error.api.ApiErrorReason._
-import com.example.common.domain.error.{AppFailure, ErrorCategory}
+import com.example.common.domain.error.{
+  AppFailure,
+  ErrorCategory,
+  HttpBadRequest,
+  HttpError,
+  HttpForbidden,
+  HttpInternalServerError,
+  HttpNotFound,
+  HttpUnauthorized
+}
 
 abstract class ApiError(
     errorReason: ApiErrorReason,

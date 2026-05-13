@@ -1,4 +1,4 @@
-package com.example.common.http.server.middleware
+package com.example.common.impl.http.server.middleware
 
 import java.nio.charset.StandardCharsets
 import java.util.UUID

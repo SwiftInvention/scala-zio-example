@@ -20,7 +20,7 @@ Code that needs to handle a `Visitor` pattern-matches on it; the compiler enforc
 
 ## Smart constructors — enforce invariants at construction
 
-If a value has invariants (an `Email` matches a format; a `PositiveInt` is positive), the constructor enforces them — and is the only place that can fail. The canonical Scala recipe is `sealed abstract case class Foo private (...)` with anonymous-subclass construction inside the companion. The naive `final case class Foo private (...)` leaks via the auto-generated `copy()`; the `abstract` keyword neutralizes that. Full recipe, gotchas, and the codec-boundary detail: [`smart-constructors.md`](smart-constructors.md).
+If a value has invariants (an `Email` matches a format; a `PositiveInt` is positive), the constructor enforces them — and is the only place that can fail. Recipe, gotchas, and the codec-boundary detail: [`smart-constructors.md`](smart-constructors.md).
 
 ## Parse, don't validate
 

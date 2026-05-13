@@ -1,4 +1,4 @@
-package com.example.common.domain.error.api
+package com.example.common.domain.error
 
 /** Self-typed onto `AppFailure` to carry an HTTP status code with a typed error.
   *

@@ -38,7 +38,7 @@ Span context propagation uses `OpenTelemetry.contextZIO`, which stores the activ
 
 ## HTTP server spans
 
-`RequestTracing.span` (in `lib/common/http/server/middleware/`) is `Middleware[Tracing]` that opens one span per HTTP request. Applied at `ServerApp` alongside the logging middlewares:
+`RequestTracing.span` (in `lib/common/impl/http/server/middleware/`) is `Middleware[Tracing]` that opens one span per HTTP request. Applied at `ServerApp` alongside the logging middlewares:
 
 ```scala
 Server.serve(routes @@ RequestTracing.span @@ accessLog @@ requestId)

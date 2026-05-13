@@ -1,9 +1,9 @@
 package com.example.app.server
 
 import com.example.app.server.config.ServerConfig
-import com.example.common.http.client.AppHttpClient
-import com.example.common.http.server.HealthRoutes
 import com.example.common.impl.config.{ConfigBootstrap, HttpClientConfig, OtelConfig}
+import com.example.common.impl.http.client.AppHttpClient
+import com.example.common.impl.http.server.HealthRoutes
 import com.example.common.impl.repo.sql.{DataSourceConfig, DataSourceLayer, SqlContext}
 import com.example.common.impl.service.TransactorQuillImpl
 import com.example.common.impl.telemetry.AppTracing

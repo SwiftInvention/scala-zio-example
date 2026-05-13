@@ -1,7 +1,5 @@
 package com.example.common.domain.error
 
-import com.example.common.domain.error.api.HttpError
-
 /** Base class for typed application errors. `AppFailure` is the error type of `AppIO`: every failure in the managed
   * effect channel is one of its subclasses. JVM exceptions from JDBC, config parsing, etc. enter the channel only via
   * explicit `mapError` at the boundary — there is no implicit Throwable leakage.
@@ -10,7 +8,7 @@ import com.example.common.domain.error.api.HttpError
   * causes survive). Carries structured info — `category`, `reason`, `description` — that the route boundary reads to
   * render a wire response.
   *
-  * Concrete errors mix in one of the `Http*` traits from `error.api.HttpError` to declare their status code.
+  * Concrete errors mix in one of the `Http*` traits from `HttpError` to declare their status code.
   */
 abstract class AppFailure(message: String, cause: Option[Throwable]) extends Exception(message, cause.orNull) {
   self: HttpError =>

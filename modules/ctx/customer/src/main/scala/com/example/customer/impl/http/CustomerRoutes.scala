@@ -1,7 +1,7 @@
 package com.example.customer.impl.http
 
 import com.example.common.domain.model.NewTypes.{AddressId, CustomerId}
-import com.example.common.http.server.api.ApiFailure
+import com.example.common.impl.http.ApiFailure
 import com.example.common.impl.logging.LogError
 import com.example.customer.app.CustomerAppService
 import com.example.customer.impl.to.converter.AddressConverter.toAddressTO

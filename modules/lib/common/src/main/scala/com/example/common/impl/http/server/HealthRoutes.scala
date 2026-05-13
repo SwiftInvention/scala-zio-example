@@ -1,10 +1,9 @@
-package com.example.common.http.server
+package com.example.common.impl.http.server
 
 import com.example.common.domain.error.AppFailure
-import com.example.common.domain.error.api.ErrorTO
 import com.example.common.domain.error.backend.ProbeTimeoutError
 import com.example.common.domain.model.Types.AppIO
-import com.example.common.http.server.api.ApiFailure
+import com.example.common.impl.http.{ApiFailure, ErrorTO}
 import com.example.common.impl.logging.LogError
 import com.example.common.impl.repo.sql.SqlContext
 import zio._

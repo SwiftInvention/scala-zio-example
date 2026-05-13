@@ -1,4 +1,4 @@
-package com.example.common.http.client
+package com.example.common.impl.http.client
 
 import com.example.common.impl.config.HttpClientConfig
 import zio._

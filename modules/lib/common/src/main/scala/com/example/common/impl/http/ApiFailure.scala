@@ -1,7 +1,14 @@
-package com.example.common.http.server.api
+package com.example.common.impl.http
 
-import com.example.common.domain.error.AppFailure
-import com.example.common.domain.error.api._
+import com.example.common.domain.error.{
+  AppFailure,
+  HttpBadRequest,
+  HttpForbidden,
+  HttpInternalServerError,
+  HttpNotFound,
+  HttpServiceUnavailable,
+  HttpUnauthorized
+}
 import zio.http.Status
 import zio.http.codec.HttpCodec
 import zio.schema.Schema

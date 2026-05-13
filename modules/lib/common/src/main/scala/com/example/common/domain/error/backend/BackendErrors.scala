@@ -1,8 +1,13 @@
 package com.example.common.domain.error.backend
 
-import com.example.common.domain.error.api.{HttpError, HttpInternalServerError, HttpServiceUnavailable}
 import com.example.common.domain.error.backend.BackendErrorReason._
-import com.example.common.domain.error.{AppFailure, ErrorCategory}
+import com.example.common.domain.error.{
+  AppFailure,
+  ErrorCategory,
+  HttpError,
+  HttpInternalServerError,
+  HttpServiceUnavailable
+}
 
 abstract class BackendError(
     errorReason: BackendErrorReason,

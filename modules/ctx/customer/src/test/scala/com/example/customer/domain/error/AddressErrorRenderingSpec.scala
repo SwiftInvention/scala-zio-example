@@ -1,7 +1,7 @@
 package com.example.customer.domain.error
 
-import com.example.common.domain.error.api.ErrorTO
 import com.example.common.domain.model.NewTypes.AddressId
+import com.example.common.impl.http.ErrorTO
 import com.example.common.test.SnapshotSpec
 import zio.test._
 

@@ -1,7 +1,7 @@
 package com.example.notification.impl.http
 
 import com.example.common.domain.model.NewTypes.{CustomerId, NotificationId}
-import com.example.common.http.server.api.ApiFailure
+import com.example.common.impl.http.ApiFailure
 import com.example.common.impl.logging.LogError
 import com.example.notification.api.to.NotificationCreateRequestTO
 import com.example.notification.app.NotificationAppService

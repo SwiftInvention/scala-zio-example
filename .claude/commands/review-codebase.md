@@ -99,7 +99,7 @@ For markdown, use the markdown prose ladder above.
 
 **Per-module scope:** structural shape of the module's Scala files. Per-instance style/principle violations are out of scope (Agent C catches those).
 
-**Cross-cutting scope:** the module graph in `build.sbt`, file layouts under `modules/`, the architectural claims in `module-layout.md` / `build-deps.md` / `bounded-context.md` / `ctx-api.md`.
+**Cross-cutting scope:** the module graph in `build.sbt`, file layouts under `modules/`, the architectural claims in `module-layout.md` / `build-deps.md` / `bounded-context.md` / `cross-context-call.md`.
 
 Read first:
 

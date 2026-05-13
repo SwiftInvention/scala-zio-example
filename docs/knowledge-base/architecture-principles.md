@@ -48,7 +48,7 @@ Within and across modules: `impl/` may import from `app/` and `domain/`; `app/` 
 
 ## `ctx-api` — cross-context calls go through `<ctx>-api`, never directly
 
-The trait + TOs live in `<ctx>-api`. The DirectClient impl lives in the ctx module and owns TO ↔ domain conversion. HTTP routes are a separate plane and don't go through the cross-context trait. Pattern: [`ctx-api.md`](patterns/ctx-api.md).
+The trait + TOs live in `<ctx>-api`. The DirectClient impl lives in the ctx module and owns TO ↔ domain conversion. HTTP routes are a separate plane and don't go through the cross-context trait. Pattern: [`cross-context-call.md`](patterns/cross-context-call.md).
 
 ## `to-converters` — TO ↔ domain mapping in dedicated converter objects
 
