@@ -86,7 +86,7 @@ lazy val commonSettings = Seq(
   // Disable scaladoc HTML generation across all modules — the template publishes no library
   // artifacts, so the generated HTML has no consumer. Source-level doc comments still exist
   // (humans + agents read those), only the doc *task* is skipped.
-  Compile / doc / sources           := Seq.empty,
+  Compile / doc / sources                := Seq.empty,
   Compile / packageDoc / publishArtifact := false
 ) ++ explicitDepsFilters
 
