@@ -82,7 +82,12 @@ lazy val commonSettings = Seq(
   Test / fork := true, // pins test cwd to the module's baseDirectory — required for SnapshotSpec's relative paths
   tpolecatScalacOptions += ScalacOptions.other("-Ymacro-annotations"),
   testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
-  libraryDependencies ++= zioTestDep
+  libraryDependencies ++= zioTestDep,
+  // Disable scaladoc HTML generation across all modules — the template publishes no library
+  // artifacts, so the generated HTML has no consumer. Source-level doc comments still exist
+  // (humans + agents read those), only the doc *task* is skipped.
+  Compile / doc / sources           := Seq.empty,
+  Compile / packageDoc / publishArtifact := false
 ) ++ explicitDepsFilters
 
 // ── lib ─────────────────────────────────────────────────────
