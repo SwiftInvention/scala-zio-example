@@ -1,8 +1,9 @@
 package com.example.ctx.customer.impl.to.converter
 
 import com.example.ctx.customer.api.to.CustomerTO
-import com.example.ctx.customer.domain.model.{Customer, CustomerName, Email}
+import com.example.ctx.customer.domain.model.Customer
 import com.example.lib.common.domain.model.Types.AppIO
+import com.example.lib.common.domain.model.{CustomerName, Email}
 
 /** TO ↔ domain mapping for `Customer`. */
 object CustomerConverter {

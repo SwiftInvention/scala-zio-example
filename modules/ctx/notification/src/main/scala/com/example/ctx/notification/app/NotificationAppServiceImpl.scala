@@ -2,7 +2,7 @@ package com.example.ctx.notification.app
 
 import com.example.ctx.customer.api.CustomerApi
 import com.example.ctx.customer.api.to.CustomerTO
-import com.example.ctx.notification.domain.error.{NotificationNotFoundError, OrphanedRecipientError}
+import com.example.ctx.notification.domain.error.NotificationNotFoundError
 import com.example.ctx.notification.domain.model.{
   Notification,
   NotificationChannel,
@@ -11,6 +11,7 @@ import com.example.ctx.notification.domain.model.{
 }
 import com.example.ctx.notification.domain.service.repo.NotificationRepo
 import com.example.ctx.notification.impl.to.converter.NotificationRecipientConverter
+import com.example.lib.common.domain.error.backend.DataIntegrityError
 import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
 import com.example.lib.common.domain.model.Types.AppIO
 import zio._
@@ -20,7 +21,7 @@ import zio._
   *   - **Create** — calls `CustomerApi.get(recipientId)` for the existence check. `CustomerNotFoundError` flows through
   *     unchanged; the HTTP layer renders it as 404.
   *   - **Get / list enrichment** — calls `CustomerApi.getMany` for batched recipient lookup. A miss is data drift,
-  *     surfaced as `OrphanedRecipientError` (500). See `patterns/cross-context-call.md`.
+  *     surfaced as `DataIntegrityError` (500). See `patterns/cross-context-call.md`.
   */
 final class NotificationAppServiceImpl(
     repo: NotificationRepo,
@@ -34,6 +35,7 @@ final class NotificationAppServiceImpl(
   ): AppIO[NotificationWithRecipient] = {
     val build = for {
       recipientTO <- customerApi.get(recipientId)
+      recipient   <- NotificationRecipientConverter.fromCustomerTO(recipientTO)
       now         <- Clock.instant
       uuid        <- Random.nextUUID
       notification = Notification(
@@ -44,10 +46,7 @@ final class NotificationAppServiceImpl(
         createdAt = now
       )
       _ <- repo.insert(notification)
-    } yield NotificationWithRecipient(
-      notification = notification,
-      recipient = NotificationRecipientConverter.fromCustomerTO(recipientTO)
-    )
+    } yield NotificationWithRecipient(notification = notification, recipient = recipient)
 
     build.tap(result =>
       ZIO.logAnnotate(
@@ -113,11 +112,17 @@ final class NotificationAppServiceImpl(
   ): AppIO[NotificationWithRecipient] =
     recipients.get(n.recipientId) match {
       case Some(to) =>
-        ZIO.succeed(
-          NotificationWithRecipient(notification = n, recipient = NotificationRecipientConverter.fromCustomerTO(to))
-        )
+        NotificationRecipientConverter
+          .fromCustomerTO(to)
+          .map(recipient => NotificationWithRecipient(notification = n, recipient = recipient))
       case None =>
-        ZIO.fail(OrphanedRecipientError.withIds(notificationId = n.id, recipientId = n.recipientId))
+        ZIO.fail(
+          DataIntegrityError(
+            message = s"notification ${NotificationId.unwrap(n.id)} references customer " +
+              s"${CustomerId.unwrap(n.recipientId)} which does not exist",
+            cause = None
+          )
+        )
     }
 }
 

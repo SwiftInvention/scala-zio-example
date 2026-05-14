@@ -25,14 +25,6 @@ object CustomerNotFoundError {
     )
 }
 
-final case class InvalidEmailError(message: String)
-    extends CustomerError(errorReason = InvalidEmail, message = message, cause = None)
-    with HttpBadRequest
-
-final case class InvalidCustomerNameError(message: String)
-    extends CustomerError(errorReason = InvalidName, message = message, cause = None)
-    with HttpBadRequest
-
 final case class InvalidAddressLineError(message: String)
     extends CustomerError(errorReason = InvalidAddressLine, message = message, cause = None)
     with HttpBadRequest

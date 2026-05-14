@@ -64,6 +64,14 @@ Two paths to the same validated value — the domain `apply` and the boundary de
 
 (The `new Email(...) {}` anonymous-subclass syntax works in the decoder too — it's how the boundary path produces an `Email` without going through the `AppIO`-returning `apply`.)
 
+## Where these live
+
+Value objects live with their owning bounded context — `AddressLine`, `City`, `PostalCode` are in `customer/domain/model/` because only the customer ctx holds values of those types. The same goes for the validation error they raise (`InvalidAddressLineError`, etc.) and the `CustomerErrorReason` cases (`InvalidAddressLine`, …) that tag them.
+
+Some value objects are shared — a single type that more than one ctx legitimately holds values of. `Email` and `CustomerName` are examples: customer's `Customer` entity holds them, and notification's recipient projection holds a customer-derived view of them. Shared value objects live in `lib/common/domain/model/`, next to `NewTypes.scala`. Their validation errors live under `lib/common/domain/error/domain/` and are tagged with `ErrorCategory.Domain`. `DomainError` is the abstract base; concrete errors map to 400 via `HttpBadRequest`.
+
+The criterion is "more than one ctx legitimately holds values of this type." Speculative sharing (lifting a value object up because *some* future ctx might want it) belongs in the owning ctx until the second consumer is real.
+
 ## Background
 
 - [Tuleism on Scala smart constructors](https://tuleism.github.io/blog/2020/scala-smart-constructors/) — covers each technique and the cross-version variations

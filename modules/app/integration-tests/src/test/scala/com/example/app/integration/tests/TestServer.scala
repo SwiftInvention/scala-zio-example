@@ -9,6 +9,7 @@ import com.example.ctx.customer.impl.service.{AddressServiceImpl, CustomerServic
 import com.example.ctx.notification.app.NotificationAppServiceImpl
 import com.example.ctx.notification.impl.http.NotificationRoutes
 import com.example.ctx.notification.impl.service.repo.NotificationRepoMySQLImpl
+import com.example.lib.common.domain.model.URLHelper
 import com.example.lib.common.impl.config.{OtelConfig, OtelTracing}
 import com.example.lib.common.impl.http.server.HealthRoutes
 import com.example.lib.common.impl.telemetry.AppTracing
@@ -34,13 +35,10 @@ import zio.telemetry.opentelemetry.tracing.Tracing
   * Tests provide `TestServer.layer`, then issue requests via `testServer.get("/customers/...")`. The underlying
   * `Client` and `Server` shut down when the scope closes.
   */
-final case class TestServer(baseUrl: String) {
+final case class TestServer(baseUrl: URL) {
 
   def get(path: String): ZIO[Client, Throwable, Response] =
-    for {
-      url <- ZIO.fromEither(URL.decode(s"$baseUrl$path"))
-      res <- ZIO.serviceWithZIO[Client](_.batched(Request.get(url)))
-    } yield res
+    ZIO.serviceWithZIO[Client](_.batched(Request.get(baseUrl.addPath(path))))
 
   /** Issue a GET, decode the JSON body into `A`, return status + parsed body. Decoding failures surface as `Throwable`
     * — tests asserting on a 404 still expect the body to parse as `ErrorTO`.
@@ -64,11 +62,10 @@ final case class TestServer(baseUrl: String) {
     val reqEncoder  = SchemaJsonCodec.jsonCodec(reqSchema).encoder
     val respDecoder = SchemaJsonCodec.jsonCodec(respSchema).decoder
     val payload     = reqEncoder.encodeJson(body, indent = None).toString
+    val request = Request
+      .post(baseUrl.addPath(path), Body.fromString(payload))
+      .addHeader(Header.ContentType(MediaType.application.json))
     for {
-      url <- ZIO.fromEither(URL.decode(s"$baseUrl$path"))
-      request = Request
-        .post(url, Body.fromString(payload))
-        .addHeader(Header.ContentType(MediaType.application.json))
       response <- ZIO.serviceWithZIO[Client](_.batched(request))
       bodyStr  <- response.body.asString
       parsed <- ZIO
@@ -92,13 +89,16 @@ object TestServer {
   private val testOtelConfig: ULayer[OtelConfig] =
     ZLayer.succeed(OtelConfig(serviceName = "scala-zio-example-test", tracing = OtelTracing.Disabled))
 
-  private val backendLayer: ZLayer[Any, Throwable, SqlContext & Transactor & ServerRoutes & Tracing] =
-    ZLayer.make[SqlContext & Transactor & ServerRoutes & Tracing](
+  private val backendLayer: ZLayer[Any, Throwable, SqlContext & Transactor & ServerRoutes & Tracing & Client] =
+    ZLayer.make[SqlContext & Transactor & ServerRoutes & Tracing & Client](
       // ── persistence (test substitution: fresh schema per spec) ──
       TestDb.freshSchemaLayer,
-      // ── tracing (no-op, configured Disabled; no probe so no Client needed at this tier) ──
+      // ── http client (consumed by AppTracing.live for the boot-time OTLP probe; with `Disabled` config the probe
+      //    never fires, but the dep stays at the type level) ──
+      Client.default,
+      // ── tracing (configured Disabled → noop SDK; an INFO logs at boot) ──
       testOtelConfig,
-      AppTracing.liveWithoutProbe,
+      AppTracing.live,
       // ── customer ctx ──
       CustomerRepoMySQLImpl.layer,
       AddressRepoMySQLImpl.layer,
@@ -121,11 +121,11 @@ object TestServer {
   private val testServerOnly: ZLayer[ServerRoutes & Server & Tracing, Throwable, TestServer] =
     ZLayer.scoped {
       for {
-        sr   <- ZIO.service[ServerRoutes]
-        srv  <- ZIO.service[Server]
-        _    <- srv.install(sr.all)
-        port <- srv.port
-        baseUrl = s"http://localhost:$port"
+        sr      <- ZIO.service[ServerRoutes]
+        srv     <- ZIO.service[Server]
+        _       <- srv.install(sr.all)
+        port    <- srv.port
+        baseUrl <- ZIO.fromEither(URLHelper.parseEither(s"http://localhost:$port"))
       } yield TestServer(baseUrl = baseUrl)
     }
 
@@ -133,5 +133,5 @@ object TestServer {
     * at the spec level via `TestLogger` in `IntegrationSpec.bootstrap` — ZLayer can't reach the runtime's logger set.
     */
   val layer: ZLayer[Any, Throwable, TestServer & Client & SqlContext & Transactor] =
-    (backendLayer ++ serverLayer) >+> testServerOnly >+> Client.default
+    (backendLayer ++ serverLayer) >+> testServerOnly
 }

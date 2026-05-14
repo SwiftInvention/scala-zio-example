@@ -62,7 +62,7 @@ just run             # foreground server (Ctrl+C to stop)
 
 `APP_ENV` comes from `.env` (seeded by `initial-setup` from `.env.example` — `APP_ENV=local`), so the server loads `application-local.conf`. Override by editing `.env` if you want a different env shape on the host.
 
-`application-local.conf` points the OTLP exporter at the local Jaeger (`http://localhost:4318/v1/traces`). `AppTracing` probes the endpoint at boot; if Jaeger isn't reachable inside the probe budget the server fails at boot. Either run `just local-infra-up` first, or set `otel.otlp-endpoint = null` in your local conf to disable tracing. See [`patterns/tracing.md`](patterns/tracing.md) for what the probe checks.
+`application-local.conf` points the OTLP exporter at the local Jaeger (`http://localhost:4318/v1/traces`). `AppTracing` probes the endpoint at boot; if Jaeger isn't reachable inside the probe budget, the layer logs a WARN and falls back to a no-op SDK — the server still starts. To opt out entirely, set `otel.otlp-endpoint = null` in your local conf. See [`patterns/tracing.md`](patterns/tracing.md) for what the probe checks.
 
 ## Dev tools (`appDev`)
 

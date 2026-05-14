@@ -50,3 +50,12 @@ Absence is `Option[X]`. `null` bypasses the type system's nullability story and 
 ## `no-var` — never use `var`
 
 State is values flowing through transformations, not slots being reassigned. `var` reintroduces the action-at-a-distance and aliasing problems that immutability prevents.
+
+## `http-url-type` — HTTP URLs flow as `zio.http.URL`
+
+When an HTTP/HTTPS URL is the value held across a typed surface — config field, function parameter, return type, case-class field — the type is `zio.http.URL`. Parse once at the boundary that produces the value; downstream code holds `URL` and trusts the type.
+
+Construction goes through `URLHelper` (in `lib/common/.../domain/model/`):
+
+- `URLHelper.parse(s: String): AppIO[URL]` — for runtime call sites where the parse failure should become an `AppFailure`.
+- `URLHelper.parseEither(s: String): Either[InvalidURLError, URL]` — for PureConfig `ConfigReader`s and similar `Either`-shaped sinks.

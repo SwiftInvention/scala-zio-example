@@ -3,6 +3,7 @@ package com.example.ctx.notification.domain.model
 import java.time.Instant
 
 import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
+import com.example.lib.common.domain.model.{CustomerName, Email}
 import zio.test._
 
 /** zio-test generators for `Notification` and its parts.
@@ -48,11 +49,24 @@ object NotificationGen {
       createdAt = createdAt
     )
 
+  val recipientEmailGen: Gen[Any, Email] =
+    for {
+      local  <- Gen.alphaNumericStringBounded(min = 1, max = 20).map(_.toLowerCase)
+      domain <- Gen.alphaNumericStringBounded(min = 1, max = 20).map(_.toLowerCase)
+      tld    <- Gen.stringN(n = 3)(Gen.alphaChar).map(_.toLowerCase)
+      email  <- Gen.fromZIO(Email(s"$local@$domain.$tld").orDie)
+    } yield email
+
+  val recipientNameGen: Gen[Any, CustomerName] =
+    Gen
+      .alphaNumericStringBounded(min = CustomerName.MinLength, max = CustomerName.MaxLength)
+      .flatMap(s => Gen.fromZIO(CustomerName(s).orDie))
+
   val recipientGen: Gen[Any, NotificationRecipient] =
     for {
       id    <- recipientIdGen
-      email <- Gen.alphaNumericStringBounded(min = 1, max = 40).map(s => s"$s@example.test")
-      name  <- Gen.alphaNumericStringBounded(min = 1, max = 60)
+      email <- recipientEmailGen
+      name  <- recipientNameGen
     } yield NotificationRecipient(id = id, email = email, name = name)
 
   val notificationWithRecipientGen: Gen[Any, NotificationWithRecipient] =

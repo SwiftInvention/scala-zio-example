@@ -23,13 +23,18 @@ import zio._
 object LogError {
 
   /** Returns a function suitable for `tapError`. Logs the failure as an `ERROR` with `Cause.fail(failure)` (full stack
-    * preserved) and annotates `error.category`, `error.reason`, `error.status_code`.
+    * preserved) and annotates `error.category`, `error.reason`, `error.status_code`, `error.message`.
+    *
+    * Headline uses `failure.description` (the wire-safe summary; `BackendError` subclasses collapse this to `"Internal
+    * server error"` so the rendered HTTP response doesn't leak internals). `error.message` carries `failure.getMessage`
+    * so the diagnostic detail stays queryable as a flat structured field.
     */
   def tagged(context: String)(failure: AppFailure): UIO[Unit] = {
     val annotations = Set(
       LogAnnotation(key = "error.category", value = failure.category.entryName),
       LogAnnotation(key = "error.reason", value = failure.reason.toString),
-      LogAnnotation(key = "error.status_code", value = failure.responseCode.toString)
+      LogAnnotation(key = "error.status_code", value = failure.responseCode.toString),
+      LogAnnotation(key = "error.message", value = failure.getMessage)
     )
     ZIO.logAnnotate(annotations) {
       ZIO.logErrorCause(s"$context: ${failure.description}", Cause.fail(failure))

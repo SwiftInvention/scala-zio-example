@@ -11,6 +11,8 @@ object ErrorCategory extends Enum[ErrorCategory] {
 
   case object Api          extends ErrorCategory
   case object Backend      extends ErrorCategory
+  case object Domain       extends ErrorCategory
+  // -- per-ctx --
   case object Customer     extends ErrorCategory
   case object Notification extends ErrorCategory
 }

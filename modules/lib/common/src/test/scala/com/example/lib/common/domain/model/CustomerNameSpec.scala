@@ -1,6 +1,6 @@
-package com.example.ctx.customer.domain.model
+package com.example.lib.common.domain.model
 
-import com.example.ctx.customer.domain.error.InvalidCustomerNameError
+import com.example.lib.common.domain.error.domain.InvalidCustomerNameError
 import zio.test.Assertion._
 import zio.test._
 

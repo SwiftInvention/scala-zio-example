@@ -1,6 +1,6 @@
-package com.example.ctx.customer.domain.model
+package com.example.lib.common.domain.model
 
-import com.example.ctx.customer.domain.error.InvalidEmailError
+import com.example.lib.common.domain.error.domain.InvalidEmailError
 import zio.test.Assertion._
 import zio.test._
 

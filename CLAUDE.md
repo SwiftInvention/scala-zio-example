@@ -22,4 +22,4 @@ The way to get the most out of these skills is to run them in a loop:
 1. Run the skill
 2. Triage the findings, deduplicate, discuss
 3. Implement if needed
-4. Either run the skill again or stop. The signal to stop is when the latest run produced a list of findings that can mostly be ignored (empty, nitpicking, stuff we already dismissed previously)
+4. Either run the skill again or stop. The signal to stop is when the latest run produced a list of findings that can mostly be ignored (empty, nitpicking, stuff we already dismissed previously). Usually the loop needs to run at least 2 times to get to the 'diminishing returns' signal.

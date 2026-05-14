@@ -87,7 +87,7 @@ object TestDbIntrospection {
             Iterator
               .continually(rs.next())
               .takeWhile(identity)
-              .map(_ => Column(rs.getString(1), rs.getString(2), rs.getString(3)))
+              .map(_ => Column(name = rs.getString(1), columnType = rs.getString(2), isNullable = rs.getString(3)))
               .toList
           finally rs.close()
         } finally stmt.close()

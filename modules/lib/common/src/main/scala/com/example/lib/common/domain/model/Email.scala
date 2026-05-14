@@ -1,10 +1,13 @@
-package com.example.ctx.customer.domain.model
+package com.example.lib.common.domain.model
 
-import com.example.ctx.customer.domain.error.InvalidEmailError
+import com.example.lib.common.domain.error.domain.InvalidEmailError
 import com.example.lib.common.domain.model.Types.AppIO
 import zio._
 
-/** Validated email address. Trimmed, lowercased; validates against a pragmatic regex. */
+/** Validated email address. Trimmed, lowercased; validates against a pragmatic regex. Lives in `lib/common` because it
+  * crosses bounded contexts — customer's `Customer` entity holds it, notification's recipient projection holds it as a
+  * customer-derived view.
+  */
 sealed abstract case class Email private (value: String)
 
 object Email {

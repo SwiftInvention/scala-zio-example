@@ -57,7 +57,7 @@ Concretely:
 - **Forked fibers** (`forkDaemon`, `forkScoped`) — the forked effect must catch and log its own failures; the parent's `tapError` doesn't see them.
 - **App's top-level entrypoint** — `tapErrorCause` at the outermost effect, last-resort log before the runtime swallows the cause.
 
-Funnel typed-error logging through one helper: `LogError.tagged(context)(failure: AppFailure)` (in `lib/common/.../impl/logging/`). It emits `ZIO.logErrorCause` (full stack preserved) with `error.category`, `error.reason`, `error.status_code` annotations from the AppFailure shape.
+Funnel typed-error logging through one helper: `LogError.tagged(context)(failure: AppFailure)` (in `lib/common/.../impl/logging/`). It emits `ZIO.logErrorCause` (full stack preserved) with `error.category`, `error.reason`, `error.status_code`, and `error.message` annotations from the AppFailure shape. The headline carries `failure.description` (the wire-safe summary; `BackendError` subclasses collapse this to `"Internal server error"`). `error.message` carries `failure.getMessage` so the diagnostic detail stays queryable as a flat structured field.
 
 ```scala
 api.get(CustomerId(id))

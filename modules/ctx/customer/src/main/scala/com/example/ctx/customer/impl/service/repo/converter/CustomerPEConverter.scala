@@ -1,7 +1,8 @@
 package com.example.ctx.customer.impl.service.repo.converter
 
-import com.example.ctx.customer.domain.model.{Customer, CustomerName, Email}
+import com.example.ctx.customer.domain.model.Customer
 import com.example.lib.common.domain.model.Types.AppIO
+import com.example.lib.common.domain.model.{CustomerName, Email}
 import com.example.lib.db.impl.sql.entity.CustomerPE
 
 /** PE ↔ domain mapping for `Customer`. A `toCustomer` failure means a DB row violates a domain invariant — data drift

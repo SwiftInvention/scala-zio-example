@@ -16,21 +16,23 @@ import zio.telemetry.opentelemetry.tracing.Tracing
 
 /** Builds a `Tracing` service from `OtelConfig`.
   *
-  *   - For `OtelTracing.Enabled`, constructs a real `OpenTelemetrySdk` with an OTLP HTTP exporter, a
-  *     `BatchSpanProcessor`, and `service.name` set from `serviceName`. All builders are wrapped in
-  *     `ZIO.fromAutoCloseable` so `BatchSpanProcessor.close()` flushes the in-flight batch when the app's scope ends.
+  *   - For `OtelTracing.Enabled`, HEAD-probes the configured endpoint via [[zio.http.Client]]; on success, builds a
+  *     real `OpenTelemetrySdk` with an OTLP HTTP exporter, a `BatchSpanProcessor`, and `service.name` set from
+  *     `serviceName`. On probe failure, falls back to `OpenTelemetry.noop` and logs a WARN — the server comes up either
+  *     way. The probe exists to avoid `BatchSpanProcessor` spamming reconnect-failure logs against a collector that's
+  *     known-down at boot.
   *   - For `OtelTracing.Disabled`, uses `OpenTelemetry.noop`. Span calls become cheap no-ops; consumers stay
-  *     unconditional (no `if (tracingEnabled) tracing.span(...) else effect`).
+  *     unconditional (no `if (tracingEnabled) tracing.span(...) else effect`). Boot emits an INFO line so the choice is
+  *     visible in the log.
   *
-  * Two layer variants:
+  * Boot-time INFO/WARN matrix:
+  *   - Enabled + probe success → INFO `"OTLP endpoint $endpoint reachable; tracing enabled"`
+  *   - Enabled + probe failure → INFO per attempt, then WARN `"OTLP probe failed; falling back to noop tracing..."`
+  *   - Disabled → INFO `"OTLP tracing disabled by config; using noop SDK"`
   *
-  *   - [[live]] HEAD-probes the configured endpoint via [[zio.http.Client]] before building the SDK; if the collector
-  *     isn't reachable inside the budget the layer fails at boot. Used by deployment composition roots.
-  *   - [[liveWithoutProbe]] skips the probe. Used where no `Client` is wired (typically tests, where `OtelTracing` is
-  *     `Disabled` and the SDK is `OpenTelemetry.noop` anyway).
-  *
-  * Span context lives in a ZIO fiber-local via `OpenTelemetry.contextZIO`. Pair only with the matching `Tracing` layer
-  * — `contextJVM` is the variant for code that runs under the OpenTelemetry java-agent.
+  * All SDK builders are wrapped in `ZIO.fromAutoCloseable` so `BatchSpanProcessor.close()` flushes the in-flight batch
+  * when the app's scope ends. Span context lives in a ZIO fiber-local via `OpenTelemetry.contextZIO`; `contextJVM` is
+  * the variant for code that runs under the OpenTelemetry java-agent.
   */
 object AppTracing {
 
@@ -39,74 +41,78 @@ object AppTracing {
 
   // `OpenTelemetry.custom` runs the inner ZIO in a Scope tied to the layer's lifetime, so each `ZIO.fromAutoCloseable`
   // here registers `close()` with the app scope. `BatchSpanProcessor.close()` flushes pending spans on shutdown.
-  private def otlpSdkLayer(
-      endpoint: String,
-      serviceName: String,
-      probe: Option[Client]
-  ): TaskLayer[JOpenTelemetry] =
-    OpenTelemetry.custom(
-      for {
-        _ <- probe match {
-          case Some(client) => probeReachable(endpoint, client)
-          case None         => ZIO.unit
-        }
-        exporter <- ZIO.fromAutoCloseable(
-          ZIO.attempt(OtlpHttpSpanExporter.builder().setEndpoint(endpoint).build())
+  private def buildRealSdk(endpoint: URL, serviceName: String): ZIO[Scope, Throwable, JOpenTelemetry] =
+    for {
+      exporter <- ZIO.fromAutoCloseable(
+        ZIO.attempt(OtlpHttpSpanExporter.builder().setEndpoint(endpoint.encode).build())
+      )
+      processor <- ZIO.fromAutoCloseable(
+        ZIO.attempt(BatchSpanProcessor.builder(exporter).build())
+      )
+      tracerProvider <- ZIO.fromAutoCloseable(
+        ZIO.attempt(
+          SdkTracerProvider
+            .builder()
+            .setResource(Resource.create(Attributes.of(ServiceAttributes.SERVICE_NAME, serviceName)))
+            .addSpanProcessor(processor)
+            .build()
         )
-        processor <- ZIO.fromAutoCloseable(
-          ZIO.attempt(BatchSpanProcessor.builder(exporter).build())
-        )
-        tracerProvider <- ZIO.fromAutoCloseable(
-          ZIO.attempt(
-            SdkTracerProvider
-              .builder()
-              .setResource(Resource.create(Attributes.of(ServiceAttributes.SERVICE_NAME, serviceName)))
-              .addSpanProcessor(processor)
-              .build()
-          )
-        )
-        sdk <- ZIO.fromAutoCloseable(
-          ZIO.attempt(OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build())
-        )
-      } yield sdk
-    )
+      )
+      sdk <- ZIO.fromAutoCloseable(
+        ZIO.attempt(OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build())
+      )
+    } yield sdk
 
   /** HEAD-probe the configured OTLP endpoint. Any HTTP response — including 405 from a POST-only `/v1/traces` — proves
     * the host is reachable and speaking HTTP at the configured URL. Network errors (refused, DNS, unreachable) retry
-    * inside `probeBudget`. Per-attempt errors are logged at DEBUG so the underlying cause is recoverable after a budget
-    * timeout.
+    * inside `probeBudget`. Per-attempt errors log at INFO so an operator scanning the boot log sees retry activity;
+    * whole-loop failure is logged WARN by the caller and routed to a noop SDK.
     */
-  private def probeReachable(endpoint: String, client: Client): Task[Unit] =
-    ZIO.fromEither(URL.decode(endpoint)).flatMap { url =>
-      val attempt = client
-        .batched(Request.head(url))
-        .tapError(e => ZIO.logDebug(s"OTLP probe attempt failed for $endpoint: ${e.getMessage}"))
+  private def probeReachable(endpoint: URL, client: Client): Task[Unit] = {
+    val attempt = client
+      .batched(Request.head(endpoint))
+      .tapError(e => ZIO.logInfo(s"OTLP probe attempt failed for ${endpoint.encode}: ${e.getMessage}"))
 
-      attempt
-        .retry(Schedule.exponential(probeRetryBase))
-        .timeoutFail(
-          new RuntimeException(s"OTLP endpoint $endpoint not reachable within ${probeBudget.render}")
-        )(probeBudget)
-        .tapError(e => ZIO.logError(s"OTLP startup probe failed: ${e.getMessage}"))
-        .unit
-    }
+    attempt
+      .retry(Schedule.exponential(probeRetryBase))
+      .timeoutFail(
+        new RuntimeException(s"OTLP endpoint ${endpoint.encode} not reachable within ${probeBudget.render}")
+      )(probeBudget)
+      .unit
+  }
 
-  private def buildLayer(probe: Option[Client]): ZLayer[OtelConfig, Throwable, Tracing] =
-    ZLayer.service[OtelConfig].flatMap { env =>
-      val cfg = env.get
-      val sdkLayer: TaskLayer[JOpenTelemetry] = cfg.tracing match {
-        case OtelTracing.Enabled(endpoint) =>
-          otlpSdkLayer(endpoint = endpoint, serviceName = cfg.serviceName, probe = probe)
-        case OtelTracing.Disabled => OpenTelemetry.noop
-      }
-      sdkLayer >+> OpenTelemetry.contextZIO >>> OpenTelemetry.tracing(cfg.serviceName)
-    }
+  /** Probe the collector, then either build the real OTLP SDK or fall back to noop. The server starts either way. */
+  private def probedOrNoop(endpoint: URL, serviceName: String, client: Client): TaskLayer[JOpenTelemetry] =
+    OpenTelemetry.custom(
+      probeReachable(endpoint, client).foldZIO(
+        failure =>
+          ZIO
+            .logWarning(
+              s"OTLP probe failed; falling back to noop tracing for this lifetime: ${failure.getMessage}"
+            )
+            .as(JOpenTelemetry.noop()),
+        _ =>
+          ZIO.logInfo(s"OTLP endpoint ${endpoint.encode} reachable; tracing enabled") *>
+            buildRealSdk(endpoint, serviceName)
+      )
+    )
+
+  private val disabledNoop: TaskLayer[JOpenTelemetry] =
+    OpenTelemetry.custom(
+      ZIO.logInfo("OTLP tracing disabled by config; using noop SDK").as(JOpenTelemetry.noop())
+    )
 
   val live: ZLayer[OtelConfig & Client, Throwable, Tracing] =
-    ZLayer.service[Client].flatMap { clientEnv =>
-      buildLayer(probe = Some(clientEnv.get))
+    ZLayer.service[OtelConfig].flatMap { cfgEnv =>
+      ZLayer.service[Client].flatMap { clientEnv =>
+        val cfg    = cfgEnv.get
+        val client = clientEnv.get
+        val sdkLayer: TaskLayer[JOpenTelemetry] = cfg.tracing match {
+          case OtelTracing.Enabled(endpoint) =>
+            probedOrNoop(endpoint = endpoint, serviceName = cfg.serviceName, client = client)
+          case OtelTracing.Disabled => disabledNoop
+        }
+        sdkLayer >+> OpenTelemetry.contextZIO >>> OpenTelemetry.tracing(cfg.serviceName)
+      }
     }
-
-  val liveWithoutProbe: ZLayer[OtelConfig, Throwable, Tracing] =
-    buildLayer(probe = None)
 }

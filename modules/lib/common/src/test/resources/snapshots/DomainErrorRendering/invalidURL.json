@@ -1,0 +1,6 @@
+{
+  "code" : 400,
+  "category" : "Domain",
+  "reason" : "InvalidURL",
+  "description" : "Invalid URL 'jdbc:mysql://x': MalformedURLException"
+}

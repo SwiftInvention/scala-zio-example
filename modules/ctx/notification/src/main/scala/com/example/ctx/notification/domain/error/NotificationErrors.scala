@@ -1,15 +1,8 @@
 package com.example.ctx.notification.domain.error
 
 import com.example.ctx.notification.domain.error.NotificationErrorReason._
-import com.example.lib.common.domain.error.{
-  AppFailure,
-  ErrorCategory,
-  HttpBadRequest,
-  HttpError,
-  HttpInternalServerError,
-  HttpNotFound
-}
-import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
+import com.example.lib.common.domain.error.{AppFailure, ErrorCategory, HttpBadRequest, HttpError, HttpNotFound}
+import com.example.lib.common.domain.model.NewTypes.NotificationId
 
 abstract class NotificationError(
     errorReason: NotificationErrorReason,
@@ -39,19 +32,3 @@ final case class InvalidNotificationMessageError(message: String)
 final case class InvalidNotificationChannelError(message: String)
     extends NotificationError(errorReason = InvalidChannel, message = message, cause = None)
     with HttpBadRequest
-
-/** Data-integrity failure on the read path: a notification row references a customer the customer ctx can't produce.
-  * Represents drift from the schema's implied invariant.
-  */
-final case class OrphanedRecipientError private (message: String, cause: Option[Throwable])
-    extends NotificationError(errorReason = OrphanedRecipient, message = message, cause = cause)
-    with HttpInternalServerError
-
-object OrphanedRecipientError {
-  def withIds(notificationId: NotificationId, recipientId: CustomerId): OrphanedRecipientError =
-    OrphanedRecipientError(
-      message = s"notification ${NotificationId.unwrap(notificationId)} references customer " +
-        s"${CustomerId.unwrap(recipientId)} which does not exist",
-      cause = None
-    )
-}

@@ -9,7 +9,7 @@ import com.example.lib.common.domain.model.Types.AppIO
   * connection), so nesting doesn't open a second SQL transaction.
   *
   * Errors: SQL exceptions are translated to `DbError` (an `AppFailure`). Repo impls may `catchSome` for
-  * domain-meaningful constraints (e.g. unique violations → `AlreadyExistsError`) before the transactor sees them.
+  * domain-meaningful constraints (e.g. unique violations on insert) before the transactor sees them.
   */
 trait Transactor {
   def withTransaction[A](io: AppIO[A]): AppIO[A]

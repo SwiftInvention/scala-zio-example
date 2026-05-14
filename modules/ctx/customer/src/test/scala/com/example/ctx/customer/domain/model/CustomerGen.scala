@@ -1,6 +1,7 @@
 package com.example.ctx.customer.domain.model
 
 import com.example.lib.common.domain.model.NewTypes.CustomerId
+import com.example.lib.common.domain.model.{CustomerName, Email}
 import zio.test._
 
 /** zio-test generators for `Customer` and its parts.

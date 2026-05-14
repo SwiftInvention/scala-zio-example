@@ -1,6 +1,0 @@
-{
-  "code" : 500,
-  "category" : "Notification",
-  "reason" : "OrphanedRecipient",
-  "description" : "notification n-11111111-2222-3333-4444-555555555555 references customer c-99999999-9999-9999-9999-999999999999 which does not exist"
-}

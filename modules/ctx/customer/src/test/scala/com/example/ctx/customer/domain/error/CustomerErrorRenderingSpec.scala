@@ -15,21 +15,9 @@ object CustomerErrorRenderingSpec extends ZIOSpecDefault with SnapshotSpec {
   private val notFound: ErrorTO =
     ErrorTO.from(CustomerNotFoundError.withId(CustomerId("11111111-2222-3333-4444-555555555555")))
 
-  private val invalidEmail: ErrorTO =
-    ErrorTO.from(InvalidEmailError(message = "Invalid email: 'not-an-email'"))
-
-  private val invalidName: ErrorTO =
-    ErrorTO.from(InvalidCustomerNameError(message = "Customer name must not be empty"))
-
   override def spec: Spec[Any, Throwable] = suite("Customer error rendering")(
     test("CustomerNotFoundError → ErrorTO") {
       matchesJsonSnapshot(name = "CustomerErrorRendering/notFound.json", value = notFound)
-    },
-    test("InvalidEmailError → ErrorTO") {
-      matchesJsonSnapshot(name = "CustomerErrorRendering/invalidEmail.json", value = invalidEmail)
-    },
-    test("InvalidCustomerNameError → ErrorTO") {
-      matchesJsonSnapshot(name = "CustomerErrorRendering/invalidName.json", value = invalidName)
     }
   )
 }

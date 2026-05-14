@@ -11,8 +11,8 @@ object NotificationRecipientConverterSpec extends ZIOSpecDefault {
       check(NotificationGen.recipientGen) { r =>
         val to = NotificationRecipientConverter.toNotificationRecipientTO(r)
         assert(to.id)(equalTo(r.id)) &&
-        assert(to.email)(equalTo(r.email)) &&
-        assert(to.name)(equalTo(r.name))
+        assert(to.email)(equalTo(r.email.value)) &&
+        assert(to.name)(equalTo(r.name.value))
       }
     }
   )

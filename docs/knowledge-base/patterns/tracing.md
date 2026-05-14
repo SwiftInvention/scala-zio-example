@@ -14,7 +14,7 @@ otel {
 ```
 
 - `service-name` — the `service.name` resource attribute on every span. Required.
-- `otlp-endpoint` — full OTLP HTTP traces URL. The HOCON value is a nullable string; the case-class field `tracing` is the ADT `OtelTracing.Enabled(url) | OtelTracing.Disabled`. A present URL parses to `Enabled`; absent or `null` parses to `Disabled`. The ADT makes the binary "tracing on / off" semantic explicit at the consumer site.
+- `otlp-endpoint` — full OTLP HTTP traces URL. The HOCON value is a nullable string; the case-class field `tracing` is the ADT `OtelTracing.Enabled(url) | OtelTracing.Disabled`, where `url` is a `zio.http.URL` (parsed once at config time). A present, well-formed URL parses to `Enabled`; absent or `null` parses to `Disabled`; an empty string or a malformed URL each fail the reader with `CannotConvert`. The empty-string case is a config error (e.g. `${OTEL_ENDPOINT}` substitution with `OTEL_ENDPOINT` unset), not a synonym for "off" — deployments that want tracing off omit the key or set it to `null`. The ADT makes the binary "tracing on / off" semantic explicit at the consumer site.
 
 Per `config-shape`, `Disabled` is "tracing genuinely off", not a placeholder for a baked-in default. For `dev` and `prod` the value is `${OTEL_ENDPOINT}` (required at deploy); deployments that don't run a collector remove the line from their conf.
 
@@ -30,9 +30,11 @@ AppTracing.live   → Tracing      (OTLP exporter when Enabled; OpenTelemetry.no
 
 The SDK builders are wrapped in `ZIO.fromAutoCloseable`, so `BatchSpanProcessor.close()` flushes the in-flight batch when the app's scope ends.
 
-Before the SDK is built, `AppTracing.live` HEAD-probes the configured OTLP endpoint via `Client` with bounded exponential-backoff retry inside a fixed budget. An unreachable collector otherwise emits a stream of `BatchSpanProcessor` reconnect failures into the log; the probe makes the layer fail at boot instead. Any HTTP response counts — including `405 Method Not Allowed` or `404 Not Found` — the probe asserts "the host is reachable and speaking HTTP at this URL", not "the OTLP path and method are correct".
+Before the SDK is built, `AppTracing.live` HEAD-probes the configured OTLP endpoint via `Client` with bounded exponential-backoff retry inside a fixed budget. Any HTTP response counts — including `405 Method Not Allowed` or `404 Not Found` — the probe asserts "the host is reachable and speaking HTTP at this URL", not "the OTLP path and method are correct".
 
-Boot-time and runtime are asymmetric: an unreachable collector at boot fails the layer; an unreachable collector during runtime doesn't — `BatchSpanProcessor` logs export failures via the OpenTelemetry SDK and keeps the server serving traffic.
+On probe failure, the layer logs a WARN and installs `OpenTelemetry.noop` for the lifetime of the process. The server comes up either way. Per-attempt failures log at INFO so retry activity is visible during boot; the WARN at the end carries the final cause. Tracing is best-effort: an unreachable collector at boot routes to noop; an unreachable collector after a real SDK is built triggers `BatchSpanProcessor` export-failure logs from the OpenTelemetry SDK. In both cases the request path is unaffected.
+
+The probe is a gate against `BatchSpanProcessor` log spam when the collector is known-down at startup, not a hard dependency. There is no background re-probe: a noop SDK stays noop for the process lifetime, and recovery is via service restart once the collector returns.
 
 Span context propagation uses `OpenTelemetry.contextZIO`, which stores the active span in a ZIO fiber-local.
 

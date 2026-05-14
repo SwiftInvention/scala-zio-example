@@ -1,6 +1,6 @@
 package com.example.ctx.notification.domain.error
 
-import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
+import com.example.lib.common.domain.model.NewTypes.NotificationId
 import com.example.lib.common.impl.http.ErrorTO
 import com.example.lib.common.test.SnapshotSpec
 import zio.test._
@@ -22,14 +22,6 @@ object NotificationErrorRenderingSpec extends ZIOSpecDefault with SnapshotSpec {
       InvalidNotificationChannelError(message = "Unknown notification channel: 'Pager'. Allowed: Email, Sms, InApp")
     )
 
-  private val orphanedRecipient: ErrorTO =
-    ErrorTO.from(
-      OrphanedRecipientError.withIds(
-        notificationId = NotificationId("n-11111111-2222-3333-4444-555555555555"),
-        recipientId = CustomerId("c-99999999-9999-9999-9999-999999999999")
-      )
-    )
-
   override def spec: Spec[Any, Throwable] = suite("Notification error rendering")(
     test("NotificationNotFoundError → ErrorTO") {
       matchesJsonSnapshot(name = "NotificationErrorRendering/notFound.json", value = notFound)
@@ -39,9 +31,6 @@ object NotificationErrorRenderingSpec extends ZIOSpecDefault with SnapshotSpec {
     },
     test("InvalidNotificationChannelError → ErrorTO") {
       matchesJsonSnapshot(name = "NotificationErrorRendering/invalidChannel.json", value = invalidChannel)
-    },
-    test("OrphanedRecipientError → ErrorTO") {
-      matchesJsonSnapshot(name = "NotificationErrorRendering/orphanedRecipient.json", value = orphanedRecipient)
     }
   )
 }
