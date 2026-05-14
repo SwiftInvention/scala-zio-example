@@ -1,0 +1,36 @@
+package com.example.ctx.notification.domain.error
+
+import com.example.lib.common.domain.model.NewTypes.NotificationId
+import com.example.lib.common.impl.http.ErrorTO
+import com.example.lib.common.test.SnapshotSpec
+import zio.test._
+
+/** Locks the wire shape of `ErrorTO` for each notification-context error. If any error's category, reason, code, or
+  * description format changes, the snapshot diff is the alarm. Update the snapshot file deliberately when the change is
+  * intended (`SNAPSHOT_UPDATE=true sbt test`).
+  */
+object NotificationErrorRenderingSpec extends ZIOSpecDefault with SnapshotSpec {
+
+  private val notFound: ErrorTO =
+    ErrorTO.from(NotificationNotFoundError.withId(NotificationId("n-11111111-2222-3333-4444-555555555555")))
+
+  private val invalidMessage: ErrorTO =
+    ErrorTO.from(InvalidNotificationMessageError(message = "Notification message must not be empty"))
+
+  private val invalidChannel: ErrorTO =
+    ErrorTO.from(
+      InvalidNotificationChannelError(message = "Unknown notification channel: 'Pager'. Allowed: Email, Sms, InApp")
+    )
+
+  override def spec: Spec[Any, Throwable] = suite("Notification error rendering")(
+    test("NotificationNotFoundError → ErrorTO") {
+      matchesJsonSnapshot(name = "NotificationErrorRendering/notFound.json", value = notFound)
+    },
+    test("InvalidNotificationMessageError → ErrorTO") {
+      matchesJsonSnapshot(name = "NotificationErrorRendering/invalidMessage.json", value = invalidMessage)
+    },
+    test("InvalidNotificationChannelError → ErrorTO") {
+      matchesJsonSnapshot(name = "NotificationErrorRendering/invalidChannel.json", value = invalidChannel)
+    }
+  )
+}

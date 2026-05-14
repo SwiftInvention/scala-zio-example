@@ -1,0 +1,29 @@
+# Integration-test infrastructure. Separate compose project from the dev
+# stack so `docker compose down -v` on one doesn't touch the other, and the
+# two have independent networks. Host port 3307 → 3306 inside, so the dev
+# mysql (3306) and the test mysql can run concurrently.
+#
+# Always invoke with `-p scala-zio-example-test -f docker-compose.test.yml`;
+# the `just test-infra-*` recipes wrap this.
+
+networks:
+  testNetwork:
+    name: scala-zio-example-test
+
+services:
+  mysql:
+    image: mysql:8.0
+    networks:
+      - testNetwork
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: 'localDatabase'
+      MYSQL_USER: 'localUser'
+      MYSQL_PASSWORD: 'localPassword'
+      MYSQL_ROOT_PASSWORD: 'localPassword'
+    healthcheck:
+      test: mysql -h localhost -P 3306 --protocol=tcp -u $$MYSQL_USER --password=$$MYSQL_PASSWORD $$MYSQL_DATABASE -e 'SELECT 1'
+      interval: 3s
+      retries: 500
+    command: ['mysqld', '--character-set-server=utf8', '--collation-server=utf8_general_ci']

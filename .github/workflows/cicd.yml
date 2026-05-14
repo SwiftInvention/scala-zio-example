@@ -1,34 +1,129 @@
-
 name: scala-zio-example CI
 
 on:
   push:
-    branches: 
+    branches:
       - main
-  pull_request: 
-    types: 
+  pull_request:
+    types:
       - opened
+      - reopened
       # "synchronize" means new commits pushed to the HEAD of the pull request branch
       - synchronize
 
 permissions: read-all
 
-jobs:
-  cancel-previous:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.11.0
+# Cancel any in-progress run on the same branch when a newer commit lands.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
+jobs:
   build:
     runs-on: ubuntu-22.04
 
+    env:
+      JUST_VERSION: "1.36.0"
+
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-    - uses: coursier/setup-action@v1
-      with:
-        jvm: temurin:1.17
+      # SDKMAN install matches what local dev uses. `sdk env install` reads
+      # .sdkmanrc and installs the exact pinned JDK + sbt; the just `init_env`
+      # shim sources sdkman-init.sh on every recipe.
+      - name: Cache SDKMAN
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        id: sdkman-cache
+        with:
+          path: ~/.sdkman
+          key: sdkman-${{ runner.os }}-${{ hashFiles('.sdkmanrc') }}
 
-    - name: Compile, check formatting, lint, and run tests
-      run: sbt compile styleCheck test
+      - name: Install SDKMAN + JDK + sbt
+        if: steps.sdkman-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          set +u
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk env install
+          set -u
+
+      # sbt's dependency cache — coursier + ivy + sbt's own.
+      - name: Cache sbt dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.sbt
+            ~/.cache/coursier
+            ~/.ivy2/cache
+          key: sbt-${{ runner.os }}-${{ hashFiles('**/build.sbt', '**/project/**/*.sbt', '**/project/**/*.scala', '**/project/build.properties') }}
+          restore-keys: |
+            sbt-${{ runner.os }}-
+
+      # Maven Central publish-date lookups for the cooldown check — accretive
+      # cache (publish dates are immutable; new coords append). Key changes
+      # when the dep set changes; restore-keys lets a bumped dep set inherit
+      # the prior cache and only fetch the new coords.
+      - name: Cache deps-cooldown publish dates
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .cache/deps-cooldown
+          key: deps-cooldown-${{ runner.os }}-${{ hashFiles('**/build.sbt.lock', 'project/plugins.sbt') }}
+          restore-keys: |
+            deps-cooldown-${{ runner.os }}-
+
+      - name: Cache just binary
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        id: just-cache
+        with:
+          path: ~/.local/bin/just
+          key: just-${{ env.JUST_VERSION }}-${{ runner.os }}
+
+      - name: Install just
+        if: steps.just-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh \
+            | bash -s -- --tag "${JUST_VERSION}" --to "$HOME/.local/bin"
+
+      - name: Add ~/.local/bin to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      # Flyway CLI for `just test-db-migrate` (called transitively by `just test-it`).
+      # Version mirrors `flyway` in project/Versions.scala.
+      - name: Install Flyway CLI
+        run: |
+          FLYWAY_VERSION=12.5.0
+          curl -sSL "https://github.com/flyway/flyway/releases/download/flyway-${FLYWAY_VERSION}/flyway-commandline-${FLYWAY_VERSION}-linux-x64.tar.gz" \
+            | tar -xz
+          sudo ln -s "${GITHUB_WORKSPACE}/flyway-${FLYWAY_VERSION}/flyway" /usr/local/bin/flyway
+          flyway --version
+
+      # The runner pre-installs docker; `just test-it` and `just docker-build`
+      # rely on `docker compose` and `docker build` respectively.
+
+      - name: Style check
+        run: just style-check
+
+      - name: Unit tests
+        run: just test
+
+      - name: Integration tests
+        run: just test-it
+
+      - name: Build docker image
+        run: just docker-build
+
+      # CycloneDX SBOM for the deployable server module — auditability and
+      # downstream-consumer surface. See patterns/supply-chain-security.md.
+      # Push-to-main only; PR builds skip the upload to avoid artifact churn.
+      - name: Generate SBOM (appServer)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: just sbom
+
+      - name: Upload SBOM artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sbom-appServer
+          path: modules/app/server/target/server-*.bom.json
+          if-no-files-found: error

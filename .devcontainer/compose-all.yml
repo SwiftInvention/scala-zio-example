@@ -1,0 +1,107 @@
+name: scala-zio-example-sandbox
+include:
+  - path: sandcat/compose-proxy.yml
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    # Share wg-client's network namespace so all traffic goes through its
+    # WireGuard tunnel. The app container has no NET_ADMIN capability,
+    # so processes inside cannot modify routing, iptables, or the tunnel.
+    network_mode: "service:wg-client"
+    volumes:
+      # Named volume for the home directory so Claude Code auth state,
+      # shell history, and other user-level config persist across rebuilds.
+      - app-home:/home/vscode
+      # Shared volume from mitmproxy containing the CA cert and
+      # sandcat.env (env vars + secret placeholders). Read-only — app
+      # containers should never write to this.
+      - mitmproxy-config:/mitmproxy-config:ro
+      # Mount the project's code
+      - ..:/workspaces/scala-zio-example-sandbox
+      # Read-only devcontainer directory
+      - ../.devcontainer:/workspaces/scala-zio-example-sandbox/.devcontainer:ro
+      # Read-only settings directory
+      - ../.sandcat:/workspaces/scala-zio-example-sandbox/.sandcat:ro
+      # Host Claude config (optional)
+      - ${HOME}/.claude/CLAUDE.md:/home/vscode/.claude/CLAUDE.md:ro
+      - ${HOME}/.claude/agents:/home/vscode/.claude/agents:ro
+      - ${HOME}/.claude/commands:/home/vscode/.claude/commands:ro
+      # Read-only Git directory
+      # - ../.git:/workspace/.git:ro
+      # Read-only IntelliJ IDEA project directory
+      # - ../.idea:/workspace/.idea:ro
+    command: sleep infinity
+    # `../.env.devcontainer` carries the agent's runtime env — APP_ENV, the
+    # ${?VAR} overrides for application-local.conf, MYSQL_HOST for `just
+    # db-migrate`, TEST_DB_* for integration tests, and the Claude Code
+    # traffic flag. Sbt + just both see it.
+    env_file:
+      - ../.env.devcontainer
+
+    depends_on:
+      wg-client:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      mysql-test:
+        condition: service_healthy
+      jaeger:
+        condition: service_healthy
+    working_dir: /workspaces/scala-zio-example-sandbox
+
+  # ---------------------------------------------------------------------------
+  # Inline infra services. Mirror docker-compose.yml's `mysql` and `jaeger`
+  # but live under this compose project (`scala-zio-example-sandbox`) so the
+  # agent — which shares wg-client's network namespace — reaches them by
+  # service name (`mysql:3306`, `jaeger:4318`).
+  # ---------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: "localDatabase"
+      MYSQL_USER: "localUser"
+      MYSQL_PASSWORD: "localPassword"
+      MYSQL_ROOT_PASSWORD: "localPassword"
+    healthcheck:
+      test: mysql -h localhost -P 3306 --protocol=tcp -u $$MYSQL_USER --password=$$MYSQL_PASSWORD $$MYSQL_DATABASE -e 'SELECT 1'
+      interval: 3s
+      retries: 500
+    command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.76.0
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:14269/"]
+      interval: 3s
+      retries: 60
+
+  # Dedicated test mysql, mirroring the host's docker-compose.test.yml split.
+  # Migrations apply at container init via the mounted /docker-entrypoint-initdb.d
+  # — flyway-named .sql files are plain SQL and sort alphabetically into version
+  # order, so mysql's initdb runs them correctly without flyway in the loop.
+  # No external port mapping; only the agent reaches it (via service-name DNS).
+  mysql-test:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: "localDatabase"
+      MYSQL_USER: "localUser"
+      MYSQL_PASSWORD: "localPassword"
+      MYSQL_ROOT_PASSWORD: "localPassword"
+    volumes:
+      - ../modules/lib/db/src/main/resources/db/migration:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: mysql -h localhost -P 3306 --protocol=tcp -u $$MYSQL_USER --password=$$MYSQL_PASSWORD $$MYSQL_DATABASE -e 'SELECT 1'
+      interval: 3s
+      retries: 500
+    command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
+
+  mitmproxy:
+    volumes:
+      # Project-level `.sandcat/` overrides for mitmproxy.
+      - ../.sandcat:/config/project:ro
+volumes:
+  app-home:

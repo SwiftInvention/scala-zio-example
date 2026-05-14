@@ -1,110 +1,39 @@
-# ScalaZioExample project
+# scala-zio-example
+
+A reference template for Scala + ZIO monoliths organized by bounded contexts.
+
+The patterns and architecture commitments live in [`docs/knowledge-base/`](docs/knowledge-base/) — start with [`overview.md`](docs/knowledge-base/overview.md). Day-to-day commands live in [`commands.md`](docs/knowledge-base/commands.md).
+
+## Tech stack
+
+- **Language / runtime**: Scala 2.13, JDK 21, sbt 1.12 (pinned in `.sdkmanrc`)
+- **Effects**: ZIO 2.1
+- **HTTP**: zio-http (typed `Endpoint` API, OpenAPI generation, Swagger UI at `/docs`)
+- **Serialization**: zio-schema (single source of truth for TOs and newtypes; zio-json codec derived where needed)
+- **Persistence**: Quill + MySQL; Flyway CLI for out-of-process migrations
+- **Config**: PureConfig (typed, per-(app, env) HOCON files)
+- **Telemetry**: zio-telemetry + OpenTelemetry SDK (OTLP HTTP exporter to local Jaeger by default)
+- **Logging**: zio-logging + slf4j
+
+Versions in [`project/Versions.scala`](project/Versions.scala); module wiring in [`build.sbt`](build.sbt).
 
 ## Prerequisites
 
-- `sbt`
-- Docker
-- docker-compose `v2` or higher (Note for macOS: enable `Use Docker Compose V2` in Docker Preferences)
-- OpenJDK 11 or above
+- [`just`](https://github.com/casey/just) — task runner
+- [SDKMAN](https://sdkman.io) — JDK + sbt are pinned in `.sdkmanrc`
+- [Flyway](https://documentation.red-gate.com/fd/command-line-184127404.html) CLI — out-of-process migrations
+- Docker — local MySQL + Jaeger via `docker compose`
 
-## Setting up
+## Quickstart
 
-### Scalafmt Editor support
+```sh
+just initial-setup           # install JDK + sbt from .sdkmanrc; seed local config
+just start-fresh-local-server # one command: infra reset → migrate → seed → run (foreground)
+just smoke-test              # in another shell: hit the running server
+```
 
-- [VS Code][vscode]
-- [Intellij IDEA][intellij]
+Editor setup notes (Scalafmt, IntelliJ debugger): [`docs/intellij-idea-setup.md`](docs/intellij-idea-setup.md).
 
-[vscode]: https://scalameta.org/metals/docs/editors/vscode/
-[intellij]: https://scalameta.org/scalafmt/docs/installation.html#intellij
+## Devcontainer
 
-## Usage
-
-- Start MySQL in docker container
-
-  Note: flags and options mean:
-
-  - use detached mode
-  - wait for all containers to be healthy
-  - remove volumes on exit
-
-  ```sh
-  docker compose up -Vd --wait mysql
-  ```
-
-- Fill db by demo data
-
-  ```sh
-  sbt dev "scalaZioExample/runMain org.organization.utils.DemoDb"
-  ```
-
-- Run
-
-  ```sh
-  sbt dev scalaZioExample/run
-  ```
-
-- Run in live reload mode
-
-  ```sh
-  sbt dev ~scalaZioExample/reStart
-  ```
-
-- When done, remove docker containers, networks and volumes
-
-  ```sh
-  docker compose down -v
-  ```
-
-- Clean build artifacts and recompile (just in case)
-
-  ```sh
-  sbt clean compile
-  ```
-
-- Run tests
-
-  ```sh
-  sbt test
-  ```
-
-- Check for dependency updates (just in case)
-
-  ```sh
-    sbt dependencyUpdates
-  ```
-
-### Swagger-UI
-
-Go to `http://localhost:8080/docs`
-
-### Scalafix
-
-- `sbt scalafix` – run linter, check all files, fail on warnings
-
-### Tpolecat
-
-There are several modes: `dev`, `ci`, `release`. In `dev` mode "fatal warnings" are disabled, so you will be able to see warnings, but they won't prevent code from compiling.
-
-- You can change tpolecat plugin mode in sbt interactively, e.g: `sbt ci` or `sbt dev`
-- You can prepend your commands with mode, e.g: `sbt ci test` or `sbt dev test`
-- You can set mode via env variable, e.g: `SBT_TPOLECAT_DEV=true sbt compile`, `SBT_TPOLECAT_CI=true sbt compile`, or `SBT_TPOLECAT_RELEASE=true sbt compile`
-
-### Migrating to ZIO2
-
-- Apply the `Zio2Upgrade` scalafix rule, as described in
-  the [migration guide](https://zio.dev/guides/migrate/zio-2.x-migration-guide/#automatic-migration)
-- Update dependencies
-  - Bump versions on core zio dependencies (`zio`, `zio-streams`, `zio-test`)
-  - Remove pins on dependencies which were pinned to prevent a transitive dependency on ZIO2
-  - For other ZIO libraries, check their respective docs for a way to correctly add a version with ZIO2 support.
-    Some require you to specify a different organization name or artefact ID:
-    - `"io.d11" % "zhttp_2.13"` -> `"dev.zio" %% "zio-http"`
-    - `"com.softwaremill.sttp.tapir" %% "tapir-zio1-http-server"` -> `"com.softwaremill.sttp.tapir" %% "tapir-zio-http-server"`
-    - `"io.github.scottweaver" %% "zio-testcontainers-mysql"` -> `"io.github.scottweaver" %% "zio-2-0-testcontainers-mysql"`
-- Fix the remaining compilation errors referring
-  to the [migration guide](https://zio.dev/guides/migrate/zio-2.x-migration-guide).
-- See [PR with all the changes listed above](https://github.com/SwiftInvention/scala-zio-example/pull/38)
-
-### Additional resources
-
-[Setting up debugger in Intellij IDEA](/docs/intellij-idea-setup.md)
+`.devcontainer/` runs the agent (Claude Code) in a network-isolated sandbox with inline `mysql` + `jaeger` services. Open the repo in VS Code and choose **Dev Containers: Open Folder in Container...**; sbt-driven recipes (`compile`, `test`, `run`, `db-migrate`, `style-*`) work inside. Pattern: [`patterns/devcontainer.md`](docs/knowledge-base/patterns/devcontainer.md). Base setup + per-host requirements: [SwiftInvention/devcontainers-example](https://github.com/SwiftInvention/devcontainers-example).

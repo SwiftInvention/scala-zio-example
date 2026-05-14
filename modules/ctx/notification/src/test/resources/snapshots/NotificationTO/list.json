@@ -1,0 +1,16 @@
+[
+  {
+    "id" : "n-11111111-2222-3333-4444-555555555555",
+    "recipientId" : "c-11111111-2222-3333-4444-555555555555",
+    "channel" : "Email",
+    "message" : "Welcome aboard, Ada.",
+    "createdAt" : "2026-05-11T12:00:00Z"
+  },
+  {
+    "id" : "n-66666666-7777-8888-9999-aaaaaaaaaaaa",
+    "recipientId" : "c-66666666-7777-8888-9999-aaaaaaaaaaaa",
+    "channel" : "Sms",
+    "message" : "Reminder: your appointment is tomorrow.",
+    "createdAt" : "2026-05-11T12:01:00Z"
+  }
+]

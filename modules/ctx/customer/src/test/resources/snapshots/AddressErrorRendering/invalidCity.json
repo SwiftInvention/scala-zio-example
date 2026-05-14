@@ -1,0 +1,6 @@
+{
+  "code" : 400,
+  "category" : "Customer",
+  "reason" : "InvalidCity",
+  "description" : "City must not be empty"
+}

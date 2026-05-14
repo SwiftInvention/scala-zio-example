@@ -14,3 +14,7 @@ addCommandAlias(
   "ci",
   "tpolecatCiMode"
 )
+addCommandAlias(
+  "unitTest",
+  "libCommon/test; ctxCustomerApi/test; ctxCustomer/test; ctxNotification/test; appServer/test"
+)

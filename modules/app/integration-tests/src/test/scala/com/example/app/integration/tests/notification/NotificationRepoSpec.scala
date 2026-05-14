@@ -1,0 +1,118 @@
+package com.example.app.integration.tests.notification
+
+import com.example.ctx.customer.fixture.CustomerFixtures
+import com.example.ctx.notification.domain.service.repo.NotificationRepo
+import com.example.ctx.notification.fixture.NotificationFixtures
+import com.example.ctx.notification.impl.service.repo.NotificationRepoMySQLImpl
+import com.example.ctx.notification.impl.service.repo.converter.NotificationPEConverter
+import com.example.lib.common.domain.model.NewTypes.{CustomerId, NotificationId}
+import com.example.lib.common.test.IntegrationSpec
+import com.example.lib.db.impl.sql.SqlContext
+import com.example.lib.db.test.TestDb
+import zio._
+import zio.test.Assertion._
+import zio.test._
+
+/** Integration tests for `NotificationRepo` against MySQL. Notification rows require a parent customer (FK), so suites
+  * seed customers before inserting notifications.
+  */
+object NotificationRepoSpec extends IntegrationSpec {
+
+  private val testLayer = TestDb.freshSchemaLayer >+> NotificationRepoMySQLImpl.layer
+
+  override def spec: Spec[Any, Throwable] = suite("NotificationRepo (MySQL)")(
+    suite("insert")(
+      test("persists a notification that can be read back") {
+        (for {
+          ctx          <- ZIO.service[SqlContext]
+          _            <- CustomerFixtures.seed(ctx = ctx, pe = CustomerFixtures.adaPE)
+          notification <- NotificationPEConverter.toNotification(NotificationFixtures.adaEmailPE)
+          _            <- ZIO.serviceWithZIO[NotificationRepo](_.insert(notification))
+          result       <- ZIO.serviceWithZIO[NotificationRepo](_.find(NotificationFixtures.adaEmailPE.id))
+        } yield assert(result.map(_.id))(equalTo(Some(NotificationFixtures.adaEmailPE.id)))).provide(testLayer)
+      },
+      test("fails when recipient_id references a non-existent customer (FK violation)") {
+        // The FK on `notification.recipient_id` references `customer.id`; inserting against a missing parent raises a
+        // SQL constraint violation that the `Transactor` boundary wraps into the `AppFailure` channel.
+        (for {
+          notification <- NotificationPEConverter.toNotification(NotificationFixtures.orphanPE)
+          exit         <- ZIO.serviceWithZIO[NotificationRepo](_.insert(notification)).exit
+        } yield assert(exit)(fails(anything))).provide(testLayer)
+      }
+    ),
+    suite("find")(
+      test("returns Some when the notification exists") {
+        (for {
+          ctx    <- ZIO.service[SqlContext]
+          _      <- CustomerFixtures.seed(ctx = ctx, pe = CustomerFixtures.adaPE)
+          _      <- NotificationFixtures.seed(ctx = ctx, pe = NotificationFixtures.adaEmailPE)
+          result <- ZIO.serviceWithZIO[NotificationRepo](_.find(NotificationFixtures.adaEmailPE.id))
+        } yield assert(result.map(_.id))(equalTo(Some(NotificationFixtures.adaEmailPE.id)))).provide(testLayer)
+      },
+      test("returns None when the notification does not exist") {
+        (for {
+          result <- ZIO.serviceWithZIO[NotificationRepo](_.find(NotificationId("n-missing")))
+        } yield assert(result)(isNone)).provide(testLayer)
+      }
+    ),
+    suite("list")(
+      test("returns all seeded notifications") {
+        (for {
+          ctx <- ZIO.service[SqlContext]
+          _ <- CustomerFixtures.seedAll(
+            ctx = ctx,
+            pes = List(CustomerFixtures.adaPE, CustomerFixtures.alanPE)
+          )
+          _ <- NotificationFixtures.seedAll(
+            ctx = ctx,
+            pes = List(NotificationFixtures.adaEmailPE, NotificationFixtures.alanInAppPE)
+          )
+          result <- ZIO.serviceWithZIO[NotificationRepo](_.list)
+          ids = result.map(_.id).toSet
+        } yield assert(ids)(
+          equalTo(Set(NotificationFixtures.adaEmailPE.id, NotificationFixtures.alanInAppPE.id))
+        )).provide(testLayer)
+      },
+      test("returns empty when the schema is fresh") {
+        (for {
+          result <- ZIO.serviceWithZIO[NotificationRepo](_.list)
+        } yield assert(result)(isEmpty)).provide(testLayer)
+      }
+    ),
+    suite("listForRecipient")(
+      test("returns only notifications belonging to the recipient") {
+        (for {
+          ctx <- ZIO.service[SqlContext]
+          _ <- CustomerFixtures.seedAll(
+            ctx = ctx,
+            pes = List(CustomerFixtures.adaPE, CustomerFixtures.alanPE)
+          )
+          _ <- NotificationFixtures.seedAll(
+            ctx = ctx,
+            pes = List(
+              NotificationFixtures.adaEmailPE,
+              NotificationFixtures.adaSmsPE,
+              NotificationFixtures.alanInAppPE
+            )
+          )
+          result <- ZIO.serviceWithZIO[NotificationRepo](_.listForRecipient(CustomerFixtures.adaPE.id))
+          ids = result.map(_.id).toSet
+        } yield assert(ids)(
+          equalTo(Set(NotificationFixtures.adaEmailPE.id, NotificationFixtures.adaSmsPE.id))
+        )).provide(testLayer)
+      },
+      test("returns empty when the recipient has no notifications") {
+        (for {
+          ctx    <- ZIO.service[SqlContext]
+          _      <- CustomerFixtures.seed(ctx = ctx, pe = CustomerFixtures.adaPE)
+          result <- ZIO.serviceWithZIO[NotificationRepo](_.listForRecipient(CustomerFixtures.adaPE.id))
+        } yield assert(result)(isEmpty)).provide(testLayer)
+      },
+      test("returns empty when the recipient doesn't exist (no existence check)") {
+        (for {
+          result <- ZIO.serviceWithZIO[NotificationRepo](_.listForRecipient(CustomerId("c-missing")))
+        } yield assert(result)(isEmpty)).provide(testLayer)
+      }
+    )
+  )
+}

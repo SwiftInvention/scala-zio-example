@@ -1,0 +1,50 @@
+# TO Converters
+
+Each entity has a converter object that translates between its domain form and its wire (TO) form. One file per entity, hand-written, in the ctx's `impl/`.
+
+## Where they live
+
+```text
+modules/ctx/<name>/src/main/scala/com/example/<name>/impl/to/converter/
+└── <Entity>Converter.scala
+```
+
+`impl/to/` collects TO-related impl-side concerns (currently just converters; later may grow to validators, custom codecs, etc.). It's the only place that can see both sides — the domain entity (its own module) and the TO (`<name>-api`). See [`cross-context-call.md`](cross-context-call.md) §"The DirectClient impl" for why.
+
+The converter is also the place where smart-constructed domain types (`Email`, `CustomerName`) flatten to wire-side primitives — domain types stay at the domain, TOs serve the wire's own constraints. See [`correct-by-construction.md`](correct-by-construction.md#domain-types-stay-at-the-domain) for the principle.
+
+## Shape
+
+```scala
+package com.example.ctx.customer.impl.to.converter
+
+import com.example.ctx.customer.api.to.CustomerTO
+import com.example.ctx.customer.domain.model.Customer
+
+object CustomerConverter {
+  def toCustomerTO(d: Customer): CustomerTO =
+    CustomerTO(d.id, d.email, d.name)
+
+  def toCustomer(to: CustomerTO): Customer =
+    Customer(to.id, to.email, to.name)
+}
+```
+
+Method names are entity-qualified: `to<Entity>TO` for domain → TO, `to<Entity>` for TO → domain. For create-command shapes: `toNew<Entity>(to: CreateXRequestTO): NewX`.
+
+## At call sites
+
+Either qualified or imported:
+
+```scala
+import com.example.ctx.customer.impl.to.converter.CustomerConverter._
+
+appService.list.map(_.map(toCustomerTO))                // imported
+appService.list.map(_.map(CustomerConverter.toCustomerTO))  // qualified
+```
+
+Imported form keeps map bodies clean. Qualified form is unambiguous when multiple converters are in scope at one call site.
+
+## One file per entity
+
+As entities accrue (`Customer`, `Company`, `Facility`), each gets its own `<Entity>Converter.scala`. If a converter is dominated by a few tightly-paired sub-entities (e.g. `CompanyConverter` also handles `CompanyAddress` because they always appear together), keep them in the same file.

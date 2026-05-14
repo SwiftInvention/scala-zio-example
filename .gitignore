@@ -1,6 +1,7 @@
 .ammonite/
 .bloop/
 .bsp/
+.cache/
 .idea/
 .metals/
 .vscode/
@@ -12,3 +13,19 @@ project/target/
 src_managed/
 target/
 log
+
+# local data
+local-data
+
+# Just-recipe env vars (overrides recipe defaults). Copy from .env.example.
+# Gitignored so machine-local values and any throwaway dev creds stay local.
+.env
+
+# Local config — copy from the .example template, may contain throwaway local creds.
+# Other env files (application-dev.conf, application-prod.conf) are committed
+# because they only contain ${VAR} substitutions, no actual secrets.
+modules/**/src/main/resources/application-local.conf
+
+# AI
+.claude/settings.local.json
+CLAUDE.local.md

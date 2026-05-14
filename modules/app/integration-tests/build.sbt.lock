@@ -1,0 +1,1696 @@
+{
+  "lockVersion" : 1,
+  "timestamp" : "2026-05-13T12:53:06.185273Z",
+  "configurations" : [
+    "compile",
+    "optional",
+    "provided",
+    "runtime",
+    "scalafix",
+    "test"
+  ],
+  "dependencies" : [
+    {
+      "org" : "com.beachape",
+      "name" : "enumeratum-macros_2.13",
+      "version" : "1.9.7",
+      "artifacts" : [
+        {
+          "name" : "enumeratum-macros_2.13.jar",
+          "hash" : "sha1:9388c543b68cc1da6a5ca2b4358784d4d04961ee"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.beachape",
+      "name" : "enumeratum_2.13",
+      "version" : "1.9.7",
+      "artifacts" : [
+        {
+          "name" : "enumeratum_2.13.jar",
+          "hash" : "sha1:1c09f0f9ada67c914cea7fdecb91497a997ae6d2"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.chuusai",
+      "name" : "shapeless_2.13",
+      "version" : "2.3.13",
+      "artifacts" : [
+        {
+          "name" : "shapeless_2.13.jar",
+          "hash" : "sha1:ad096ac4c21b4bed4efca36e32e0c62ba00a8d3f"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.example",
+      "name" : "ctxcustomer_2.13",
+      "version" : "0.1.1-SNAPSHOT",
+      "artifacts" : [
+      ],
+      "configurations" : [
+        "compile",
+        "optional",
+        "provided",
+        "runtime",
+        "scalafix",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.example",
+      "name" : "ctxcustomerapi_2.13",
+      "version" : "0.1.1-SNAPSHOT",
+      "artifacts" : [
+      ],
+      "configurations" : [
+        "compile",
+        "optional",
+        "provided",
+        "runtime",
+        "scalafix",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.example",
+      "name" : "ctxnotification_2.13",
+      "version" : "0.1.1-SNAPSHOT",
+      "artifacts" : [
+      ],
+      "configurations" : [
+        "compile",
+        "optional",
+        "provided",
+        "runtime",
+        "scalafix",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.example",
+      "name" : "libcommon_2.13",
+      "version" : "0.1.1-SNAPSHOT",
+      "artifacts" : [
+      ],
+      "configurations" : [
+        "compile",
+        "optional",
+        "provided",
+        "runtime",
+        "scalafix",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.example",
+      "name" : "libdb_2.13",
+      "version" : "0.1.1-SNAPSHOT",
+      "artifacts" : [
+      ],
+      "configurations" : [
+        "compile",
+        "optional",
+        "provided",
+        "runtime",
+        "scalafix",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.example",
+      "name" : "server_2.13",
+      "version" : "0.1.1-SNAPSHOT",
+      "artifacts" : [
+      ],
+      "configurations" : [
+        "compile",
+        "optional",
+        "provided",
+        "runtime",
+        "scalafix",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.github.ben-manes.caffeine",
+      "name" : "caffeine",
+      "version" : "3.1.8",
+      "artifacts" : [
+        {
+          "name" : "caffeine.jar",
+          "hash" : "sha1:24795585df8afaf70a2cd534786904ea5889c047"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.github.pureconfig",
+      "name" : "pureconfig-core_2.13",
+      "version" : "0.17.10",
+      "artifacts" : [
+        {
+          "name" : "pureconfig-core_2.13.jar",
+          "hash" : "sha1:ef4feb653c3fb57cb692a0c61d1b0a7d8a148148"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.github.pureconfig",
+      "name" : "pureconfig-generic-base_2.13",
+      "version" : "0.17.10",
+      "artifacts" : [
+        {
+          "name" : "pureconfig-generic-base_2.13.jar",
+          "hash" : "sha1:48f85a01e1ac5585d72c8f26b6a74d5581a8fd38"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.github.pureconfig",
+      "name" : "pureconfig-generic_2.13",
+      "version" : "0.17.10",
+      "artifacts" : [
+        {
+          "name" : "pureconfig-generic_2.13.jar",
+          "hash" : "sha1:91304fb8fa2e8674089377771d64b69bd28f01aa"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.github.pureconfig",
+      "name" : "pureconfig_2.13",
+      "version" : "0.17.10",
+      "artifacts" : [
+        {
+          "name" : "pureconfig_2.13.jar",
+          "hash" : "sha1:881cb6f835325eb35c945472ee4661bfa6249bc2"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.github.takayahilton",
+      "name" : "sql-formatter_2.13",
+      "version" : "1.2.1",
+      "artifacts" : [
+        {
+          "name" : "sql-formatter_2.13.jar",
+          "hash" : "sha1:62a46239c6ab1d7fb3b44baa5ffc5deea64c9352"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.google.errorprone",
+      "name" : "error_prone_annotations",
+      "version" : "2.21.1",
+      "artifacts" : [
+        {
+          "name" : "error_prone_annotations.jar",
+          "hash" : "sha1:6d9b10773b5237df178a7b3c1b4208df7d0e7f94"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.google.protobuf",
+      "name" : "protobuf-java",
+      "version" : "4.31.1",
+      "artifacts" : [
+        {
+          "name" : "protobuf-java.jar",
+          "hash" : "sha1:1828b20315b63d5f71b3c61b094494a8f1acdc5a"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.lihaoyi",
+      "name" : "fansi_2.13",
+      "version" : "0.5.0",
+      "artifacts" : [
+        {
+          "name" : "fansi_2.13.jar",
+          "hash" : "sha1:79ac5cfe836ecef21ef8d1cd6fe63436dc0eb9ce"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.lihaoyi",
+      "name" : "pprint_2.13",
+      "version" : "0.9.0",
+      "artifacts" : [
+        {
+          "name" : "pprint_2.13.jar",
+          "hash" : "sha1:cd6ebab58792fd9d673edd76de5a8d40649a9370"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.lihaoyi",
+      "name" : "sourcecode_2.13",
+      "version" : "0.4.0",
+      "artifacts" : [
+        {
+          "name" : "sourcecode_2.13.jar",
+          "hash" : "sha1:05e754d24fe657d4a58dffed67910f58b26bb953"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.lihaoyi",
+      "name" : "unroll-annotation_2.13",
+      "version" : "0.1.12",
+      "artifacts" : [
+        {
+          "name" : "unroll-annotation_2.13.jar",
+          "hash" : "sha1:92fd9bd3c93d95a5c84cf70a0e16be0c643f127b"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.lihaoyi",
+      "name" : "unroll-plugin_2.13",
+      "version" : "0.1.12",
+      "artifacts" : [
+        {
+          "name" : "unroll-plugin_2.13.jar",
+          "hash" : "sha1:399e887b03904cce66b92c36016c46c125aa592f"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.mysql",
+      "name" : "mysql-connector-j",
+      "version" : "9.7.0",
+      "artifacts" : [
+        {
+          "name" : "mysql-connector-j.jar",
+          "hash" : "sha1:4e6e3e8765e4a9d0609744b3e8fe75afe1b98cba"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.softwaremill.magnolia1_2",
+      "name" : "magnolia_2.13",
+      "version" : "1.1.10",
+      "artifacts" : [
+        {
+          "name" : "magnolia_2.13.jar",
+          "hash" : "sha1:e55ca218d465ac4e522f6ed5c163bdb1e5e00c14"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.squareup.okhttp3",
+      "name" : "okhttp-jvm",
+      "version" : "5.3.2",
+      "artifacts" : [
+        {
+          "name" : "okhttp-jvm.jar",
+          "hash" : "sha1:f31e8de27feebe1e56d6c9d354a0986b65be0e1d"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.squareup.okio",
+      "name" : "okio-jvm",
+      "version" : "3.16.4",
+      "artifacts" : [
+        {
+          "name" : "okio-jvm.jar",
+          "hash" : "sha1:ceb794cf0bbf8d0d20f49aa91ce20db7fd77675d"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.typesafe",
+      "name" : "config",
+      "version" : "1.4.5",
+      "artifacts" : [
+        {
+          "name" : "config.jar",
+          "hash" : "sha1:0cc25b497ded7068a861517a815546fb472f9e58"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.typesafe.scala-logging",
+      "name" : "scala-logging_2.13",
+      "version" : "3.9.5",
+      "artifacts" : [
+        {
+          "name" : "scala-logging_2.13.jar",
+          "hash" : "sha1:d5a0f61168371d8cff1c510f55407aa46bea8366"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "com.zaxxer",
+      "name" : "HikariCP",
+      "version" : "6.2.1",
+      "artifacts" : [
+        {
+          "name" : "HikariCP.jar",
+          "hash" : "sha1:2d60b91e74ee4ff10fc9a395d10b3b9c7061ef87"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "izumi-reflect-thirdparty-boopickle-shaded_2.13",
+      "version" : "3.0.9",
+      "artifacts" : [
+        {
+          "name" : "izumi-reflect-thirdparty-boopickle-shaded_2.13.jar",
+          "hash" : "sha1:13dc79179ef55b5bbd4f5be1fed5f4911b70e88f"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "izumi-reflect_2.13",
+      "version" : "3.0.9",
+      "artifacts" : [
+        {
+          "name" : "izumi-reflect_2.13.jar",
+          "hash" : "sha1:19f99662d2176beca03d1c8eecb40aa0add54aa5"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-constraintless_2.13",
+      "version" : "0.3.3",
+      "artifacts" : [
+        {
+          "name" : "zio-constraintless_2.13.jar",
+          "hash" : "sha1:cccb7f18cd3b1219606eb8c36f7f939c4af07b6d"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-http_2.13",
+      "version" : "3.11.0",
+      "artifacts" : [
+        {
+          "name" : "zio-http_2.13.jar",
+          "hash" : "sha1:3bfcf853b464b121115b199dbb2414c73a722517"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-internal-macros_2.13",
+      "version" : "2.1.25",
+      "artifacts" : [
+        {
+          "name" : "zio-internal-macros_2.13.jar",
+          "hash" : "sha1:dcf1ab0b7b2b27b828512d970cf9ea5fade2eada"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-json_2.13",
+      "version" : "0.9.0",
+      "artifacts" : [
+        {
+          "name" : "zio-json_2.13.jar",
+          "hash" : "sha1:0750e52b8519ea80248a9013bc296bcb733e0104"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-logging-slf4j-bridge_2.13",
+      "version" : "2.5.3",
+      "artifacts" : [
+        {
+          "name" : "zio-logging-slf4j-bridge_2.13.jar",
+          "hash" : "sha1:5fb39782af143d2181d9e97bce1b5d947667aa41"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-logging_2.13",
+      "version" : "2.5.3",
+      "artifacts" : [
+        {
+          "name" : "zio-logging_2.13.jar",
+          "hash" : "sha1:15e671c2cd0a3d649bd3f1de0232528cdfb0938c"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-opentelemetry_2.13",
+      "version" : "3.1.16",
+      "artifacts" : [
+        {
+          "name" : "zio-opentelemetry_2.13.jar",
+          "hash" : "sha1:288c86d33db22aec2bde2f623d8372e0147e2f92"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-parser_2.13",
+      "version" : "0.1.11",
+      "artifacts" : [
+        {
+          "name" : "zio-parser_2.13.jar",
+          "hash" : "sha1:42ee27e620d796b5a1c8a32cddc6289025a0185f"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-prelude-macros_2.13",
+      "version" : "1.0.0-RC47",
+      "artifacts" : [
+        {
+          "name" : "zio-prelude-macros_2.13.jar",
+          "hash" : "sha1:15baec4b0d2d23dedc04ad3f264be8094e078999"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-prelude_2.13",
+      "version" : "1.0.0-RC47",
+      "artifacts" : [
+        {
+          "name" : "zio-prelude_2.13.jar",
+          "hash" : "sha1:467eeca531eca9bde792d08ca72cc0ff293868d7"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-schema-derivation_2.13",
+      "version" : "1.8.3",
+      "artifacts" : [
+        {
+          "name" : "zio-schema-derivation_2.13.jar",
+          "hash" : "sha1:611dcfd2c7b1d47b24464813603956f5df832fce"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-schema-json_2.13",
+      "version" : "1.8.3",
+      "artifacts" : [
+        {
+          "name" : "zio-schema-json_2.13.jar",
+          "hash" : "sha1:44509b0e99bf06ae623c046e78055b999817dfe4"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-schema-macros_2.13",
+      "version" : "1.8.3",
+      "artifacts" : [
+        {
+          "name" : "zio-schema-macros_2.13.jar",
+          "hash" : "sha1:c175107ee4becb4bd7c753bf43def716c0f36e4c"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-schema-protobuf_2.13",
+      "version" : "1.8.3",
+      "artifacts" : [
+        {
+          "name" : "zio-schema-protobuf_2.13.jar",
+          "hash" : "sha1:c4195df381c11331fabfbeff0ffcbafc62324e16"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-schema_2.13",
+      "version" : "1.8.3",
+      "artifacts" : [
+        {
+          "name" : "zio-schema_2.13.jar",
+          "hash" : "sha1:c3e16a44755eb618c9afdcdf3ff83138e13c1e78"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-stacktracer_2.13",
+      "version" : "2.1.25",
+      "artifacts" : [
+        {
+          "name" : "zio-stacktracer_2.13.jar",
+          "hash" : "sha1:8ae2b28f96d4afe0c4e552eef5ea445fd1096802"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-streams_2.13",
+      "version" : "2.1.25",
+      "artifacts" : [
+        {
+          "name" : "zio-streams_2.13.jar",
+          "hash" : "sha1:600b079db546808553562f8a6e53521b37bc2096"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-test-sbt_2.13",
+      "version" : "2.1.25",
+      "artifacts" : [
+        {
+          "name" : "zio-test-sbt_2.13.jar",
+          "hash" : "sha1:251eaf223c2f250fb238b414e2a44e605318fd4a"
+        }
+      ],
+      "configurations" : [
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio-test_2.13",
+      "version" : "2.1.25",
+      "artifacts" : [
+        {
+          "name" : "zio-test_2.13.jar",
+          "hash" : "sha1:8ecf92734a7d03b5607bf1966de1b2a29825d9f1"
+        }
+      ],
+      "configurations" : [
+        "test"
+      ]
+    },
+    {
+      "org" : "dev.zio",
+      "name" : "zio_2.13",
+      "version" : "2.1.25",
+      "artifacts" : [
+        {
+          "name" : "zio_2.13.jar",
+          "hash" : "sha1:7903fb283b46ab10ade9bf34bae77c41e85b6aeb"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.getquill",
+      "name" : "quill-core_2.13",
+      "version" : "4.8.5",
+      "artifacts" : [
+        {
+          "name" : "quill-core_2.13.jar",
+          "hash" : "sha1:e3913851ae1a074f0c31d50a45b72b85589fc5ac"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.getquill",
+      "name" : "quill-engine_2.13",
+      "version" : "4.8.5",
+      "artifacts" : [
+        {
+          "name" : "quill-engine_2.13.jar",
+          "hash" : "sha1:a3ad273071d2cb06feee72d352329f61da21ab33"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.getquill",
+      "name" : "quill-jdbc-zio_2.13",
+      "version" : "4.8.5",
+      "artifacts" : [
+        {
+          "name" : "quill-jdbc-zio_2.13.jar",
+          "hash" : "sha1:03999af795aebdca51e7779303e21ece64a77c4c"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.getquill",
+      "name" : "quill-jdbc_2.13",
+      "version" : "4.8.5",
+      "artifacts" : [
+        {
+          "name" : "quill-jdbc_2.13.jar",
+          "hash" : "sha1:18ee3d4dbbb3f1db1eb48deed798f90b662521fb"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.getquill",
+      "name" : "quill-sql_2.13",
+      "version" : "4.8.5",
+      "artifacts" : [
+        {
+          "name" : "quill-sql_2.13.jar",
+          "hash" : "sha1:d829afd03512a0c9ac8533562a181420e56a0828"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.getquill",
+      "name" : "quill-zio_2.13",
+      "version" : "4.8.5",
+      "artifacts" : [
+        {
+          "name" : "quill-zio_2.13.jar",
+          "hash" : "sha1:5643f09ac27c752f39ca0bb99f8498bf1d7f83ee"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.github.java-diff-utils",
+      "name" : "java-diff-utils",
+      "version" : "4.16",
+      "artifacts" : [
+        {
+          "name" : "java-diff-utils.jar",
+          "hash" : "sha1:cca1e7dc2460d0afeebc3fc4a3386eadede08c5a"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-buffer",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-buffer.jar",
+          "hash" : "sha1:a1b3a6a4ebaf546860eb119d4e462cd300976ae3"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-codec-base",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-codec-base.jar",
+          "hash" : "sha1:381b47a0cdd126010a7df1c25d25d7bf55c4fddb"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-codec-compression",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-codec-compression.jar",
+          "hash" : "sha1:aa0849118167bc727a8dbdaeccc45d56c1f1e8fb"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-codec-http",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-codec-http.jar",
+          "hash" : "sha1:8dbaa045acc60abf333d428dca4339ce36423bd0"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-codec-socks",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-codec-socks.jar",
+          "hash" : "sha1:e7114ff84cea11086b33367468f5cae16aa727a8"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-common",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-common.jar",
+          "hash" : "sha1:d35ffb9bf5cc0e05ae7408cf6a682b62dceceafc"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-handler",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-handler.jar",
+          "hash" : "sha1:1ccb2b1eed54ce049b3ff39fde225014526ab6a0"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-handler-proxy",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-handler-proxy.jar",
+          "hash" : "sha1:2304d930dcd2c2ba3537318395361944938e3d42"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-pkitesting",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-pkitesting.jar",
+          "hash" : "sha1:352305cf4418cbbeec4efa8988361e4324e0666f"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-resolver",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-resolver.jar",
+          "hash" : "sha1:c59aa586a12e62d80207a00f9cf18eedf69d1012"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-transport",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-transport.jar",
+          "hash" : "sha1:e9d42074c3d96cf31ce57cc58f6de6f31959b7a8"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-transport-classes-epoll",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-transport-classes-epoll.jar",
+          "hash" : "sha1:208f99e5eb334344c51eb921563cd04a3458df66"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-transport-classes-kqueue",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-transport-classes-kqueue.jar",
+          "hash" : "sha1:eda51852a1d97bf459fb354b1cf0fd9eb679a171"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-transport-native-epoll",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-transport-native-epoll.jar",
+          "hash" : "sha1:98ade7018a9d182e3ec98c3b1e80b147bf116b1f"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-transport-native-kqueue",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-transport-native-kqueue.jar",
+          "hash" : "sha1:1bf1dda7fa7ff678ba91fa5cde5463969d01564e"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.netty",
+      "name" : "netty-transport-native-unix-common",
+      "version" : "4.2.12.Final",
+      "artifacts" : [
+        {
+          "name" : "netty-transport-native-unix-common.jar",
+          "hash" : "sha1:8f8e5e39fcf6bebc8ec4c1d855f4f1335756c50e"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry",
+      "name" : "opentelemetry-api",
+      "version" : "1.61.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-api.jar",
+          "hash" : "sha1:6b36cee03bfd6424f532342a8c4519c10666c157"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry",
+      "name" : "opentelemetry-common",
+      "version" : "1.61.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-common.jar",
+          "hash" : "sha1:cf3f9eee453b106916e8d7f43a212293b868e95a"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry",
+      "name" : "opentelemetry-context",
+      "version" : "1.61.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-context.jar",
+          "hash" : "sha1:8385e62008c321fcbafecf0b7f3f432ab9b99062"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry",
+      "name" : "opentelemetry-exporter-common",
+      "version" : "1.61.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-exporter-common.jar",
+          "hash" : "sha1:2ea79318304cad4c4b903e8dac1ec739914aedcc"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry",
+      "name" : "opentelemetry-exporter-otlp",
+      "version" : "1.61.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-exporter-otlp.jar",
+          "hash" : "sha1:9b5436f1f754650728c3052a46f8fe59e3f5cf53"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry",
+      "name" : "opentelemetry-exporter-otlp-common",
+      "version" : "1.61.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-exporter-otlp-common.jar",
+          "hash" : "sha1:76d2a99dd063fc8e3d231d62860f33444131ef30"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry",
+      "name" : "opentelemetry-exporter-sender-okhttp",
+      "version" : "1.61.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-exporter-sender-okhttp.jar",
+          "hash" : "sha1:71e3bc45372e4d9284da52f848f21145d979963e"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry",
+      "name" : "opentelemetry-sdk",
+      "version" : "1.61.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-sdk.jar",
+          "hash" : "sha1:02221e7c13577b5d04fb3b69a72cbfeba0f73034"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry",
+      "name" : "opentelemetry-sdk-common",
+      "version" : "1.61.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-sdk-common.jar",
+          "hash" : "sha1:13ac20fd570b28d56fefd7a7f7e427f80bb7959c"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry",
+      "name" : "opentelemetry-sdk-extension-autoconfigure-spi",
+      "version" : "1.61.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-sdk-extension-autoconfigure-spi.jar",
+          "hash" : "sha1:1465543b7d061886c92f5a62c6deed49a81726f8"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry",
+      "name" : "opentelemetry-sdk-logs",
+      "version" : "1.61.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-sdk-logs.jar",
+          "hash" : "sha1:3612cd019e07d1a196795c8db79b9760b623a393"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry",
+      "name" : "opentelemetry-sdk-metrics",
+      "version" : "1.61.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-sdk-metrics.jar",
+          "hash" : "sha1:956444da6c88b6619fb80dcacca3aee19753f250"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry",
+      "name" : "opentelemetry-sdk-trace",
+      "version" : "1.61.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-sdk-trace.jar",
+          "hash" : "sha1:3004df101068116093b2a2c7984ad69a908208b9"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.opentelemetry.semconv",
+      "name" : "opentelemetry-semconv",
+      "version" : "1.40.0",
+      "artifacts" : [
+        {
+          "name" : "opentelemetry-semconv.jar",
+          "hash" : "sha1:fca8594d7edb9ac5f7f9baa8d68f135354a7a243"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "io.suzaku",
+      "name" : "boopickle_2.13",
+      "version" : "1.5.0",
+      "artifacts" : [
+        {
+          "name" : "boopickle_2.13.jar",
+          "hash" : "sha1:d6e644cdad245b19f42433ddfaaacd9a04ed1e76"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.bouncycastle",
+      "name" : "bcpkix-jdk18on",
+      "version" : "1.83",
+      "artifacts" : [
+        {
+          "name" : "bcpkix-jdk18on.jar",
+          "hash" : "sha1:3f4300d0441459bfa64a481c80062b002ff0cf65"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.bouncycastle",
+      "name" : "bcprov-jdk18on",
+      "version" : "1.83",
+      "artifacts" : [
+        {
+          "name" : "bcprov-jdk18on.jar",
+          "hash" : "sha1:310e719f391bd9f4ee5103ca299c172643efb595"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.bouncycastle",
+      "name" : "bcutil-jdk18on",
+      "version" : "1.83",
+      "artifacts" : [
+        {
+          "name" : "bcutil-jdk18on.jar",
+          "hash" : "sha1:da0747f51fe1774f8e922b498b9c3e0ebe87b2d4"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.checkerframework",
+      "name" : "checker-qual",
+      "version" : "3.37.0",
+      "artifacts" : [
+        {
+          "name" : "checker-qual.jar",
+          "hash" : "sha1:ba74746d38026581c12166e164bb3c15e90cc4ea"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.jetbrains",
+      "name" : "annotations",
+      "version" : "13.0",
+      "artifacts" : [
+        {
+          "name" : "annotations.jar",
+          "hash" : "sha1:919f0dfe192fb4e063e7dacadee7f8bb9a2672a9"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.jetbrains.kotlin",
+      "name" : "kotlin-stdlib",
+      "version" : "2.2.21",
+      "artifacts" : [
+        {
+          "name" : "kotlin-stdlib.jar",
+          "hash" : "sha1:fa374a986e128314c3db00a20aae55f72a258511"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.jline",
+      "name" : "jline",
+      "version" : "3.29.0",
+      "artifacts" : [
+        {
+          "name" : "jline.jar",
+          "hash" : "sha1:c1eed8285fadb65a189e2925106b663cc4aa8ed0"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.portable-scala",
+      "name" : "portable-scala-reflect_2.13",
+      "version" : "1.1.3",
+      "artifacts" : [
+        {
+          "name" : "portable-scala-reflect_2.13.jar",
+          "hash" : "sha1:f9295253915f13387e1d4e5b54d531c95e6e2197"
+        }
+      ],
+      "configurations" : [
+        "test"
+      ]
+    },
+    {
+      "org" : "org.scala-lang",
+      "name" : "scala-compiler",
+      "version" : "2.13.18",
+      "artifacts" : [
+        {
+          "name" : "scala-compiler.jar",
+          "hash" : "sha1:8819d2783d182a78ac47918f8d0194599f4c432f"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.scala-lang",
+      "name" : "scala-library",
+      "version" : "2.13.18",
+      "artifacts" : [
+        {
+          "name" : "scala-library.jar",
+          "hash" : "sha1:eb2086988c25b08705472cc750654570900362e5"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.scala-lang",
+      "name" : "scala-reflect",
+      "version" : "2.13.18",
+      "artifacts" : [
+        {
+          "name" : "scala-reflect.jar",
+          "hash" : "sha1:674f3bd39f5c528d575da69c42a5dff772b9b75c"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.scala-lang.modules",
+      "name" : "scala-collection-compat_2.13",
+      "version" : "2.14.0",
+      "artifacts" : [
+        {
+          "name" : "scala-collection-compat_2.13.jar",
+          "hash" : "sha1:73b62c66181022be8c2f63c60dd83201be1febde"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.scala-sbt",
+      "name" : "test-interface",
+      "version" : "1.0",
+      "artifacts" : [
+        {
+          "name" : "test-interface.jar",
+          "hash" : "sha1:0a3f14d010c4cb32071f863d97291df31603b521"
+        }
+      ],
+      "configurations" : [
+        "test"
+      ]
+    },
+    {
+      "org" : "org.slf4j",
+      "name" : "jcl-over-slf4j",
+      "version" : "1.7.36",
+      "artifacts" : [
+        {
+          "name" : "jcl-over-slf4j.jar",
+          "hash" : "sha1:d877e195a05aca4a2f1ad2ff14bfec1393af4b5e"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.slf4j",
+      "name" : "jul-to-slf4j",
+      "version" : "1.7.36",
+      "artifacts" : [
+        {
+          "name" : "jul-to-slf4j.jar",
+          "hash" : "sha1:ed46d81cef9c412a88caef405b58f93a678ff2ca"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.slf4j",
+      "name" : "log4j-over-slf4j",
+      "version" : "1.7.36",
+      "artifacts" : [
+        {
+          "name" : "log4j-over-slf4j.jar",
+          "hash" : "sha1:2a753acda077203a4794f106871bb237501c9a53"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    },
+    {
+      "org" : "org.slf4j",
+      "name" : "slf4j-api",
+      "version" : "1.7.36",
+      "artifacts" : [
+        {
+          "name" : "slf4j-api.jar",
+          "hash" : "sha1:6c62681a2f655b49963a5983b8b0950a6120ae14"
+        }
+      ],
+      "configurations" : [
+        "compile",
+        "runtime",
+        "test"
+      ]
+    }
+  ]
+}

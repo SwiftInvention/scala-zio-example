@@ -1,0 +1,6 @@
+{
+  "code" : 400,
+  "category" : "Domain",
+  "reason" : "InvalidEmail",
+  "description" : "Invalid email: 'not-an-email'"
+}

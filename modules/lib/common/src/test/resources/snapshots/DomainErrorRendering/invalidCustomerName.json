@@ -1,0 +1,6 @@
+{
+  "code" : 400,
+  "category" : "Domain",
+  "reason" : "InvalidCustomerName",
+  "description" : "Customer name must not be empty"
+}
