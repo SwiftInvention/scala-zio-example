@@ -26,3 +26,12 @@ A single zio-http server in `ServerApp` routes each request to the contributing 
 ## Tech stack
 
 Scala 2.13 + ZIO 2.1 + zio-http + zio-schema + zio-prelude. Quill + MySQL for persistence; Flyway CLI for migrations. PureConfig for typed config. enumeratum for error enums. zio-telemetry + OpenTelemetry SDK for tracing. zio-logging + slf4j. JDK 21 + sbt 1.12, pinned via `.sdkmanrc`. Versions in `project/Versions.scala`, deps in `project/Dependencies.scala`.
+
+## Everyday commands
+
+- `just compile` — tight loop while writing code (compiles main + test, warnings as errors)
+- `just style-fix` — scalafmt + scalafix; run after a logical chunk, not every keystroke
+- `just precommit-fix` — full gate before declaring a code-touching task done (style + unit + integration tests)
+- `sbt "<moduleId>/testOnly *SpecName"` — targeted test run
+
+Full reference (local server, docker, dev tools, setup): [`commands.md`](commands.md).

@@ -7,7 +7,6 @@ Here's some general info on this project:
 @docs/knowledge-base/patterns/local-reasoning.md
 @docs/knowledge-base/architecture-principles.md
 @docs/knowledge-base/styleguide.md
-@docs/knowledge-base/commands.md
 
 There are also specific docs in `docs/knowledge-base/patterns/` that are not in context by default - consider reading some of those when you're working on a relevant area.
 We always have `patterns/local-reasoning.md` in the context because it's foundational philosophy we want to keep in mind at all times.

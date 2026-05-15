@@ -26,26 +26,9 @@ A postal address belonging to a customer. Has an id, an owning customer id, a st
 
 `AddressLine`, `City`, and `PostalCode` are smart-constructor value objects in the same domain package.
 
-## Operations
-
-Currently read-only.
-
-Customer:
-
-- `get(id)` — fail-on-missing lookup. Fails with `CustomerNotFoundError`. Backs `GET /customers/:id`.
-- `list` — all customers. Backs `GET /customers`.
-- `findMany(ids)` — batch lookup. Returns a `Map[CustomerId, Customer]` whose key set is a subset of `ids`. Not exposed via HTTP; powers `CustomerApi.getMany` for cross-context list-enrichment.
-
-Address:
-
-- `getAddress(id)` — fail-on-missing lookup. Fails with `AddressNotFoundError`. Backs `GET /addresses/:id`.
-- `listAddressesForCustomer(customerId)` — addresses owned by a customer. Pass-through to the repo: returns an empty list if the customer has no addresses or doesn't exist (no existence check). Backs `GET /customers/:id/addresses`.
-
-Cross-context API (`CustomerApi` in `customer-api`): TO-typed surface that other contexts call into. Holds `get` (existence check) and `getMany` (batch lookup for list-enrichment) — the operations the notification ctx needs.
-
 ## Notification
 
-A notification record attached to a customer. Created via `POST /notifications`; can be listed, fetched by id, or filtered by recipient.
+A notification record attached to a customer. The notification ctx depends on `customer-api` for recipient lookup.
 
 | Term                        | Meaning                                                                              |
 | --------------------------- | ------------------------------------------------------------------------------------ |
@@ -57,12 +40,3 @@ A notification record attached to a customer. Created via `POST /notifications`;
 | `NotificationWithRecipient` | Domain pair returned by enriched read paths                                          |
 | `NotificationTO`            | Wire format for the notification itself (in `notification/impl/to/`)                 |
 | `NotificationRecipientTO`   | Wire format for the recipient projection — self-contained, decoupled from `CustomerTO` (in `notification/impl/to/`) |
-
-### Operations
-
-- `create(recipientId, channel, message)` — creates a record. Calls `CustomerApi.get(recipientId)` for the existence check; `CustomerNotFoundError` propagates unchanged. Backs `POST /notifications`.
-- `get(id)` — fail-on-missing lookup; enriches with recipient via `CustomerApi.getMany`. Fails with `NotificationNotFoundError` on miss. Backs `GET /notifications/:id`.
-- `list` — all notifications, each enriched with its recipient (batched via `CustomerApi.getMany`). Backs `GET /notifications`.
-- `listForRecipient(recipientId)` — notifications scoped to one customer. No enrichment (recipient is implied by the path). Backs `GET /customers/:id/notifications`.
-
-The two cross-context interactions — existence check on `create`, batch enrichment on `get` / `list` — both live in `NotificationAppService`, not in the route. See [`patterns/cross-context-call.md`](patterns/cross-context-call.md).
