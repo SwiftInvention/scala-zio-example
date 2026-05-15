@@ -10,6 +10,8 @@ Inline markers go next to the offending code, referencing the principle by its s
 // architecture: bounded-context FIXME
 ```
 
+While we apply the rules in a strict fashion, the rules themselves are revisable. Flag tension if you see it.
+
 ---
 
 The first two entries — `local-reasoning` and `correct-by-construction` — are meta-principles; the rest of this list are mechanisms for preserving them at one scale or another.

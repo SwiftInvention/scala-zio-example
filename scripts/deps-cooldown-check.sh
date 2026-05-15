@@ -56,6 +56,7 @@ parse_http_date() {
 # ── Coord collection ─────────────────────────────────────────────────────────
 
 declare -A coords  # key "org|name|version" → 1; dedups across lockfiles
+verification_failures=()  # accumulated across plugin parsing + Maven Central lookups
 
 # Main-build coords from every lockfile. Intra-project modules are recorded
 # with an empty `artifacts` array (they don't publish jars); filter them out.
@@ -85,7 +86,10 @@ while IFS= read -r raw; do
     org="${BASH_REMATCH[1]}"
     name="${BASH_REMATCH[2]}${SBT_PLUGIN_CROSS}"
     version="${val_to_version[${BASH_REMATCH[3]}]:-}"
-    [[ -z "$version" ]] && { echo "WARN: unresolved version val '${BASH_REMATCH[3]}' for sbt plugin '${BASH_REMATCH[1]}:${BASH_REMATCH[2]}'" >&2; continue; }
+    if [[ -z "$version" ]]; then
+      verification_failures+=("unresolved version val '${BASH_REMATCH[3]}' for sbt plugin '${BASH_REMATCH[1]}:${BASH_REMATCH[2]}'")
+      continue
+    fi
     coords["${org}|${name}|${version}"]=1
     continue
   fi
@@ -95,7 +99,10 @@ while IFS= read -r raw; do
     org="${BASH_REMATCH[1]}"
     name="${BASH_REMATCH[2]}${SCALA_FULL_CROSS}"
     version="${val_to_version[${BASH_REMATCH[3]}]:-}"
-    [[ -z "$version" ]] && { echo "WARN: unresolved version val '${BASH_REMATCH[3]}' for compiler plugin '${BASH_REMATCH[1]}:${BASH_REMATCH[2]}'" >&2; continue; }
+    if [[ -z "$version" ]]; then
+      verification_failures+=("unresolved version val '${BASH_REMATCH[3]}' for compiler plugin '${BASH_REMATCH[1]}:${BASH_REMATCH[2]}'")
+      continue
+    fi
     coords["${org}|${name}|${version}"]=1
     continue
   fi
@@ -105,7 +112,10 @@ while IFS= read -r raw; do
     org="${BASH_REMATCH[1]}"
     name="${BASH_REMATCH[2]}${SCALA_BINARY_CROSS}"
     version="${val_to_version[${BASH_REMATCH[3]}]:-}"
-    [[ -z "$version" ]] && { echo "WARN: unresolved version val '${BASH_REMATCH[3]}' for compiler plugin '${BASH_REMATCH[1]}:${BASH_REMATCH[2]}'" >&2; continue; }
+    if [[ -z "$version" ]]; then
+      verification_failures+=("unresolved version val '${BASH_REMATCH[3]}' for compiler plugin '${BASH_REMATCH[1]}:${BASH_REMATCH[2]}'")
+      continue
+    fi
     coords["${org}|${name}|${version}"]=1
     continue
   fi
@@ -117,7 +127,6 @@ violations=()
 checked=0
 cached=0
 fetched=0
-warned=0
 
 for coord in "${!coords[@]}"; do
   IFS='|' read -r org name version <<< "$coord"
@@ -133,16 +142,26 @@ for coord in "${!coords[@]}"; do
   else
     org_path="${org//.//}"
     url="https://repo1.maven.org/maven2/${org_path}/${name}/${version}/"
-    last_modified=$(curl -sI "$url" | awk -F': ' 'tolower($1)=="last-modified"{print $2}' | tr -d '\r\n')
+    # `|| true` so a curl-level failure (network, DNS) becomes a verification
+    # failure below, not a script crash via `set -e`.
+    response=$(curl -sI "$url" || true)
+    # Status from the first response line: "HTTP/2 200" or "HTTP/1.1 200 OK".
+    status=$(printf '%s\n' "$response" | awk 'NR==1{print $2}')
+    # Anything non-200 is a verification failure — including 404. Maven Central
+    # serves 404s with a Last-Modified header from the error page, so we can't
+    # trust header presence alone; the status line is the truth.
+    if [[ "$status" != "200" ]]; then
+      verification_failures+=("HTTP ${status:-unreachable} for ${coord} (${url})")
+      continue
+    fi
+    last_modified=$(printf '%s\n' "$response" | awk -F': ' 'tolower($1)=="last-modified"{print $2}' | tr -d '\r\n')
     if [[ -z "$last_modified" ]]; then
-      echo "WARN: no Last-Modified for ${coord} (${url}) — skipping" >&2
-      warned=$((warned + 1))
+      verification_failures+=("no Last-Modified for ${coord} (${url})")
       continue
     fi
     publish_epoch=$(parse_http_date "$last_modified" || true)
     if [[ -z "$publish_epoch" ]]; then
-      echo "WARN: couldn't parse '${last_modified}' for ${coord} — skipping" >&2
-      warned=$((warned + 1))
+      verification_failures+=("couldn't parse Last-Modified '${last_modified}' for ${coord}")
       continue
     fi
     echo "$publish_epoch" > "$cache_file"
@@ -155,7 +174,18 @@ for coord in "${!coords[@]}"; do
   fi
 done
 
-echo "Cooldown check: ${checked} coords inspected (${cached} cached, ${fetched} fetched, ${warned} warned)" >&2
+echo "Cooldown check: ${checked} coords inspected (${cached} cached, ${fetched} fetched, ${#verification_failures[@]} unverified)" >&2
+
+if (( ${#verification_failures[@]} > 0 )); then
+  echo "" >&2
+  echo "FAIL: ${#verification_failures[@]} dep(s) could not be verified:" >&2
+  for f in "${verification_failures[@]}"; do
+    echo "  - $f" >&2
+  done
+  echo "" >&2
+  echo "The gate fails closed: a dep that can't be checked is treated as a violation." >&2
+  echo "Fix the script (or plugins.sbt) so each coord resolves and Maven Central returns a parseable Last-Modified." >&2
+fi
 
 if (( ${#violations[@]} > 0 )); then
   echo "" >&2
@@ -165,5 +195,8 @@ if (( ${#violations[@]} > 0 )); then
   done
   echo "" >&2
   echo "Either wait for the cooldown window to elapse, or pin to an older version." >&2
+fi
+
+if (( ${#violations[@]} > 0 || ${#verification_failures[@]} > 0 )); then
   exit 1
 fi
