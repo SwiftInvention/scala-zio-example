@@ -7,7 +7,7 @@ ctx/<name>/       implementation (always present)
 ctx/<name>-api/   cross-context contract (added when a foreign ctx imports it)
 ```
 
-A ctx without a cross-context caller has no `-api` module. The ctx's HTTP wire format lives in `ctx/<name>/impl/to/` — that's a separate concern from cross-context wire format (see [`cross-context-call.md`](cross-context-call.md) §"The api module"). When a consumer materializes, the trait + the TOs the trait references move (or come into existence) in the new `-api` module.
+A ctx without a cross-context caller has no `-api` module. The ctx's HTTP wire format lives in `ctx/<name>/impl/to/` — that's a separate concern from cross-context wire format (see [`cross-context-call.md`](cross-context-call.md) §"The api module").
 
 ## Internal layout of `ctx/<name>/`
 
@@ -56,11 +56,11 @@ modules/ctx/<name>/src/main/scala/com/example/ctx/<name>/
 
 `<Name>AppService` is the fan-out point: the cross-context bridge (`<Name>ApiDirectImpl`) and the HTTP routes are sibling consumers, not chained. The cross-context branch exists only when another ctx imports `<name>-api`; without a consumer, neither the trait nor the DirectImpl exist. See [`cross-context-call.md`](cross-context-call.md) §"Routes don't go through the api" for why the HTTP plane bypasses `<Name>Api`.
 
-Each link is a thin pass-through unless it has something to add. Domain services host validation and business rules; AppService orchestrates them. If `<Name>Service` would be pure delegation, drop it and have AppService call Repo directly.
+Domain services host validation and business rules; AppService orchestrates them. If `<Name>Service` would be pure delegation, drop it and have AppService call Repo directly.
 
 ## Why `app/` colocates trait and impl
 
-Service and Repo impls live in `impl/` because they may have multiple variants — `Stub`, `MySQL`, `Postgres` — chosen at composition time. AppService is different: a thin orchestrator tightly bound to its trait, almost always one impl, and read as a trait+impl pair. Colocating them keeps that cohesion visible.
+Service and Repo impls live in `impl/` because they may have multiple variants — `Stub`, `MySQL`, `Postgres` — chosen at composition time. AppService is different: a thin orchestrator tightly bound to its trait, almost always one impl, and read as a trait+impl pair.
 
 ## Import shape
 

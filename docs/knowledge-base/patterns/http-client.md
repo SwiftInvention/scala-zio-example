@@ -11,7 +11,7 @@ HttpClientConfig.layer → HttpClientConfig
 AppHttpClient.layer    → Client            (configured with our connection-timeout and idle-timeout)
 ```
 
-Under the hood it composes zio-http's `Client.live` with default `NettyConfig` and `DnsResolver` — if a deployment ever needs to tune those (custom resolver, fixed local address, SSL config beyond defaults), swap the providers at `AppHttpClient`.
+Under the hood it composes zio-http's `Client.live` with default `NettyConfig` and `DnsResolver`. Swap the providers at `AppHttpClient` to tune them.
 
 ## Config
 
@@ -22,11 +22,11 @@ http-client {
 }
 ```
 
-`connection-timeout` bounds per-request TCP connect attempts; `idle-timeout` is how long an idle pooled connection survives before close. Both are required — there are no defaults in code (`config-shape`).
+`connection-timeout` bounds per-request TCP connect attempts; `idle-timeout` is how long an idle pooled connection survives before close. Both are required.
 
 Per-endpoint timeouts (full response read) belong on the caller via `effect.timeoutFail(...)(...)`.
 
-Other zio-http knobs — connection-pool size, `requestDecompression`, SSL config beyond the JVM default — aren't exposed yet. Add fields per consumer demand.
+Other zio-http knobs (connection-pool size, `requestDecompression`, non-default SSL) aren't exposed.
 
 ## Consumer pattern
 
@@ -50,7 +50,7 @@ Use `client.batched(request)` (auto-discharges the response body's `Scope`) unle
 
 ## Failures at the boundary
 
-zio-http's `Client` fails with `Throwable` — network errors, parse errors, codec errors all surface there. Adapters that expose typed `AppFailure` to the rest of the app (`AppIO`) must `mapError` at the boundary, the same way `Transactor` and `SqlContext` lift JDBC `Throwable`s into `DbError`.
+zio-http's `Client` fails with `Throwable` — network errors, parse errors, codec errors all surface there. Adapters that expose typed `AppFailure` to the rest of the app (`AppIO`) must `mapError` at the boundary.
 
 ## First consumer: the OTLP startup probe
 

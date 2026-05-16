@@ -2,7 +2,7 @@
 
 How one bounded context calls another: the surface (`<ctx>-api`), where the call site lives, how the api modules stay decoupled, how failures behave, and how the discipline survives a microservice extraction.
 
-The example to read against this doc: `NotificationAppService` calls `CustomerApi` in two places — an existence check on `create`, and a batch lookup for `get`/`list` enrichment.
+The running example: `NotificationAppService` calls `CustomerApi` in two places — an existence check on `create`, and a batch lookup for `get`/`list` enrichment.
 
 ## The api module: `ctx/<name>-api/`
 
@@ -19,7 +19,7 @@ Only the trait and the TOs it references. No errors, no domain logic — those l
 
 `<ctx>-api` modules are **leaves** in the build graph. They depend on `libCommon` and nothing else — including no other `-api` module. The codebase-wide rule lives in [`build-deps.md`](build-deps.md); the reason it matters here is co-evolution: any module that imports `<foreign>-api` is shaped by the foreign ctx's wire format. If contracts cross-reference each other, you can't evolve one without considering callers of the other.
 
-This rules out a tempting shape: a `-api` TO that embeds another ctx's `-api` TO. The receiving `-api` would transitively expose the foreign wire format and couple the two contracts. Each ctx defines its own projection of what it needs (e.g. notification's `NotificationRecipientTO` carries just id + email + name) and converts at the boundary in `impl/`.
+This rules out one shape: a `-api` TO that embeds another ctx's `-api` TO. The receiving `-api` would transitively expose the foreign wire format and couple the two contracts. Each ctx defines its own projection of what it needs (e.g. notification's `NotificationRecipientTO` carries just id + email + name) and converts at the boundary in `impl/`.
 
 The same pattern applies on the domain side. `NotificationRecipient` is a notification-domain type, not an import of `Customer`. Customer's domain types stay private to customer; notification reasons about its own representation of "who this notification is for."
 
@@ -42,7 +42,7 @@ object CustomerApiDirectImpl {
 }
 ```
 
-It takes `<Name>AppService` (domain-typed) as a constructor dep and maps domain entities to TOs at the boundary. The ctx module is the only place that compiles with both the domain entity and the TO visible — owner of the converter story: [`converters.md`](converters.md).
+It takes `<Name>AppService` (domain-typed) as a constructor dep and maps domain entities to TOs at the boundary. The ctx module is the only place that compiles with both the domain entity and the TO visible — TO ↔ domain mapping rules live in [`converters.md`](converters.md).
 
 ## What gets exposed in `<ctx>-api`
 
@@ -52,9 +52,7 @@ Corollary: when a caller no longer uses a method, prune it. Callers of `<ctx>-ap
 
 ## Routes don't go through the api
 
-Routes (in `<ctx>/impl/http/`) talk to `<Name>AppService` directly, not through `<Name>Api`. The frontend wire format and the cross-context wire format are separate concerns — a frontend may want richer payloads than what other contexts need. `<Name>AppService` is typically wider than `<Name>Api`; the cross-context trait only contains operations actually called from other contexts.
-
-The cross-context API is for *intra-system* calls (between contexts in the same JVM). External clients hit the HTTP routes.
+Routes (in `<ctx>/impl/http/`) talk to `<Name>AppService` directly, not through `<Name>Api`. The frontend wire format and the cross-context wire format are separate concerns. `<Name>AppService` is typically wider than `<Name>Api`; the cross-context trait only contains operations actually called from other contexts.
 
 ## Where the cross-context call lives
 
@@ -94,4 +92,4 @@ The disciplines above keep call sites unchanged when a foreign ctx moves to a se
 2. The composition root swaps in the HTTP impl instead of the Direct impl. Other modules don't change.
 3. At true extraction time — caller deployed separately, can't see the ctx module on its classpath — move `<Name>ApiHttpImpl` to a new `<name>-client` module that depends only on `<name>-api`. The caller deployment includes `<name>-api` + `<name>-client`. The owning service deployment includes `<name>` and uses the Direct impl internally for any same-JVM callers.
 
-Per-context and localized. Don't pre-pay the `-client` module structure before extraction is on the table.
+Don't pre-pay the `-client` module structure before extraction is on the table.

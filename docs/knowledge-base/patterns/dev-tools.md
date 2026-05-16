@@ -22,9 +22,9 @@ Does not belong in `appDev`:
 
 ## Each entrypoint composes its own layers
 
-No shared `DevEnv.layer`. Each `ZIOAppDefault` builds what it needs in its own `provide(...)` — an action that only touches the database provides `ConfigBootstrap`, `DataSourceConfig`, `DataSourceLayer`, `SqlContext`, plus `TransactorQuillImpl` if it transacts. The action's effect declares its env at the type level (`AppRIO[SqlContext & Transactor, Unit]`); the runner's `provide(...)` matches it. A god-layer would let actions grab anything from a wider env without the type reflecting that.
+No shared `DevEnv.layer`. Each `ZIOAppDefault` builds what it needs in its own `provide(...)` — an action that only touches the database provides `ConfigBootstrap`, `DataSourceConfig`, `DataSourceLayer`, `SqlContext`, plus `TransactorQuillImpl` if it transacts. The action's effect declares its env at the type level (`AppRIO[SqlContext & Transactor, Unit]`); the runner's `provide(...)` matches it.
 
-Conf loads from `application-local.conf` in `appDev`'s own resources. Per `config-shape`, files are self-contained per app: `appDev` carries the `database.data-source` block, duplicated across apps that share the local MySQL.
+Conf loads from `application-local.conf` in `appDev`'s own resources. `appDev` carries the `database.data-source` block, duplicated across apps that share the local MySQL.
 
 ## Action shape
 
@@ -61,4 +61,4 @@ Repos sidestep this — they're regular classes with no `def run` from a parent.
 - **Flyway migration** (`lib/db/.../db/migration/`): structural (DDL). Versioned, runs in every env.
 - **Dev seed action**: data-only, runs only locally. Idempotency is the action's responsibility.
 
-Fixture rows in a Flyway migration would either ship to production or require env-conditional migrations — neither is pleasant.
+Fixture rows in a Flyway migration would either ship to production or require env-conditional migrations.

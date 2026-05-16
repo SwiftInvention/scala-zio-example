@@ -9,9 +9,9 @@ modules/ctx/<name>/src/main/scala/com/example/<name>/impl/to/converter/
 └── <Entity>Converter.scala
 ```
 
-`impl/to/` collects TO-related impl-side concerns (currently just converters; later may grow to validators, custom codecs, etc.). It's the only place that can see both sides — the domain entity (its own module) and the TO (`<name>-api`). See [`cross-context-call.md`](cross-context-call.md) §"The DirectClient impl" for why.
+`impl/to/` is the impl-side home for TO-related code. It's the only place that can see both sides — the domain entity (its own module) and the TO (`<name>-api`).
 
-The converter is also the place where smart-constructed domain types (`Email`, `CustomerName`) flatten to wire-side primitives — domain types stay at the domain, TOs serve the wire's own constraints. See [`correct-by-construction.md`](correct-by-construction.md#domain-types-stay-at-the-domain) for the principle.
+The converter is also the place where smart-constructed domain types (`Email`, `CustomerName`) flatten to wire-side primitives — domain types stay at the domain, TOs serve the wire's own constraints.
 
 ## Shape
 
@@ -30,7 +30,7 @@ object CustomerConverter {
 }
 ```
 
-Method names are entity-qualified: `to<Entity>TO` for domain → TO, `to<Entity>` for TO → domain. For create-command shapes: `toNew<Entity>(to: CreateXRequestTO): NewX`.
+Method names are entity-qualified: `to<Entity>TO` for domain → TO, `to<Entity>` for TO → domain. For create-command shapes: `toNew<Entity>(to: Create<Entity>RequestTO): New<Entity>`.
 
 ## At call sites
 
@@ -47,4 +47,4 @@ Imported form keeps map bodies clean. Qualified form is unambiguous when multipl
 
 ## One file per entity
 
-As entities accrue (`Customer`, `Company`, `Facility`), each gets its own `<Entity>Converter.scala`. If a converter is dominated by a few tightly-paired sub-entities (e.g. `CompanyConverter` also handles `CompanyAddress` because they always appear together), keep them in the same file.
+Each entity gets its own `<Entity>Converter.scala`. Tightly-paired sub-entities that always appear together can share a file (e.g. `CustomerConverter` also handling `Address`).

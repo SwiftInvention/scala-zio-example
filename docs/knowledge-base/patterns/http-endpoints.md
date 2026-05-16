@@ -31,7 +31,7 @@ object ApiFailure {
 }
 ```
 
-Each variant's `Schema` transforms to `ErrorTO`'s flat shape, so the JSON body on the wire is `{"code": ..., "category": ..., "reason": ..., "description": ...}` regardless of status — the variant wrapper exists for type discipline at the route boundary, not for the wire format.
+Each variant's `Schema` transforms to `ErrorTO`'s flat shape, so the JSON body on the wire is `{"code": ..., "category": ..., "reason": ..., "description": ...}` regardless of status.
 
 Application endpoints declare the full `ApiFailure` variant set via `outErrors`:
 
@@ -49,7 +49,7 @@ val get = Endpoint(Method.GET / "customers" / PathCodec.string("id"))
 
 Codec vals live in `ApiFailure` (one per variant) and are imported by every `<Name>Endpoints.scala`. The impl's error type is uniformly `ApiFailure` (the trait); routes use `mapError(ApiFailure.from)`. `ApiFailure.from` matches on `f.asHttpError`, the self-typed `HttpError` view — exhaustive over `HttpError`'s sealed sub-traits, so the build breaks if a new `HttpError` trait lands without a matching `ApiFailure` variant. The framework picks the matching codec by `ClassTag` at serialize time.
 
-The trade-off: every endpoint's OpenAPI conservatively documents all 6 status families even when the impl realistically only produces a subset. The cost is verbose docs; the gain is that the impl can produce any `ApiFailure` and the framework always has a codec — drift is impossible. Declaring a per-endpoint subset is unsafe: under impl drift, zio-http renders an undeclared variant as `HTTP 400` with body `{"name":"EncodingResponseError",...}`.
+The trade-off: every endpoint's OpenAPI documents all 6 status families even when the impl only produces a subset — the cost of guaranteeing the framework always has a codec. Declaring a per-endpoint subset is unsafe: under impl drift, zio-http renders an undeclared variant as `HTTP 400` with body `{"name":"EncodingResponseError",...}`.
 
 Adding a new `HttpError` trait requires four coordinated changes: a new variant in `ApiFailure`, a new codec val, a new branch in `ApiFailure.from` (the build will break here if you forget), and a new entry in each `<Name>Endpoints.scala`'s `outErrors` arg list.
 
@@ -72,5 +72,3 @@ The classic `Routes(Method.GET / "..." -> handler {...})` API is more compact fo
 - Wire shape is a value, reusable for OpenAPI generation, future client generation, contract testing.
 - Path parameter types are checked at the boundary (`PathCodec.string("id")` produces a `String` input to the handler).
 - Error model is explicit at the type level — the handler effect's error type matches the endpoint's declared error.
-
-For the codebase's discipline (typed everything, single source of truth for boundary contracts), the trade is favorable.

@@ -34,7 +34,7 @@ No `app/` — libs don't have an application surface. Same `domain` / `impl` spl
 - `impl/http/client/` — outbound `Client` layer (`AppHttpClient`)
 - `impl/http/{ApiFailure,ErrorTO}.scala` — wire-format error plumbing
 
-HTTP server + client adapters live under `impl/http/`. The wire-format error types (`ApiFailure`, `ErrorTO`) sit at the top of `impl/http/`; `HttpError` (the status-code mixin on every `AppFailure`) lives in `domain/error/` because every typed error mixes it in at the type level.
+`HttpError` (the status-code mixin on every `AppFailure`) lives in `domain/error/` because every typed error mixes it in at the type level.
 
 `lib/db` is the shared persistence module — `SqlContext`, `Transactor` + impl, `DataSourceLayer`, `NewTypeEncodings`, every PE and DbSchema, the Flyway migrations under `src/main/resources/`. Ctxes depend on it for the PE types their repos query. See [`persistence.md`](persistence.md).
 

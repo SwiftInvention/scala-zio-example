@@ -4,13 +4,13 @@ description: Multi-dimensional sweep of the codebase. Three sub-agents in parall
 
 # review-codebase
 
-Sweeps the codebase for structural and per-element issues. Three agents dispatch in parallel, each looking at a different axis. The skill returns a triaged list of findings — what to act on, what to dismiss. Acting on findings happens in conversation after the sweep.
+Acting on findings happens in conversation after the sweep — the skill returns a triaged list, doesn't fix anything.
 
 ## Three scopes
 
 - **Global** — every module + cross-cutting. Heavy. Use sparingly.
 - **Per-module** — one module's Scala files (code + scaladoc). Light. Use iteratively as you clean up.
-- **Cross-cutting** — top-level docs + patterns docs + module graph + cross-module structure. Light. The agents shift inputs from a per-module run (see Agent A/B/C sections).
+- **Cross-cutting** — top-level docs + patterns docs + module graph + cross-module structure. Light.
 
 ## Arguments
 
@@ -24,7 +24,7 @@ Markdown docs (`docs/knowledge-base/*.md`) aren't reviewed per-module — they g
 
 Used by Agents A and B. Agent C runs per-instance rule checks and skips this section.
 
-`local-reasoning.md` says local-reasoning applies at every scale — expression, function, class, module, context, system. A coherence sweep walks the ladder for its medium and asks three questions at each level.
+A coherence sweep walks the ladder for its medium and asks three questions at each level.
 
 **Three questions at every level:**
 
@@ -34,31 +34,13 @@ Used by Agents A and B. Agent C runs per-instance rule checks and skips this sec
 
 **Cut > expand.** Findings that remove or merge carry a lower bar than findings that add or split. Completeness findings need stronger justification still — only raise when absence creates a real gap, not when the scope could *conceivably* hold more.
 
-**Threshold for filing:** when unsure whether something *is* a defect, file it. A noted concern is cheap to dismiss; a missed one compounds. The cut-bias shapes *suggestions*, not the *threshold* for flagging.
-
-## Sentence-level prose checklist
-
-Applied by Agent A at the lowest level of any prose ladder:
-
-- Hedging the prose doesn't need ("probably", "generally", "mostly" when the real claim is unhedged)
-- Defensive framing ("load-bearing", "does real work", "subtle but important")
-- Pre-empting objections nobody raised ("you might think X but actually Y")
-- Triple-explaining one idea
-- Over-citation of principle slugs when prose already invokes the rule
-- "Note:" / "Important:" tags carrying no info beyond emphasis
-- Justifications addressed to an imagined skeptic
-- Transitional / version-aware framing ("now", "no longer", "previously", "we used to", "the refactor")
-- Diff-describing prose ("we removed X", "shorter than before")
-- References that route the reader elsewhere without naming what's there
-- Backward-compat scaffolding without a stated counterparty
-
-Reasoning that informs the reader of a non-obvious mechanism stays. Present-tense contrasts against framework defaults ("the channel is `AppFailure`, not `Throwable`") are reader-orienting, not version-aware.
+**Threshold for filing:** when unsure whether something *is* a defect, file it. The cut-bias shapes *suggestions*, not the *threshold* for flagging.
 
 ## Markdown prose ladder
 
 Used by Agent A when reviewing markdown docs:
 
-- Sentence in paragraph — apply the sentence-level checklist.
+- Sentence in paragraph — apply the sentence-level standard from `prose.md`.
 - Paragraph in section — right header? Two paragraphs covering the same ground?
 - Section in document — earns its place? Header matches contents?
 - Document role — what's this doc about in one sentence? Does the content match? Duplicating another doc? Concerns mixed?
@@ -73,11 +55,11 @@ Dispatch in parallel via the `Agent` tool, `subagent_type: general-purpose`. One
 
 **Cross-cutting scope:** all markdown under `docs/knowledge-base/` (top-level + patterns/). Scaladoc is out of scope. One extra question at the document-role level for patterns docs: does each pattern doc earn its place as a separate file, or do two cover the same ground?
 
-Read `docs/knowledge-base/patterns/local-reasoning.md` — the "Local reasoning applies to docs, too" section is the standard.
+Read `docs/knowledge-base/patterns/prose.md` for the sentence-level standard and antipatterns. Read `docs/knowledge-base/patterns/local-reasoning.md` for the "Local reasoning applies to docs, too" framing.
 
 **Scaladoc ladder:**
 
-- Sentence in scaladoc block — sentence-level checklist.
+- Sentence in scaladoc block — apply the sentence-level standard from `prose.md`.
 - Scaladoc block vs its definition — does the prose describe what's actually there? Does it earn its length? Stale snapshot from an earlier shape? Essential mechanisms missing?
 
 For markdown, use the markdown prose ladder above.
@@ -113,13 +95,13 @@ Read first:
 - `docs/knowledge-base/patterns/correct-by-construction.md` — for type-discipline checks.
 - The relevant `patterns/<...>.md` for any specific principle you need to disambiguate.
 
-**Principles by slug**: `local-reasoning`, `correct-by-construction`, `module-layout`, `bounded-context`, `import-direction`, `build-deps`, `ctx-api`, `to-converters`, `newtypes`, `smart-constructors`, `errors`, `config-shape`, `db-lib`, `pe-converters`, `tx-default`, `logging`. (The slug list lives in `architecture-principles.md`; if that doc adds an entry, add it here too.)
+**Principles by slug**: `local-reasoning`, `correct-by-construction`, `module-layout`, `bounded-context`, `import-direction`, `build-deps`, `ctx-api`, `to-converters`, `newtypes`, `smart-constructors`, `errors`, `config-shape`, `db-lib`, `pe-converters`, `tx-default`, `logging`.
 
 **Style rules by slug**: `impl-suffix`, `no-package-files`, `final-by-default`, `no-default-args`, `named-args`, `no-null`, `no-var`.
 
 **Code-level local-reasoning antipatterns**: vestigial generality (`Map[K, V]` always one key, `Option[X]` always `Some`, sealed trait with one case, abstract method with one impl, flags whose `false` branch is dead); names that capture transition (`newFoo`, `RefactoredFoo`, `FooV2`); shared mutable state; ambient context not in signatures; action-at-a-distance.
 
-A violation is real when a rule applies and the resulting code doesn't match. Pre-existing violations marked `FIXME` / `WONTFIX` are out of scope.
+Pre-existing violations marked `FIXME` / `WONTFIX` are out of scope.
 
 When a single pattern hits many sites in this module, group them so the orchestrator can roll up.
 
@@ -152,10 +134,10 @@ Each per-module and the cross-cutting scope gets its own loop — don't chain th
 
 After implementation, findings often dissolve — fixing one cross-doc duplication invalidates the matching one on the other side. Re-running surfaces the cleaned shape and catches what slipped through round 1.
 
-When a chunk creates a new doc, run `/fresh-read` on it before declaring done — new writes carry the writer's in-head context that a diff glance misses.
+When a chunk creates a new doc, run `/fresh-read` on it before declaring done.
 
 Stop when the latest sweep produces a list that can mostly be ignored (empty, nitpicking, stuff already dismissed) — say so explicitly when you observe it.
 
 ## Persistence
 
-Most loops happen in one session. If you want findings to survive, write them somewhere — pick whatever format fits.
+If you want findings to survive past the session, write them somewhere — pick whatever format fits.

@@ -1,6 +1,6 @@
 # Build Dependencies
 
-`build.sbt`'s `dependsOn` clauses determine what each module can `import`. The compile-time dep graph **is** the architectural boundary — not naming conventions, not docs.
+`build.sbt`'s `dependsOn` clauses determine what each module can `import`. The compile-time dep graph is the architectural boundary — not naming conventions, not docs.
 
 ## In `build.sbt`
 
@@ -45,7 +45,7 @@ Why the build doesn't enforce it:
 - **Within a single sbt module** — everything is on one classpath; the compiler doesn't see folder structure as a boundary.
 - **Across sbt modules** — once module A `dependsOn` module B, A sees ALL of B's classes. sbt has `compile->compile` configurations that could partition this, but it's not worth the ceremony.
 
-So this is a convention enforced by reading, not by the compiler. Watch for it in review. Common slip: routes (`impl/http/`) reaching into another context's `impl/` package directly instead of going through its `<ctx>-api`.
+Watch for it in review. Common slip: routes (`impl/http/`) reaching into another context's `impl/` package directly instead of going through its `<ctx>-api`.
 
 ## Library dep groups
 
@@ -57,4 +57,4 @@ External library deps live in `project/Dependencies.scala` as named groups:
 - `loggingDep` + `logExcludeDep` (zio-logging + slf4j bridges)
 - `enumeratumDep`, `circeDep`, `newtypeDep`
 
-Each module pulls in only what it needs. `libCommon` carries the cross-cutting deps (config, persistence, logging, telemetry, zio-http for the shared client + server pieces); `ctxCustomerApi` doesn't get DB deps; etc. Tighter deps per module make boundaries clearer at the import site.
+Each module pulls in only what it needs. `libCommon` carries the cross-cutting deps (config, persistence, logging, telemetry, zio-http for the shared client + server pieces); `ctxCustomerApi` doesn't get DB deps.

@@ -65,6 +65,15 @@ test-it level='':
   export TEST_LOG_LEVEL='{{ level }}'
   sbt "dev; appIntegrationTests/test"
 
+# supply-chain checks: lockfile current, no undeclared/unused compile deps, no declared dep younger than 7 days
+[group('dev loop')]
+supply-chain-check:
+  #!/usr/bin/env bash
+  set -eu
+  {{ init_env }}
+  sbt "dependencyLockCheck; undeclaredCompileDependenciesTest; unusedCompileDependenciesTest"
+  just deps-cooldown 7
+
 # lint, check format (warnings as errors). Scala only.
 [group('dev loop')]
 style-check:

@@ -21,7 +21,7 @@ Practices:
 - **Review build changes like production code.** A PR that bumps `project/plugins.sbt` or adds a `sourceGenerator` is in the same risk class as a PR that touches application logic. No drive-by "just bump the build plugin" merges.
 - **No source dependencies.** `ProjectRef(uri("git://..."))`, `dependsOn(RootProject(uri(...)))`, or `ProjectRef(uri("https://..."))` pull and execute remote Scala. Banned outright.
 - **Choose macro-heavy deps deliberately.** Quill, enumeratum, zio-schema-derivation all run macros at compile time. The library set is small and well-known; new additions go through review.
-- **Global plugins file is empty.** `~/.sbt/1.0/plugins/` runs on every build on the machine — a global plugin compromises every project. The devcontainer ships with an empty global plugins directory. On host, audit `~/.sbt/1.0/plugins/`; anything there should be a deliberate, reviewed choice.
+- **Global plugins file is empty.** `~/.sbt/1.0/plugins/` runs on every build on the machine — a global plugin compromises every project. Audit `~/.sbt/1.0/plugins/`; anything there should be a deliberate, reviewed choice.
 
 ## Artifact sources
 
@@ -43,7 +43,7 @@ just deps-relock          # regenerate all lockfiles after intentional dep chang
 sbt dependencyLockCheck   # fail if resolved graph differs from lock
 ```
 
-`dependencyLockCheck` is wired into `just style-check` (CI gate) and `just precommit-fix` (done-state gate), and runs before `compile` so a mutated transitive's macros don't execute before the check fires. A PR that bumps a dep without regenerating the lock fails the check; a PR that mutates the lock without touching `project/Versions.scala` (the version-declaration file) is reviewable as a deliberate change.
+`dependencyLockCheck` is wired into `just style-check` (CI gate) and `just precommit-fix` (done-state gate), and runs before `compile` so a mutated transitive's macros don't execute before the check fires. A PR that bumps a dep without regenerating the lock fails the check; a PR that mutates the lock without touching `project/Versions.scala` is reviewable as a deliberate change.
 
 This catches three things:
 
@@ -62,7 +62,7 @@ just deps-cooldown 7        # check against a 7-day window
 just deps-cooldown 14       # tighter window for one-off audit
 ```
 
-The check is wired into `just style-check` (CI gate) and `just precommit-fix` (done-state gate) with the project's chosen window (7 days) declared at each call site. A PR that adds or bumps to a too-young version fails the gate; you wait, or pin to an older version.
+The check is wired into `just style-check` (CI gate) and `just precommit-fix` (done-state gate) with the project's chosen window (7 days) declared at each call site. A PR that adds or bumps to a too-young version fails the gate.
 
 Coverage:
 
@@ -74,7 +74,7 @@ Out of scope:
 - **GitHub Actions** — different lookup mechanism. Pinned to commit SHAs separately; see "CI workflow actions" below.
 - **JDK and sbt itself** — pinned via `.sdkmanrc` and `project/build.properties`; not Maven-Central-resolved.
 
-No Scala Steward or Renovate in the loop — deps change by human PR, and the gate covers both initial adds and bumps.
+No Scala Steward or Renovate in the loop — deps change by human PR.
 
 ## CI workflow actions
 
@@ -86,15 +86,15 @@ Pin every action to its full 40-character commit SHA. Keep the tag as a trailing
 - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 ```
 
-SHAs are immutable; the workflow runs exactly the code reviewed when the pin was set. Bumping an action means resolving the new tag's SHA, reviewing the diff between old and new SHA (not just the tag's release notes), and updating both the pin and the comment in one commit.
+Bumping an action means resolving the new tag's SHA, reviewing the diff between old and new SHA (not just the tag's release notes), and updating both the pin and the comment in one commit.
 
-Coverage: every `uses:` clause across `.github/workflows/` resolves to a SHA. The trailing tag comment is documentation only — GitHub ignores it at run time.
+Coverage: every `uses:` clause across `.github/workflows/` resolves to a SHA. The trailing tag comment is documentation only.
 
-The pin fixes the action's source, not what that source does at run time. An action's body can fetch external resources mid-run — `setup-node` downloads Node binaries from a CDN, `actions/cache` reads and writes a GitHub-managed blob store, container actions pull images that may themselves reference mutable tags. Vetting that runtime behavior is a separate review.
+The pin fixes the action's source, not what that source does at run time. An action's body can fetch external resources mid-run — `setup-node` downloads Node binaries from a CDN, `actions/cache` reads and writes a GitHub-managed blob store, container actions pull images that may themselves reference mutable tags.
 
 ## Dependency surface
 
-The smaller the trusted compute base, the smaller the attack surface. Two practices:
+Two practices:
 
 **Don't depend on abandoned upstreams.** When a dep is no longer maintained, flag it inline at its declaration site in `project/Versions.scala` with a `// Note: ...` marker — each flagged dep is a candidate for replacement.
 
@@ -103,14 +103,14 @@ The smaller the trusted compute base, the smaller the attack surface. Two practi
 - **`undeclaredCompileDependenciesTest`** — fails if a module's source imports a library not in its `libraryDependencies`. The transitive's version would otherwise be implicit (whatever some other dep happens to pull); failing the build forces a deliberate declaration with a deliberate version.
 - **`unusedCompileDependenciesTest`** — fails if `libraryDependencies` lists something nothing imports. Dead surface — drop it.
 
-The build is structured so each module's `libraryDependencies` is the truth about what that module touches at compile time. Ctx modules redeclare cross-cutting types (`zio-prelude`, `zio-schema`) directly, rather than picking them up transitively through the shared `libCommon` module.
+Ctx modules redeclare cross-cutting types (`zio-prelude`, `zio-schema`) directly, rather than picking them up transitively through the shared `libCommon` module.
 
 Two narrow filter sets cover what the plugin can't see through (configured in `build.sbt` under `explicitDepsFilters`):
 
 - **Runtime-only artifacts** (`unusedCompileDependenciesFilter`) — JDBC drivers, slf4j bridges, the plain `quill-jdbc` shim. Required on the runtime classpath; never imported in Scala source. The plugin does compile-time bytecode analysis only and can't see them.
 - **Umbrella sub-artifacts** (`undeclaredCompileDependenciesFilter`) — bytecode references to sub-artifacts pulled by a declared umbrella (`pureconfig-core` via `pureconfig`, `quill-core` / `quill-engine` via `quill-jdbc-zio`, ZIO type-tag / fiber-trace internals via `zio`).
 
-Each filter entry is documented inline at its declaration site. Adding a new runtime-only dep or umbrella means adding a filter line.
+Each filter entry is documented inline at its declaration site.
 
 ## SBOM
 

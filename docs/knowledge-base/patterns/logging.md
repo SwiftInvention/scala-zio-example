@@ -28,27 +28,25 @@ object ServerApp extends ZIOAppDefault {
 
 `ZIOAppDefault` builds the bootstrap layer before any layer in the main `run` effect, so the configured logger replaces ZIO's defaults before the first user-level log line emits — including `ConfigBootstrap.layer`'s `APP_ENV resolved: ...` line that fires once the main layer chain starts.
 
-`bootstrap` does its own minimal config load: it reads `APP_ENV` directly, then calls `ConfigBootstrap.load[LoggingConfig]("logging")` against the parsed `EnvLabel`. This duplicates what `ConfigBootstrap.layer` + `LoggingConfig.load` would do later — the price of installing the logger before any layer in the main env builds. Typesafe-config caches the parsed file, so the duplicate read is free.
-
-`LoggingConfig` exists as a typed slice and a reader, but has no `layer` — `AppLogger.bootstrap` is the only consumer. `ConfigBootstrap.readEnvLabel` is the silent variant of `ConfigBootstrap.layer` (no `APP_ENV resolved` log) used by the bootstrap.
+`bootstrap` does its own minimal config load: it reads `APP_ENV` directly, then calls `ConfigBootstrap.load[LoggingConfig]("logging")` against the parsed `EnvLabel`.
 
 ## INFO vs DEBUG
 
 The split is **operator vs investigator**:
 
 - **INFO** — notable events an operator wants to see in production logs. This is the high-signal layer — what you scan first when chasing a bug. Three kinds of INFO sites:
-  - *Per app-service call.* Every public app-service method logs once at completion, carrying outcome as annotations (ids, counts, branch taken). Long-running calls additionally log at start so in-flight work is visible. App-service is the natural per-request boundary — HTTP-driven and cross-context calls both pass through here, so a single line covers both surfaces.
+  - *Per app-service call.* Every public app-service method logs once at completion, carrying outcome as annotations (ids, counts, branch taken). Long-running calls additionally log at start so in-flight work is visible.
   - *Notable events at lower layers.* When a domain service or repo does something an operator would want to know about — retry succeeded after N attempts, fallback path taken, cache invalidated, stale row repaired — it logs at INFO too.
   - *Process lifecycle and dev actions.* Boot, shutdown, config resolution, seed/migration milestones (`ServerApp`, `ConfigBootstrap`, `SeedExample`).
 - **DEBUG** — per-iteration / per-call operational chatter. "Querying X", "skipping because Y", "already exists, no-op", per-row branch decisions, intermediate values. Lives at the layer where the interesting thing happens — mid-orchestration in an app service (e.g. `NotificationAppServiceImpl.list` annotates the dedup'd recipient count before the cross-context batch fetch), at a branch in a domain service (e.g. `CustomerServiceImpl.getMany` logs the empty-id-set short-circuit), inside a repo. Off in deployed envs by default; the investigator turns it on.
 - **WARN** — recoverable failures that didn't surface to a user but might next time.
 - **ERROR** — failures that surfaced or broke behavior. See "Error logs at boundaries" below for where they fire.
 
-Logs are the primary observability surface — the dashboard (Grafana, GCP Log Viewer) is where you look first, traces are supplementary. So a log line should tell its own story without needing the trace alongside.
+A log line should tell its own story without needing the trace alongside.
 
 ## Error logs at boundaries
 
-Don't fail silently. Every boundary where a typed error could be lost or converted gets an ERROR log. Duplicate logs across boundaries are fine; missing one is not.
+Every boundary where a typed error could be lost or converted gets an ERROR log. Duplicate logs across boundaries are fine; missing one is not.
 
 Concretely:
 
@@ -88,8 +86,6 @@ TEST_LOG_LEVEL=debug sbt "it/testOnly *TransactorSpec"
 ```
 
 Integration specs extend `IntegrationSpec` (next to `TestLogger`), which overrides the spec's `bootstrap` layer with `TestLogger.layer >+> testEnvironment`. The bootstrap layer is where ZIO's runtime config — including the default-logger set — is mutable. A regular `ZLayer` composed via `provideShared` doesn't reach into the runtime, so default loggers leak through and emit log lines from inside the code under test even if you tried to remove them there.
-
-zio-test failure reports print regardless of logger configuration, so a silent logger doesn't hide test outcomes.
 
 ## Slf4j bridge
 

@@ -12,15 +12,15 @@ just style-fix       # chunk closer: auto-fix formatting + scalafix; rewrites fi
 just precommit-fix   # done-gate: style-fix + style-check + unit tests + integration tests
 ```
 
-`compile` is the fast feedback loop while writing code — reach for it after each edit while you're working through compile errors or shaping a function. `style-fix` runs scalafmt and scalafix; reach for it after a logical chunk of work, not between every keystroke (the file rewrites surprise you mid-edit). `precommit-fix` is the expected gate before declaring a code-touching task complete — it formats, lints, and runs the full test suite (including IT against test MySQL, which it brings up itself).
+`compile` is the fast feedback loop while writing code — reach for it after each edit while you're working through compile errors or shaping a function. `style-fix` runs scalafmt and scalafix; reach for it after a logical chunk of work, not between every keystroke. `precommit-fix` is the gate before declaring a code-touching task complete — it brings up test MySQL itself for IT.
 
-`style-check` exists for verify-only without rewrites:
+`style-check` verifies without rewriting:
 
 ```sh
 just style-check     # verify formatting + lint, fail on issues; no rewrites
 ```
 
-`style-check` and `precommit-fix` run `dependencyLockCheck` — they fail if `build.sbt.lock` doesn't match the resolved dependency graph. After an intentional dep change (`Versions.scala`, `Dependencies.scala`, or a plugin bump), regenerate:
+`style-check` and `precommit-fix` run `dependencyLockCheck` — they fail if `build.sbt.lock` doesn't match the resolved dependency graph. After a dep change (`Versions.scala`, `Dependencies.scala`, or a plugin bump), regenerate:
 
 ```sh
 just deps-relock     # regenerate all module-level build.sbt.lock files
@@ -50,7 +50,7 @@ just smoke-test                 # curl the running server; expects it up on :808
 
 `start-fresh-local-server` chains `local-infra-reset → db-migrate → seed-example → run` and blocks on the foreground server. Run `smoke-test` from a separate shell to hit it.
 
-Individual pieces if you want finer-grained control:
+Individual pieces:
 
 ```sh
 just local-infra-up        # bring up MySQL + Jaeger (blocks until healthy)
@@ -60,7 +60,7 @@ just db-migrate      # apply Flyway migrations
 just run             # foreground server (Ctrl+C to stop)
 ```
 
-`APP_ENV` comes from `.env` (seeded by `initial-setup` from `.env.example` — `APP_ENV=local`), so the server loads `application-local.conf`. Override by editing `.env` if you want a different env shape on the host.
+`APP_ENV` comes from `.env` (seeded by `initial-setup` from `.env.example` — `APP_ENV=local`), so the server loads `application-local.conf`. Override by editing `.env`.
 
 `application-local.conf` points the OTLP exporter at the local Jaeger (`http://localhost:4318/v1/traces`). `AppTracing` probes the endpoint at boot; if Jaeger isn't reachable inside the probe budget, the layer logs a WARN and falls back to a no-op SDK — the server still starts. To opt out entirely, set `otel.otlp-endpoint = null` in your local conf. See [`patterns/tracing.md`](patterns/tracing.md) for what the probe checks.
 

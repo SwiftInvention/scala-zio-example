@@ -11,8 +11,8 @@ A composition root is the file that sees concrete implementations and wires them
 | `modules/app/dev/.../Experiment.scala`        | `Experiment`         | One-off local dev scratchpad — its own `provide(...)` block                    |
 | `modules/app/dev/.../actions/*.scala`         | each action          | Each `ZIOAppDefault` action wires its own layers — no shared composition       |
 
-A new `app/<name>/` module gets one — for a new deployment unit, a scoped dev script, or a test harness that substitutes infrastructure.
+A new `app/<name>/` module gets one.
 
 ## The rule: roots stay parallel
 
-Different roots wire similar things in different ways (`DataSourceLayer` vs `TestDb.freshSchemaLayer`, `AppTracing.live` vs `AppTracing.liveWithoutProbe`, real `Server.Config` vs ephemeral). Don't factor that overlap into a shared layer set — the variation *is* what having more than one root buys you. Share *mechanisms* (a service trait + impl, a ctx) by lifting them into modules; let each root compose them itself.
+Different roots wire similar things in different ways (`DataSourceLayer` vs `TestDb.freshSchemaLayer`, `AppTracing.live` vs `AppTracing.liveWithoutProbe`, real `Server.Config` vs ephemeral). Don't factor that overlap into a shared layer set — the variation is what having more than one root buys you. Share *mechanisms* (a service trait + impl, a ctx) by lifting them into modules; let each root compose them itself.

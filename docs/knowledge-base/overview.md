@@ -12,7 +12,7 @@ A reference template for Scala + ZIO monoliths organized by bounded contexts. Th
 | `modules/lib/db`               | `libDb`              | shared persistence (schema, PEs, `SqlContext`, `Transactor`, migrations)                   |
 | `modules/ctx/customer-api`     | `ctxCustomerApi`     | customer cross-context contract (trait + TOs) — consumed by notification                   |
 | `modules/ctx/customer`         | `ctxCustomer`        | customer impl (domain, app, infra)                                                         |
-| `modules/ctx/notification`     | `ctxNotification`    | notification impl; depends on `ctxCustomerApi` for recipient lookup. No `-api` module — nothing calls into notification yet |
+| `modules/ctx/notification`     | `ctxNotification`    | notification impl; depends on `ctxCustomerApi` for recipient lookup. No `-api` module — nothing calls into notification |
 | `modules/app/server`           | `appServer`          | deployment unit — composition root + entrypoint                                            |
 | `modules/app/dev`              | `appDev`             | local-only dev tools — `Experiment` scratchpad + one-off `actions/`                        |
 | `modules/app/integration-tests` | `appIntegrationTests` | test-only — integration specs against a real server + ephemeral MySQL schema             |
@@ -30,7 +30,7 @@ Scala 2.13 + ZIO 2.1 + zio-http + zio-schema + zio-prelude. Quill + MySQL for pe
 ## Everyday commands
 
 - `just compile` — tight loop while writing code (compiles main + test, warnings as errors)
-- `just style-fix` — scalafmt + scalafix; run after a logical chunk, not every keystroke
+- `just style-fix` — scalafmt + scalafix; run after a logical chunk
 - `just precommit-fix` — full gate before declaring a code-touching task done (style + unit + integration tests)
 - `sbt "<moduleId>/testOnly *SpecName"` — targeted test run
 

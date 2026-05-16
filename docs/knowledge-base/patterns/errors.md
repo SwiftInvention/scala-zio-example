@@ -5,7 +5,7 @@
 ## What this buys
 
 - **No implicit Throwable leakage.** A repo method can't accidentally surface a `NullPointerException` or `SQLException`. Anything not an `AppFailure` has to be wrapped at the boundary, and the wrapping is grep-able.
-- **The route boundary is exhaustive by construction.** `mapError` in a route receives `AppFailure` directly. There's no "something we forgot about" case to handle.
+- **The route boundary is exhaustive by construction.** `mapError` in a route receives `AppFailure` directly.
 
 What this doesn't buy: per-method failure precision. `IO[AppFailure, A]` widens at the family supertype, not the specific subclass — see [Why not per-method failure types](#why-not-per-method-failure-types).
 
@@ -41,7 +41,7 @@ object CustomerNotFoundError {
 
 The `withId` smart constructor keeps the message wording consistent across raise sites.
 
-`AppFailure` extends `Exception` for cause chaining — concrete errors hold a raw `Option[Throwable]` so JVM-origin stack traces survive. The `Exception`-ness is internal plumbing; the channel type is `AppFailure`.
+`AppFailure` extends `Exception` for cause chaining — concrete errors hold a raw `Option[Throwable]` so JVM-origin stack traces survive.
 
 ## Where the pieces live
 
@@ -101,4 +101,4 @@ The channel widens at `AppFailure`, not at the specific subclass: `def get(id: C
 
 Scala 2.13 has no union types, so encoding `IO[CustomerNotFoundError | DbError, A]` precisely costs a per-method error ADT — a layer of boilerplate that grows with every new method. The trade is worth taking: callers nearly always handle `AppFailure` uniformly at the route boundary (`mapError(ApiFailure.from)`), where the variant set is fixed and exhaustive. The cases that need to branch on a specific subclass do so in app-service code that's already reading the bodies of the methods it calls.
 
-Scala 3 union types would close this gap without the boilerplate. When we cross that line, the discussion is a candidate to revisit.
+Scala 3 union types would close this gap without the boilerplate. Revisit when we move to Scala 3.

@@ -37,13 +37,11 @@ modules/ctx/<name>/src/main/scala/com/example/ctx/<name>/
         └── <Name>PEConverter.scala       PE ↔ domain mapping
 ```
 
-The `sql/` package and `SqlContext` name are dialect-agnostic — `MySQLImpl` is the dialect-specific suffix on the repo impl, the rest is portable.
-
 ## PE ownership
 
 The schema is one schema. Migrations apply as one batch; PEs are the in-Scala mirror of that batch. A foreign-table consumer imports the PE from `lib/db` like any other library type.
 
-What `lib/db` ships: PEs (data shapes), DbSchema traits (Quill `querySchema` declarations), and the infrastructure to run queries. It has no awareness of any ctx's domain.
+What `lib/db` ships: PEs (data shapes), DbSchema traits (Quill `querySchema` declarations), and the infrastructure to run queries.
 
 What each ctx keeps: the repo trait (signatures in domain types), the repo impl (queries against PEs + conversion), the `<Name>PEConverter`. The converter stays in the ctx because it's the only place both the PE and the domain entity are visible.
 
@@ -71,7 +69,7 @@ The local workflow is `local-infra-up` → `db-migrate` → `run`, with each ste
 
 ## PE shape vs domain shape
 
-`<Entity>PEConverter` is the projection between domain and persistence. Domain types stay at the domain; PEs match the schema's column shape (which may diverge from the domain — denormalized fields, computed columns, audit metadata). Pulling smart-constructed domain types like `Email` into the PE creates conflicts the schema can't accommodate; the converter handles the flattening on the way out and the parse on the way in.
+Domain types stay at the domain; PEs match the schema's column shape (which may diverge from the domain — denormalized fields, computed columns, audit metadata). Pulling smart-constructed domain types like `Email` into the PE creates conflicts the schema can't accommodate; the converter handles the flattening on the way out and the parse on the way in.
 
 ## DbSchema mixin
 
@@ -135,7 +133,7 @@ The chain is:
 
 1. Quill surfaces JDBC `SQLException` on its native `Throwable` channel.
 2. `SqlContext.runQuery` wraps it as `DbError` via `mapError` — per-query JDBC failures enter the `AppFailure` channel here.
-3. Repo impls may `catchSome` on domain-meaningful constraint violations (unique-key → `AlreadyExistsError`, FK → custom error) before the result reaches the service. Optional, where it adds value.
+3. Repo impls may `catchSome` on domain-meaningful constraint violations (unique-key → `AlreadyExistsError`, FK → custom error) before the result reaches the service.
 4. `Transactor.withTransaction` runs Quill's `transaction`, which widens back to `Throwable`. A total `mapError` narrows: `AppFailure` passes through, `SQLException` becomes `DbError`, anything else becomes `InternalServerError`.
 5. Route renders `AppFailure` as `ErrorTO`.
 
@@ -155,8 +153,8 @@ ConfigBootstrap.layer  → DataSourceConfig.layer
                                     → HealthRoutes.layer
 ```
 
-`DataSourceLayer` is a thin Hikari constructor over a typed `DataSourceConfig` — see [`config.md`](config.md) for the typed-config pattern. Migrations are applied out-of-process; the server assumes the schema is in place when it starts.
+`DataSourceLayer` is a thin Hikari constructor over a typed `DataSourceConfig` — see [`config.md`](config.md) for the typed-config pattern.
 
 ## Local dev
 
-Connection config lives in `app/server/src/main/resources/application-local.conf`. Default targets `localhost:3306/localDatabase` with `localUser`/`localPassword`, matching `docker-compose.yml`. See [`commands.md`](../commands.md) for the local infra / migrate / run recipes, and [`config.md`](config.md) for the broader config pattern.
+Connection config lives in `app/server/src/main/resources/application-local.conf`. Default targets `localhost:3306/localDatabase` with `localUser`/`localPassword`, matching `docker-compose.yml`. See [`commands.md`](../commands.md) for the local infra / migrate / run recipes.

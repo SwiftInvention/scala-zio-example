@@ -1,6 +1,6 @@
 # Correct by Construction
 
-Type discipline at the heart of the codebase: shape domain types so the compiler proves the invariants the runtime never has to. *Make illegal states unrepresentable.*
+Type discipline: shape domain types so the compiler proves the invariants the runtime never has to. *Make illegal states unrepresentable.*
 
 ## ADTs — model exactly the legal states
 
@@ -16,7 +16,7 @@ case object Anonymous extends Visitor
 
 Code that needs to handle a `Visitor` pattern-matches on it; the compiler enforces exhaustiveness. Add a third variant later (`BotUser`) and every match site fails to compile until updated.
 
-**Prefer functions on the sum, not on individual variants.** A function `def foo(a: Authenticated)` sits *outside* the exhaustiveness net — when a new variant lands, `foo` keeps compiling silently and you lose the structural prompt to consider whether it should serve the new case. Take the sum and dispatch internally via `match`. Take a variant directly only when the function structurally cannot serve any other variant. Variants are implementation details of the sum; the sum is the public surface.
+**Prefer functions on the sum, not on individual variants.** A function `def foo(a: Authenticated)` sits *outside* the exhaustiveness net — when a new variant lands, `foo` keeps compiling silently and you lose the structural prompt to consider whether it should serve the new case. Take the sum and dispatch internally via `match`. Take a variant directly only when the function structurally cannot serve any other variant.
 
 ## Smart constructors — enforce invariants at construction
 
@@ -38,7 +38,7 @@ A `CustomerTO` carries `email: String`, not `email: Email` — the wire format h
 
 Per-value exceptions to the outbound rule are deliberate. `CustomerId` (a `Newtype`) travels as a flat `String` over the wire via its codec but stays a typed value in Scala — worth it because typed ids prevent argument swaps at every call site that holds one. `Email`, by contrast, is internal-only: the smart-constructed type flattens to `String` outbound, since the wire receiver typically just renders it. The judgment is per-value: does the consumer at the boundary actually benefit from the type, or is the boundary just rendering / storing it?
 
-## Antipatterns we reject
+## Antipatterns
 
 **Validate-and-pass-through.** `def validate(s: String): Boolean; if (validate(s)) doSomething(s)` — the `s: String` keeps flowing, validation knowledge implicit. Parse: `def parse(s: String): Either[Err, T]; parse(s).foreach(doSomething)`.
 
@@ -56,7 +56,7 @@ final case class Enabled(cfg: FeatureConfig) extends FeatureSetting
 
 The consumer has to branch.
 
-## When the philosophy bends
+## When the discipline bends
 
 Don't pay the type cost where it doesn't earn its keep:
 

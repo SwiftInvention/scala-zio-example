@@ -14,7 +14,7 @@ Inline markers go next to the offending code, referencing the rule by its slug:
 
 ## `impl-suffix` — concrete trait impls use the `Impl` suffix
 
-The default name for a concrete implementation of trait `Foo` is `Foo-ImplKind-Impl`.
+The name for a concrete implementation of trait `Foo` is `Foo-ImplKind-Impl`.
 `CustomerClient` -> `CustomerClientDirectImpl`
 `CustomerRepo` -> `CustomerRepoMySQLImpl`
 The companion's layer val is named `layer` (e.g. `CustomerRepoMySQLImpl.layer`).
@@ -29,7 +29,7 @@ Non-`final` opens a class to override at a distance: the method body invoked mig
 
 ## `no-default-args` — function parameters don't have default values
 
-Default arguments hide the value at the call site: the reader of `serve(routes)` can't tell whether a port was passed or defaulted. Every caller passes every parameter explicitly — the call site stays honest about what value is in play.
+Default arguments hide the value at the call site: the reader of `serve(routes)` can't tell whether a port was passed or defaulted. Every caller passes every parameter explicitly.
 
 ## `named-args` — named arguments at arity ≥ 3, or when two parameters share a type
 
@@ -41,7 +41,7 @@ createUser("Ada", "ada@example.test", true, false)
 createUser(name = "Ada", email = "ada@example.test", isAdmin = true, isActive = false)
 ```
 
-Use named args when **(a)** the function takes 3+ parameters, OR **(b)** any two parameters share a type. Clause (b) catches Boolean/Option-blindness below the arity threshold — `transfer(fromId, toId, amount)` with two `CustomerId`s is unsafe at arity 2 even though arity-2 is otherwise positional-fine.
+Use named args when **(a)** the function takes 3+ parameters, OR **(b)** any two parameters share a type. Clause (b) catches same-type argument swaps regardless of arity — `transfer(fromId, toId, amount)` with two `CustomerId`s needs names to keep them straight.
 
 ## `no-null` — never use `null`
 

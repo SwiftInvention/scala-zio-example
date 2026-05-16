@@ -8,7 +8,7 @@ The `appServer` deployment unit is packaged as a docker image via sbt-native-pac
 just docker-build       # = sbt appServer/Docker/publishLocal
 ```
 
-Tags the local docker daemon with `scala-zio-example-server:<version>` and `:latest`. Single-arch (host arch); multi-arch upgrade path at the bottom of this doc.
+Tags the local docker daemon with `scala-zio-example-server:<version>` and `:latest`. Single-arch (host arch).
 
 `sbt appServer/Docker/stage` produces `modules/app/server/target/docker/stage/Dockerfile` if you want to inspect what's generated without building.
 
@@ -27,7 +27,7 @@ OCI labels (`org.opencontainers.image.title`, `.description`, `.source`) are set
 
 The image carries all checked-in env files (`application-dev.conf`, `application-prod.conf`) plus, if the build host has it, the gitignored `application-local.conf`. Only the one selected by `APP_ENV` is loaded at boot; `local` is the on-host shape.
 
-The dev/prod files use `${VAR}` env-var substitution for endpoints and credentials. Compose-local supplies those vars in `docker-compose.yml`'s `environment:` block — same shape as a real dev deployment, different values.
+The dev/prod files use `${VAR}` env-var substitution for endpoints and credentials. Compose-local supplies those vars in `docker-compose.yml`'s `environment:` block.
 
 ```yaml
 services:
@@ -53,7 +53,7 @@ just start-fresh-docker-server     # local-infra-reset → db-migrate → seed-e
 
 Compose wires the server next to `mysql` and `jaeger` on the `scala-zio-example-local` network. The healthcheck hits `http://localhost:8080/health` via `curl` — once it passes, `docker compose up --wait` returns.
 
-Hit it the same way as a host-run server:
+Smoke test:
 
 ```sh
 just smoke-test    # curls the server on :8080

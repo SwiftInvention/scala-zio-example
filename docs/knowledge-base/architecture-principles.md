@@ -10,7 +10,7 @@ Inline markers go next to the offending code, referencing the principle by its s
 // architecture: bounded-context FIXME
 ```
 
-While we apply the rules in a strict fashion, the rules themselves are revisable. Flag tension if you see it.
+Rules are revisable — flag tension if you see it.
 
 ---
 
@@ -40,7 +40,7 @@ A context is `<ctx>` + `<ctx>-api`. Inside the impl module: `domain/` (abstracti
 
 ## `import-direction` — imports flow `impl → app → domain`
 
-Within and across modules: `impl/` may import from `app/` and `domain/`; `app/` may import from `domain/`; `domain/` imports from neither. Convention-only — review catches it. Pattern: [`build-deps.md`](patterns/build-deps.md#convention-only-impl--app--domain-import-direction).
+Within and across modules: `impl/` may import from `app/` and `domain/`; `app/` may import from `domain/`; `domain/` imports from neither. Convention-only — review catches violations. Pattern: [`build-deps.md`](patterns/build-deps.md#convention-only-impl--app--domain-import-direction).
 
 ## `build-deps` — module dependencies enforce the architecture
 
@@ -64,7 +64,7 @@ Identifiers (`CustomerId`, `AddressId`, `NotificationId`) flow through the syste
 
 ## `smart-constructors` — validated value objects use `sealed abstract case class Foo private (...)`
 
-Values with invariants (`Email`, `CustomerName`, `PostalCode`) construct through a smart-constructor `apply` that returns `AppIO[T]` and is the only path to a value. The triple `sealed abstract case class Foo private (...)` is load-bearing: naive `final case class Foo private (...)` leaks validation via the auto-generated `copy()`, so `abstract` is required to suppress it. Construction via `new Foo(...) {}` inside the companion. Value objects live with the owning ctx. Pattern: [`smart-constructors.md`](patterns/smart-constructors.md).
+Values with invariants (`Email`, `CustomerName`, `PostalCode`) construct through a smart-constructor `apply` that returns `AppIO[T]` and is the only path to a value. The triple `sealed abstract case class Foo private (...)` matters: naive `final case class Foo private (...)` leaks validation via the auto-generated `copy()`, so `abstract` is required to suppress it. Construction via `new Foo(...) {}` inside the companion. Value objects live with the owning ctx. Pattern: [`smart-constructors.md`](patterns/smart-constructors.md).
 
 ## `errors` — typed `AppFailure` channel, no implicit Throwable leakage
 
@@ -92,6 +92,6 @@ Every repo method wraps its query in `Transactor.withTransaction`. App-service m
 
 ---
 
-## `logging` — INFO/DEBUG/ERROR by audience, ERROR at every boundary
+## `logging` — log levels by audience, ERROR at every boundary
 
 INFO is for operators scanning a production log, DEBUG is for investigators troubleshooting a specific call, WARN is for recoverable failures that didn't surface, ERROR is for failures that did. Every boundary where a typed failure could be lost or converted gets an ERROR log, funneled through `LogError.tagged`. Duplicate logs across boundaries are fine; missing one is not. Pattern: [`logging.md`](patterns/logging.md).

@@ -12,7 +12,7 @@ modules/<app>/src/main/resources/
 └── application-prod.conf            committed; ${VAR} substitutions for secrets
 ```
 
-Only `application-local.conf` is gitignored. `dev`/`prod` files are committed because they contain no real secrets — only defaults and `${VAR}` references. The `.example` template exists for `local` because local config typically has actual values baked in (passwords, API keys for dev convenience) that shouldn't be in git.
+Only `application-local.conf` is gitignored. `dev`/`prod` files are committed because they contain no real secrets — only defaults and `${VAR}` references. The `.example` template exists for `local` because the working local file holds real (throwaway) credentials that shouldn't be in git.
 
 Each file is its own truth — no `reference.conf`, no merge with another env's file. The bug this guards against: a value changes in `reference.conf`, an env file doesn't mention it, the new default silently activates. With self-contained per-env files, "what's the runtime value?" is one lookup, and a new field has to be set in every env file (or boot fails there).
 
@@ -24,7 +24,7 @@ Each file is its own truth — no `reference.conf`, no merge with another env's 
 
 `EnvLabel` (in `lib/common/domain/model/`) is a sealed enumeratum trait with `Local | Dev | Prod`. `entryName` is lowercase — matches both the conf-file suffix and the shell convention for env-var values.
 
-`ConfigBootstrap.layer` (in `lib/common/impl/config/`) reads `APP_ENV`, parses to `EnvLabel`, exposes it. **Nothing else propagates.** No `Config` service, no `EnvConfig` wrapper. Typesafe-config and pureconfig stay contained to the parsing perimeter — the consumers downstream see only typed `XConfig` values.
+`ConfigBootstrap.layer` (in `lib/common/impl/config/`) reads `APP_ENV`, parses to `EnvLabel`, exposes it. No `Config` service, no `EnvConfig` wrapper. Typesafe-config and pureconfig stay contained to the parsing perimeter — the consumers downstream see only typed `XConfig` values.
 
 `ConfigBootstrap` also exposes a helper used by every `XConfig.layer`:
 
@@ -76,8 +76,6 @@ DataSourceLayer.layer        : ZLayer[DataSourceConfig, _, DataSource]
 (http server binding)        : ZLayer[ServerConfig, _, Server]
 ```
 
-The parsing tier (XConfig.layers) is the only place that touches typesafe-config or pureconfig. Service layers below it consume typed values exclusively.
-
 ## No defaults in code — for configurable values
 
 If a value is something an operator is meant to tune per env, it lives in `.conf` with no in-code fallback. The rule applies to all code that consumes a config field:
@@ -100,7 +98,7 @@ The question "what's `port` at runtime?" must always be answered by reading the 
 
 ### Internal-mechanism constants are not config
 
-A `private val probeBudget: Duration = 5.seconds` in a layer's source is fine. It isn't a configurable value — operators don't tune the retry cadence on a startup probe; they turn the probe on or off (which is a config decision, modeled in `OtelConfig`). Promoting every internal constant to `.conf` would inflate the surface without adding control.
+A `private val probeBudget: Duration = 5.seconds` in a layer's source is fine. It isn't a configurable value — operators don't tune the retry cadence on a startup probe; they turn the probe on or off (which is a config decision, modeled in `OtelConfig`).
 
 The test: is there a plausible env where an operator would want this value different? If yes, it's config. If it's mechanism the implementation chose for itself, it's a constant in code.
 
@@ -112,7 +110,7 @@ If a value is required: required field on the case class, no default. The `.conf
 final case class DataSourceConfig(jdbcUrl: String, user: String, password: String, maximumPoolSize: Int)
 ```
 
-If a value is *conceptually* optional — its absence has distinct semantics from any present value — model it as `Option[X]` and have the consumer branch on the option. **Not** to substitute a fallback value, but to do something genuinely different:
+If a value is *conceptually* optional — its absence has distinct semantics from any present value — model it as `Option[X]` and have the consumer branch on the option. Not to substitute a fallback value, but to do something different:
 
 ```scala
 final case class TelemetryConfig(metricsSink: Option[MetricsSinkConfig])

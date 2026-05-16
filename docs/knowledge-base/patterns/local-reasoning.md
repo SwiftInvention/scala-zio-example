@@ -2,19 +2,17 @@
 
 What a piece of code does should be derivable from reading *that* code plus its *named* dependencies — without descending into the bodies of those dependencies. The named dependencies form the local frame. The discipline is that the frame is honest: types and signatures don't lie about what's inside.
 
-This is the discipline that lets a codebase scale. Without it, every change requires understanding the whole system, and every reader's mental model diverges from every other's. With it, you can read a function and trust what it says.
-
 ## What enables local reasoning
 
 **Types as contracts.** Signatures declare inputs, outputs, failure modes, and effects. `def find(id: CustomerId): AppIO[Option[Customer]]` is a complete description of what a caller can rely on: takes a typed id, returns an option of customer in the effect channel. Nothing else.
 
 **No hidden state.** Values are values. No mutation through aliased references, no globals, no thread-locals. A `Customer` you hold today is the same `Customer` next millisecond — nobody else has a way to change it under you.
 
-**Closed sets.** Sealed traits/enums let pattern matches be exhaustive. You can know all the cases without grep'ing for subclasses. Open inheritance is action-at-a-distance: a method might be overridden somewhere you can't see.
+**Closed sets.** Sealed traits/enums let pattern matches be exhaustive. You can know all the cases without grep'ing for subclasses.
 
 **Explicit dependencies.** What a function needs is in its signature or its required layer; nothing is pulled from ambient context. `Transactor` is a parameter or a `ZIO.service` call, not a static or a thread-local.
 
-**Bounded effects.** Effects are in types. `AppIO[X]` declares "this might do work in the world"; pure functions don't lie. A method returning a plain value doesn't secretly hit the network.
+**Bounded effects.** Effects are in types. `AppIO[X]` declares "this might do work in the world". A method returning a plain value doesn't secretly hit the network.
 
 ## At every level of abstraction
 
@@ -26,7 +24,7 @@ The discipline applies at every scale, with the unit of "code" widening:
 - **Bounded context.** Cross-context calls go through `<ctx>-api`, never internals. The customer ctx's domain models are not the order ctx's concern.
 - **System.** Deployment-unit behavior is derivable from the composition root. `ServerEnv.scala` is the truth about what's wired; you don't have to grep for layer constructions.
 
-The unit changes; the rule doesn't. At each level, what you need to understand the level is *at* the level (or in declared dependencies of the level), not somewhere you have to descend to find.
+The unit changes; the rule doesn't.
 
 ## Where this is enforced in the codebase
 
@@ -43,7 +41,7 @@ Most existing principles are mechanisms for preserving local reasoning at one le
 
 **Per-method failure precision.** `AppIO[A] = IO[AppFailure, A]` tells you the failure is one of our structured errors, not which subclass. To know whether `CustomerService.get` can fail with `CustomerNotFoundError` vs `DbError`, you read the body. The trade-off and its Scala 3 successor live in [`errors.md`](errors.md) §"Why not per-method failure types".
 
-**Trait contracts not fully captured by types.** Some of our traits have semantics (laws, ordering, what counts as nesting) that types don't express. `Transactor.withTransaction[A](io: AppIO[A]): AppIO[A]` doesn't tell you that nested calls reuse the outer connection — that's documented but not encoded. A reader has to descend or know the convention. The fix when it matters: tighten the docstring to be the contract; or richer types that encode more of the law.
+**Trait contracts not fully captured by types.** Some of our traits have semantics (laws, ordering, what counts as nesting) that types don't express. `Transactor.withTransaction[A](io: AppIO[A]): AppIO[A]` doesn't tell you that nested calls reuse the outer connection — that's documented but not encoded. A reader has to descend or know the convention.
 
 **Implicit resolution.** Quill encodings, zio-json codecs, PureConfig readers — implicits get pulled into scope from elsewhere. The use site doesn't show what's resolved. A reader debugging "why does this not compile?" has to know the rules of implicit search, which are global.
 
@@ -51,7 +49,7 @@ Most existing principles are mechanisms for preserving local reasoning at one le
 
 ## Antipatterns
 
-Things that destroy local reasoning, listed so they're recognizable:
+Things that destroy local reasoning:
 
 - **Open inheritance with overrides.** Method on a non-`final` class might be overridden in a subclass you don't see. Calling it doesn't tell you which body runs. Default to `final` for classes that aren't designed for extension.
 - **Shared mutable state.** Globals, vars on objects, `ThreadLocal`. Anyone can change them; you can't reason about your view without grep'ing.
@@ -66,11 +64,13 @@ Things that destroy local reasoning, listed so they're recognizable:
 
 A doc that requires you to chase four links to understand its premise has bad local reasoning, same as a function that requires reading four others. A doc should be self-contained beyond a small set of named pointers.
 
+See [`prose.md`](prose.md) for the full prose standard and the antipatterns that violate it.
+
 ## When the discipline bends
 
 Some kinds of code legitimately need non-local mechanisms:
 
 - Composition roots — see [`composition-roots.md`](composition-roots.md).
 - Cross-cutting infrastructure (logging, tracing — instrumentation by definition spans abstractions).
-- Performance-critical paths where mutation buys real wins (rare; isolate behind interfaces).
+- Performance-critical paths where mutation buys real wins — isolate behind interfaces.
 - Pluggable extensibility where the dynamism is the feature.
